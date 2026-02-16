@@ -1,4 +1,4 @@
-const { createClient } = require('@libsql/client');
+const { createClient } = require('@libsql/client/http');
 const { hashSenha } = require('./auth');
 require('dotenv').config();
 
