@@ -65,7 +65,7 @@ app.post("/api/respostas", async (req, res) => {
         exercicio,
         resposta,
         avaliacao.nota,
-        avaliacao.feedback,
+        JSON.stringify(avaliacao),
       ],
     });
 
@@ -166,7 +166,7 @@ app.get("/api/ranking", async (req, res) => {
 });
 
 // SPA fallback
-app.get("*", (req, res) => {
+app.get("/{*splat}", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
