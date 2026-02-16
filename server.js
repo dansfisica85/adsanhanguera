@@ -346,12 +346,18 @@ app.get('/{*splat}', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start server
-async function start() {
-  await initDB();
-  app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+// Inicialização do banco
+let dbReady = false;
+const dbInit = initDB().then(() => { dbReady = true; });
+
+// Start server (apenas quando executado diretamente, não na Vercel)
+if (require.main === module) {
+  dbInit.then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+    });
   });
 }
 
-start();
+// Export para Vercel serverless
+module.exports = app;
