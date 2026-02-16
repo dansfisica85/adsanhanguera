@@ -11,9 +11,15 @@
 
   <!-- ===== TELA DE LOGIN ===== -->
   <div id="loginScreen" class="login-screen">
+    <!-- Partículas decorativas -->
+    <div class="login-particles">
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
     <div class="login-card">
       <div class="login-logo">
-        <div class="login-icon">🎓</div>
+        <div class="login-icon-ring">
+          <div class="login-icon">🎓</div>
+        </div>
         <h1>ADS Anhanguera</h1>
         <p>Oficina de Soluções Profissionais</p>
       </div>
@@ -27,8 +33,21 @@
           <input type="password" id="loginSenha" placeholder="Sua senha" required />
         </div>
         <div id="loginError" class="login-error hidden"></div>
-        <button type="submit" class="btn btn-primary btn-full">Entrar</button>
+        <button type="submit" class="btn btn-primary btn-full">
+          <span>Entrar</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
       </form>
+      <div class="login-dev-info">
+        <div class="login-dev-divider"><span>Desenvolvedor</span></div>
+        <p class="login-dev-name">Davi Antonino Nunes da Silva</p>
+        <div class="login-dev-links">
+          <a href="mailto:professordavi85@gmail.com" title="Email">📧 professordavi85@gmail.com</a>
+          <a href="https://wa.me/5516992604315" target="_blank" title="WhatsApp">📱 (16) 99260-4315</a>
+          <a href="https://github.com/dansfisica85" target="_blank" title="GitHub">🐙 dansfisica85</a>
+          <a href="https://open.spotify.com/intl-pt/artist/0IBe0S81z4uWoscwHEOQ1f" target="_blank" title="Spotify">🎵 Artigli Notturni 🐾</a>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -106,68 +125,70 @@
         </div>
 
         <div class="concepts-section">
-          <h3 class="section-title">📖 Conceitos Fundamentais</h3>
+          <h3 class="section-title">📖 Conceitos Fundamentais <span class="section-hint">Clique nos cards para expandir</span></h3>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>🏢 Caso Nutrientes Delivery</h4>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="concept-body">
-              <p>A <strong>Nutrientes Delivery</strong> é uma startup de alimentação saudável que precisa de um sistema integrado com quatro módulos:</p>
-              <ul>
-                <li><strong>Módulo do Cliente:</strong> Aplicativo para pedidos, personalização de refeições e acompanhamento nutricional</li>
-                <li><strong>Módulo de Nutrição:</strong> Motor de cálculo nutricional das receitas e integração com banco de dados de alimentos</li>
-                <li><strong>Módulo de Produção:</strong> Gestão de receitas diárias, controle de estoque e desperdício</li>
-                <li><strong>Módulo de Logística:</strong> Roteirização de entregas e acompanhamento em tempo real</li>
-              </ul>
-              <div class="info-box">
-                <strong>Equipe:</strong> 3 programadores juniores, 1 analista sênior, 1 product owner<br>
-                <strong>Prazo:</strong> 6 meses para o MVP<br>
-                <strong>Conflito:</strong> Analista Sênior prefere Preditivo vs. PO/CEO exige Adaptativo
+          <div class="flashcards-grid">
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="orange">
+              <div class="flashcard-icon">🏢</div>
+              <h4 class="flashcard-title">Caso Nutrientes Delivery</h4>
+              <p class="flashcard-preview">Startup de alimentação saudável com 4 módulos integrados</p>
+              <div class="flashcard-badge">Estudo de Caso</div>
+              <div class="flashcard-full-content" style="display:none">
+                <p>A <strong>Nutrientes Delivery</strong> é uma startup de alimentação saudável que precisa de um sistema integrado com quatro módulos:</p>
+                <ul>
+                  <li><strong>Módulo do Cliente:</strong> Aplicativo para pedidos, personalização de refeições e acompanhamento nutricional</li>
+                  <li><strong>Módulo de Nutrição:</strong> Motor de cálculo nutricional das receitas e integração com banco de dados de alimentos</li>
+                  <li><strong>Módulo de Produção:</strong> Gestão de receitas diárias, controle de estoque e desperdício</li>
+                  <li><strong>Módulo de Logística:</strong> Roteirização de entregas e acompanhamento em tempo real</li>
+                </ul>
+                <div class="info-box">
+                  <strong>Equipe:</strong> 3 programadores juniores, 1 analista sênior, 1 product owner<br>
+                  <strong>Prazo:</strong> 6 meses para o MVP<br>
+                  <strong>Conflito:</strong> Analista Sênior prefere Preditivo vs. PO/CEO exige Adaptativo
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>📊 Matriz RACI</h4>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="concept-body">
-              <p>A <strong>Matriz RACI</strong> é uma ferramenta de gestão que define responsabilidades em um projeto:</p>
-              <div class="grid-2">
-                <div class="mini-card accent-blue"><strong>R – Responsável</strong><p>Quem executa a tarefa.</p></div>
-                <div class="mini-card accent-green"><strong>A – Aprovador</strong><p>Quem aprova o resultado.</p></div>
-                <div class="mini-card accent-yellow"><strong>C – Consultado</strong><p>Quem deve ser consultado antes de decisões.</p></div>
-                <div class="mini-card accent-purple"><strong>I – Informado</strong><p>Quem precisa ser informado sobre progresso.</p></div>
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="blue">
+              <div class="flashcard-icon">📊</div>
+              <h4 class="flashcard-title">Matriz RACI</h4>
+              <p class="flashcard-preview">Ferramenta de gestão de responsabilidades</p>
+              <div class="flashcard-badge">Gestão</div>
+              <div class="flashcard-full-content" style="display:none">
+                <p>A <strong>Matriz RACI</strong> é uma ferramenta de gestão que define responsabilidades em um projeto:</p>
+                <div class="grid-2">
+                  <div class="mini-card accent-blue"><strong>R – Responsável</strong><p>Quem executa a tarefa.</p></div>
+                  <div class="mini-card accent-green"><strong>A – Aprovador</strong><p>Quem aprova o resultado.</p></div>
+                  <div class="mini-card accent-yellow"><strong>C – Consultado</strong><p>Quem deve ser consultado antes de decisões.</p></div>
+                  <div class="mini-card accent-purple"><strong>I – Informado</strong><p>Quem precisa ser informado sobre progresso.</p></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>🔄 Ciclo de Vida Híbrido</h4>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="concept-body">
-              <p>O <strong>Ciclo de Vida Híbrido</strong> combina abordagens Preditiva (Cascata) e Adaptativa (Ágil):</p>
-              <div class="grid-2">
-                <div class="mini-card accent-blue"><strong>Abordagem Preditiva (Cascata)</strong><p>Ideal para requisitos estáveis. Aplicação: Módulo de Produção.</p></div>
-                <div class="mini-card accent-green"><strong>Abordagem Adaptativa (Ágil)</strong><p>Ideal para requisitos que mudam. Aplicação: Módulo do Cliente.</p></div>
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="green">
+              <div class="flashcard-icon">🔄</div>
+              <h4 class="flashcard-title">Ciclo de Vida Híbrido</h4>
+              <p class="flashcard-preview">Combinação de abordagens Preditiva e Ágil</p>
+              <div class="flashcard-badge">Metodologia</div>
+              <div class="flashcard-full-content" style="display:none">
+                <p>O <strong>Ciclo de Vida Híbrido</strong> combina abordagens Preditiva (Cascata) e Adaptativa (Ágil):</p>
+                <div class="grid-2">
+                  <div class="mini-card accent-blue"><strong>Abordagem Preditiva (Cascata)</strong><p>Ideal para requisitos estáveis. Aplicação: Módulo de Produção.</p></div>
+                  <div class="mini-card accent-green"><strong>Abordagem Adaptativa (Ágil)</strong><p>Ideal para requisitos que mudam. Aplicação: Módulo do Cliente.</p></div>
+                </div>
+                <p>As <strong>3 atividades essenciais</strong>: Detalhamento da Baseline, Definição de Timebox/Sprints, Plano de Comunicação.</p>
               </div>
-              <p>As <strong>3 atividades essenciais</strong>: Detalhamento da Baseline, Definição de Timebox/Sprints, Plano de Comunicação.</p>
             </div>
-          </div>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>🏗️ Arquitetura de Software</h4>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="concept-body">
-              <div class="mini-card accent-blue"><strong>Microservices (Recomendado)</strong><p>Cada módulo é independente. Ideal para escalabilidade.</p></div>
-              <div class="mini-card accent-green" style="margin-top:10px;"><strong>Padrão MVC</strong><p>Recomendado para o Módulo do Cliente: Model (pedidos), View (interface), Controller (lógica).</p></div>
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="purple">
+              <div class="flashcard-icon">🏗️</div>
+              <h4 class="flashcard-title">Arquitetura de Software</h4>
+              <p class="flashcard-preview">Microservices e padrão MVC</p>
+              <div class="flashcard-badge">Arquitetura</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="mini-card accent-blue"><strong>Microservices (Recomendado)</strong><p>Cada módulo é independente. Ideal para escalabilidade.</p></div>
+                <div class="mini-card accent-green" style="margin-top:10px;"><strong>Padrão MVC</strong><p>Recomendado para o Módulo do Cliente: Model (pedidos), View (interface), Controller (lógica).</p></div>
+              </div>
             </div>
           </div>
         </div>
@@ -186,68 +207,71 @@
         </div>
 
         <div class="concepts-section">
-          <h3 class="section-title">📖 Conceitos Fundamentais</h3>
+          <h3 class="section-title">📖 Conceitos Fundamentais <span class="section-hint">Clique nos cards para expandir</span></h3>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>⚡ A Crise do MVP</h4>
-              <span class="toggle-icon">▼</span>
+          <div class="flashcards-grid">
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="red">
+              <div class="flashcard-icon">⚡</div>
+              <h4 class="flashcard-title">A Crise do MVP</h4>
+              <p class="flashcard-preview">Conflitos durante o Sprint com novas exigências</p>
+              <div class="flashcard-badge">Cenário</div>
+              <div class="flashcard-full-content" style="display:none">
+                <p>No meio do Sprint, o CEO exige inclusão de Calculadora Nutricional em Tempo Real e Pagamento Recorrente via PIX.</p>
+                <div class="warning-box">⚠️ <strong>Problema:</strong> O PO está sob pressão para aceitar mudanças no meio do Sprint, comprometendo a entrega do MVP.</div>
+              </div>
             </div>
-            <div class="concept-body">
-              <p>No meio do Sprint, o CEO exige inclusão de Calculadora Nutricional em Tempo Real e Pagamento Recorrente via PIX.</p>
-              <div class="warning-box">⚠️ <strong>Problema:</strong> O PO está sob pressão para aceitar mudanças no meio do Sprint, comprometendo a entrega do MVP.</div>
-            </div>
-          </div>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>📜 Manifesto Ágil e Valores</h4>
-              <span class="toggle-icon">▼</span>
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="blue">
+              <div class="flashcard-icon">📜</div>
+              <h4 class="flashcard-title">Manifesto Ágil</h4>
+              <p class="flashcard-preview">Os 4 valores fundamentais do desenvolvimento ágil</p>
+              <div class="flashcard-badge">Valores</div>
+              <div class="flashcard-full-content" style="display:none">
+                <ol>
+                  <li><strong>Indivíduos e interações</strong> mais que processos e ferramentas</li>
+                  <li><strong>Software funcionando</strong> mais que documentação abrangente</li>
+                  <li><strong>Colaboração com o cliente</strong> mais que negociação de contratos</li>
+                  <li><strong>Responder a mudanças</strong> mais que seguir um plano</li>
+                </ol>
+              </div>
             </div>
-            <div class="concept-body">
-              <ol>
-                <li><strong>Indivíduos e interações</strong> mais que processos e ferramentas</li>
-                <li><strong>Software funcionando</strong> mais que documentação abrangente</li>
-                <li><strong>Colaboração com o cliente</strong> mais que negociação de contratos</li>
-                <li><strong>Responder a mudanças</strong> mais que seguir um plano</li>
-              </ol>
-            </div>
-          </div>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>🔧 Artefatos e Eventos do Scrum</h4>
-              <span class="toggle-icon">▼</span>
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="green">
+              <div class="flashcard-icon">🔧</div>
+              <h4 class="flashcard-title">Artefatos e Eventos Scrum</h4>
+              <p class="flashcard-preview">Product Backlog, Sprint Backlog e Incremento</p>
+              <div class="flashcard-badge">Scrum</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="grid-2">
+                  <div class="mini-card accent-blue"><strong>Product Backlog</strong><p>Lista ordenada de necessidades do produto. Gerenciado pelo PO.</p></div>
+                  <div class="mini-card accent-green"><strong>Sprint Backlog</strong><p>Itens selecionados para o Sprint. Protegido pelo time.</p></div>
+                  <div class="mini-card accent-purple"><strong>Incremento</strong><p>Soma dos itens completados durante o Sprint.</p></div>
+                </div>
+              </div>
             </div>
-            <div class="concept-body">
-              <div class="grid-2">
-                <div class="mini-card accent-blue"><strong>Product Backlog</strong><p>Lista ordenada de necessidades do produto. Gerenciado pelo PO.</p></div>
-                <div class="mini-card accent-green"><strong>Sprint Backlog</strong><p>Itens selecionados para o Sprint. Protegido pelo time.</p></div>
-                <div class="mini-card accent-purple"><strong>Incremento</strong><p>Soma dos itens completados durante o Sprint.</p></div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="orange">
+              <div class="flashcard-icon">💡</div>
+              <h4 class="flashcard-title">MVP e Design Thinking</h4>
+              <p class="flashcard-preview">Prototipação rápida e validação de hipóteses</p>
+              <div class="flashcard-badge">Inovação</div>
+              <div class="flashcard-full-content" style="display:none">
+                <p>O <strong>MVP</strong> é a versão mais simples do produto que permite máximo aprendizado.</p>
+                <div class="process-flow">
+                  <div class="process-step">Empatia</div>
+                  <div class="process-arrow">→</div>
+                  <div class="process-step">Definição</div>
+                  <div class="process-arrow">→</div>
+                  <div class="process-step">Ideação</div>
+                  <div class="process-arrow">→</div>
+                  <div class="process-step">Prototipação</div>
+                  <div class="process-arrow">→</div>
+                  <div class="process-step">Teste</div>
+                </div>
               </div>
             </div>
           </div>
-
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>💡 MVP e Design Thinking</h4>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="concept-body">
-              <p>O <strong>MVP</strong> é a versão mais simples do produto que permite máximo aprendizado.</p>
-              <div class="process-flow">
-                <div class="process-step">Empatia</div>
-                <div class="process-arrow">→</div>
-                <div class="process-step">Definição</div>
-                <div class="process-arrow">→</div>
-                <div class="process-step">Ideação</div>
-                <div class="process-arrow">→</div>
-                <div class="process-step">Prototipação</div>
-                <div class="process-arrow">→</div>
-                <div class="process-step">Teste</div>
-              </div>
-            </div>
-          </div>
+        </div>
         </div>
 
         <div class="exercises-section">
@@ -264,59 +288,61 @@
         </div>
 
         <div class="concepts-section">
-          <h3 class="section-title">📖 Conceitos Fundamentais</h3>
+          <h3 class="section-title">📖 Conceitos Fundamentais <span class="section-hint">Clique nos cards para expandir</span></h3>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>🚨 Problemas Críticos</h4>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="concept-body">
-              <div class="grid-2">
-                <div class="mini-card accent-red"><strong>Risco Materializado (Estoque)</strong><p>Falha no Adaptador de Protocolo. Perda de R$ 15.000 em insumos.</p></div>
-                <div class="mini-card accent-yellow"><strong>Problema de Documentação</strong><p>Desenvolvedor júnior gastou 2 dias sem documentação, causando atraso.</p></div>
+          <div class="flashcards-grid">
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="red">
+              <div class="flashcard-icon">🚨</div>
+              <h4 class="flashcard-title">Problemas Críticos</h4>
+              <p class="flashcard-preview">Riscos materializados e falhas de documentação</p>
+              <div class="flashcard-badge">Riscos</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="grid-2">
+                  <div class="mini-card accent-red"><strong>Risco Materializado (Estoque)</strong><p>Falha no Adaptador de Protocolo. Perda de R$ 15.000 em insumos.</p></div>
+                  <div class="mini-card accent-yellow"><strong>Problema de Documentação</strong><p>Desenvolvedor júnior gastou 2 dias sem documentação, causando atraso.</p></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>⚖️ Gestão de Riscos e Matriz de Risco</h4>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="concept-body">
-              <p><strong>Natureza dos Riscos:</strong> Técnico, Organizacional, Financeiro.</p>
-              <div class="info-box">
-                <strong>Ações de Contingência:</strong> Mecanismo de Failover, Redundância de Sensores, Backup manual.
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="orange">
+              <div class="flashcard-icon">⚖️</div>
+              <h4 class="flashcard-title">Gestão de Riscos</h4>
+              <p class="flashcard-preview">Matriz de risco e ações de contingência</p>
+              <div class="flashcard-badge">Gestão</div>
+              <div class="flashcard-full-content" style="display:none">
+                <p><strong>Natureza dos Riscos:</strong> Técnico, Organizacional, Financeiro.</p>
+                <div class="info-box">
+                  <strong>Ações de Contingência:</strong> Mecanismo de Failover, Redundância de Sensores, Backup manual.
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>📏 Métricas de Qualidade</h4>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="concept-body">
-              <div class="formula-box">
-                <strong>Métrica de Esforço Perdido (MEP)</strong>
-                <div class="formula">MEP = (Tempo Perdido / Duração Total do Sprint) × 100</div>
-                <p>Exemplo: (2 dias / 10 dias) × 100 = <strong>20%</strong> do Sprint perdido.</p>
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="purple">
+              <div class="flashcard-icon">📏</div>
+              <h4 class="flashcard-title">Métricas de Qualidade</h4>
+              <p class="flashcard-preview">MEP — Métrica de Esforço Perdido</p>
+              <div class="flashcard-badge">Qualidade</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="formula-box">
+                  <strong>Métrica de Esforço Perdido (MEP)</strong>
+                  <div class="formula">MEP = (Tempo Perdido / Duração Total do Sprint) × 100</div>
+                  <p>Exemplo: (2 dias / 10 dias) × 100 = <strong>20%</strong> do Sprint perdido.</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>📝 Documentação como Risco</h4>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="concept-body">
-              <ol>
-                <li><strong>Bus Factor:</strong> Dependência de um único desenvolvedor</li>
-                <li><strong>Custo de Manutenção:</strong> Time-to-Market lento</li>
-                <li><strong>Risco de Segurança:</strong> Erros por falta de especificação</li>
-              </ol>
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="blue">
+              <div class="flashcard-icon">📝</div>
+              <h4 class="flashcard-title">Documentação como Risco</h4>
+              <p class="flashcard-preview">Bus Factor, custo de manutenção e segurança</p>
+              <div class="flashcard-badge">Documentação</div>
+              <div class="flashcard-full-content" style="display:none">
+                <ol>
+                  <li><strong>Bus Factor:</strong> Dependência de um único desenvolvedor</li>
+                  <li><strong>Custo de Manutenção:</strong> Time-to-Market lento</li>
+                  <li><strong>Risco de Segurança:</strong> Erros por falta de especificação</li>
+                </ol>
+              </div>
             </div>
           </div>
         </div>
@@ -335,82 +361,84 @@
         </div>
 
         <div class="concepts-section">
-          <h3 class="section-title">📖 Conceitos Fundamentais</h3>
+          <h3 class="section-title">📖 Conceitos Fundamentais <span class="section-hint">Clique nos cards para expandir</span></h3>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>🚀 CI/CD – Integração e Entrega Contínua</h4>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="concept-body">
-              <div class="grid-2">
-                <div class="mini-card accent-blue"><strong>CI – Integração Contínua</strong><p>Toda alteração é automaticamente testada e integrada.</p></div>
-                <div class="mini-card accent-green"><strong>CD – Entrega Contínua</strong><p>Código testado é automaticamente disponibilizado para produção.</p></div>
-              </div>
-              <div class="process-flow">
-                <div class="process-step">Commit</div><div class="process-arrow">→</div>
-                <div class="process-step">Build</div><div class="process-arrow">→</div>
-                <div class="process-step">Testes</div><div class="process-arrow">→</div>
-                <div class="process-step">Deploy</div><div class="process-arrow">→</div>
-                <div class="process-step">Produção</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>🎨 UX – Experiência do Usuário</h4>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="concept-body">
-              <ul>
-                <li><strong>Usabilidade:</strong> Sistema fácil e intuitivo</li>
-                <li><strong>Acessibilidade:</strong> Acessível para todos</li>
-                <li><strong>Retenção:</strong> Boa experiência mantém usuários</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>🏛️ Governança de TI – COBIT e ITIL</h4>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="concept-body">
-              <div class="grid-2">
-                <div class="mini-card accent-blue"><strong>COBIT</strong><p>Governança: alinhamento da TI com objetivos de negócio.</p></div>
-                <div class="mini-card accent-green"><strong>ITIL</strong><p>Gerenciamento de serviços de TI. Padroniza operações.</p></div>
+          <div class="flashcards-grid">
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="blue">
+              <div class="flashcard-icon">🚀</div>
+              <h4 class="flashcard-title">CI/CD</h4>
+              <p class="flashcard-preview">Integração e Entrega Contínua automatizadas</p>
+              <div class="flashcard-badge">DevOps</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="grid-2">
+                  <div class="mini-card accent-blue"><strong>CI – Integração Contínua</strong><p>Toda alteração é automaticamente testada e integrada.</p></div>
+                  <div class="mini-card accent-green"><strong>CD – Entrega Contínua</strong><p>Código testado é automaticamente disponibilizado para produção.</p></div>
+                </div>
+                <div class="process-flow">
+                  <div class="process-step">Commit</div><div class="process-arrow">→</div>
+                  <div class="process-step">Build</div><div class="process-arrow">→</div>
+                  <div class="process-step">Testes</div><div class="process-arrow">→</div>
+                  <div class="process-step">Deploy</div><div class="process-arrow">→</div>
+                  <div class="process-step">Produção</div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>🌱 Paradigma ESG</h4>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="concept-body">
-              <div class="grid-3">
-                <div class="mini-card accent-green"><strong>🌍 Environmental</strong><p>Otimização de rotas, eficiência energética.</p></div>
-                <div class="mini-card accent-blue"><strong>👥 Social</strong><p>Proteção de dados (LGPD), interface inclusiva.</p></div>
-                <div class="mini-card accent-purple"><strong>🏛️ Governance</strong><p>Transparência, auditoria, ética corporativa.</p></div>
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="orange">
+              <div class="flashcard-icon">🎨</div>
+              <h4 class="flashcard-title">UX – Experiência do Usuário</h4>
+              <p class="flashcard-preview">Usabilidade, acessibilidade e retenção</p>
+              <div class="flashcard-badge">Design</div>
+              <div class="flashcard-full-content" style="display:none">
+                <ul>
+                  <li><strong>Usabilidade:</strong> Sistema fácil e intuitivo</li>
+                  <li><strong>Acessibilidade:</strong> Acessível para todos</li>
+                  <li><strong>Retenção:</strong> Boa experiência mantém usuários</li>
+                </ul>
               </div>
             </div>
-          </div>
 
-          <div class="concept-card">
-            <div class="concept-header" onclick="toggleConcept(this)">
-              <h4>🗺️ Mapa Mental Estratégico</h4>
-              <span class="toggle-icon">▼</span>
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="purple">
+              <div class="flashcard-icon">🏛️</div>
+              <h4 class="flashcard-title">Governança de TI</h4>
+              <p class="flashcard-preview">COBIT e ITIL para gestão de serviços</p>
+              <div class="flashcard-badge">Governança</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="grid-2">
+                  <div class="mini-card accent-blue"><strong>COBIT</strong><p>Governança: alinhamento da TI com objetivos de negócio.</p></div>
+                  <div class="mini-card accent-green"><strong>ITIL</strong><p>Gerenciamento de serviços de TI. Padroniza operações.</p></div>
+                </div>
+              </div>
             </div>
-            <div class="concept-body">
-              <div class="mind-map">
-                <div class="mind-node central">Projeto de Software<br>Nutrientes Delivery</div>
-                <div class="mind-branches">
-                  <div class="mind-node node-1"><strong>Nó 1: Gestão Inicial</strong><br>Ciclo Híbrido + UX</div>
-                  <div class="mind-node node-2"><strong>Nó 2: Execução Ágil</strong><br>Scrum/MVP + CI/CD</div>
-                  <div class="mind-node node-3"><strong>Nó 3: Qualidade</strong><br>Documentação + Controle de Versão</div>
-                  <div class="mind-node node-4"><strong>Nó 4: Governança</strong><br>Stakeholders + COBIT/ITIL/ESG</div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="green">
+              <div class="flashcard-icon">🌱</div>
+              <h4 class="flashcard-title">Paradigma ESG</h4>
+              <p class="flashcard-preview">Environmental, Social e Governance</p>
+              <div class="flashcard-badge">Sustentabilidade</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="grid-3">
+                  <div class="mini-card accent-green"><strong>🌍 Environmental</strong><p>Otimização de rotas, eficiência energética.</p></div>
+                  <div class="mini-card accent-blue"><strong>👥 Social</strong><p>Proteção de dados (LGPD), interface inclusiva.</p></div>
+                  <div class="mini-card accent-purple"><strong>🏛️ Governance</strong><p>Transparência, auditoria, ética corporativa.</p></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flashcard flashcard-wide" onclick="openFlashCard(this)" data-color="orange">
+              <div class="flashcard-icon">🗺️</div>
+              <h4 class="flashcard-title">Mapa Mental Estratégico</h4>
+              <p class="flashcard-preview">Visão integrada dos 4 nós do projeto</p>
+              <div class="flashcard-badge">Estratégia</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="mind-map">
+                  <div class="mind-node central">Projeto de Software<br>Nutrientes Delivery</div>
+                  <div class="mind-branches">
+                    <div class="mind-node node-1"><strong>Nó 1: Gestão Inicial</strong><br>Ciclo Híbrido + UX</div>
+                    <div class="mind-node node-2"><strong>Nó 2: Execução Ágil</strong><br>Scrum/MVP + CI/CD</div>
+                    <div class="mind-node node-3"><strong>Nó 3: Qualidade</strong><br>Documentação + Controle de Versão</div>
+                    <div class="mind-node node-4"><strong>Nó 4: Governança</strong><br>Stakeholders + COBIT/ITIL/ESG</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -528,6 +556,21 @@
       <div class="modal-box-body readme-content" id="readmeContent">
         <div class="loading">Carregando README</div>
       </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL FLASH CARD ===== -->
+  <div id="flashCardModal" class="flashcard-modal-overlay" onclick="closeFlashCard(event)">
+    <div class="flashcard-modal">
+      <div class="flashcard-modal-header">
+        <div class="flashcard-modal-icon" id="flashModalIcon"></div>
+        <div>
+          <h3 id="flashModalTitle"></h3>
+          <span class="flashcard-modal-badge" id="flashModalBadge"></span>
+        </div>
+        <button class="modal-close flashcard-modal-close" onclick="closeFlashCard()">&times;</button>
+      </div>
+      <div class="flashcard-modal-body" id="flashModalBody"></div>
     </div>
   </div>
 

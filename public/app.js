@@ -196,6 +196,52 @@ function toggleConcept(header) {
   header.closest('.concept-card').classList.toggle('open');
 }
 
+// ===== Flash Card Modal =====
+function openFlashCard(card) {
+  const modal = document.getElementById('flashCardModal');
+  const icon = card.querySelector('.flashcard-icon').textContent;
+  const title = card.querySelector('.flashcard-title').textContent;
+  const badge = card.querySelector('.flashcard-badge').textContent;
+  const content = card.querySelector('.flashcard-full-content').innerHTML;
+  const color = card.getAttribute('data-color');
+
+  document.getElementById('flashModalIcon').textContent = icon;
+  document.getElementById('flashModalTitle').textContent = title;
+  document.getElementById('flashModalBadge').textContent = badge;
+  document.getElementById('flashModalBody').innerHTML = content;
+
+  // Set color theme on badge
+  const badgeEl = document.getElementById('flashModalBadge');
+  const colorMap = {
+    orange: 'linear-gradient(135deg, #F37021, #D45A0A)',
+    blue: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+    green: 'linear-gradient(135deg, #16A34A, #15803D)',
+    purple: 'linear-gradient(135deg, #7C3AED, #6D28D9)',
+    red: 'linear-gradient(135deg, #DC2626, #B91C1C)',
+  };
+  badgeEl.style.background = colorMap[color] || colorMap.orange;
+
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeFlashCard(e) {
+  if (e && e.target !== e.currentTarget) return;
+  const modal = document.getElementById('flashCardModal');
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// Close flash card on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const flashModal = document.getElementById('flashCardModal');
+    if (flashModal && flashModal.classList.contains('active')) {
+      closeFlashCard();
+    }
+  }
+});
+
 // ===== Carregar Exercícios =====
 async function loadExercicios(unidade) {
   const container = document.getElementById(`exercises-${unidade}`);
