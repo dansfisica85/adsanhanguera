@@ -5,31 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ADS Anhanguera – Projeto de Software</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <!-- Modal de Login -->
-  <div id="loginModal" class="modal active">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>🎓 Projeto de Software – ADS Anhanguera</h2>
+
+  <!-- ===== TELA DE LOGIN ===== -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-icon">🎓</div>
+        <h1>ADS Anhanguera</h1>
         <p>Oficina de Soluções Profissionais</p>
       </div>
       <form id="loginForm">
         <div class="form-group">
-          <label for="nome">Nome Completo</label>
-          <input type="text" id="nome" placeholder="Seu nome completo" required />
+          <label for="loginEmail">Email</label>
+          <input type="text" id="loginEmail" placeholder="seu.email@exemplo.com" required />
         </div>
         <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" placeholder="seu.email@exemplo.com" required />
+          <label for="loginSenha">Senha</label>
+          <input type="password" id="loginSenha" placeholder="Sua senha" required />
         </div>
+        <div id="loginError" class="login-error hidden"></div>
         <button type="submit" class="btn btn-primary btn-full">Entrar</button>
       </form>
     </div>
   </div>
 
-  <!-- App Principal -->
+  <!-- ===== APP PRINCIPAL ===== -->
   <div id="app" class="hidden">
+
     <!-- Header -->
     <header class="header">
       <div class="header-content">
@@ -40,8 +45,17 @@
             <span class="subtitle">ADS – Anhanguera | Nutrientes Delivery</span>
           </div>
         </div>
-        <div class="user-info">
-          <span id="userNameDisplay"></span>
+        <div class="header-right">
+          <span id="userNameDisplay" class="user-name"></span>
+          <span id="roleBadge" class="role-badge"></span>
+          <!-- Toggle coordenador -->
+          <div id="coordToggle" class="coord-toggle hidden">
+            <label class="switch">
+              <input type="checkbox" id="coordSwitch" onchange="toggleCoordView()" />
+              <span class="slider"></span>
+            </label>
+            <span id="coordLabel" class="coord-label">Visão Aluno</span>
+          </div>
           <button class="btn btn-sm btn-outline" onclick="logout()">Sair</button>
         </div>
       </div>
@@ -50,35 +64,47 @@
     <!-- Navigation Tabs -->
     <nav class="tabs-nav">
       <div class="tabs-container">
-        <button class="tab active" data-tab="1" onclick="switchTab(1)">
+        <button class="tab active" data-tab="u1" onclick="switchTab('u1')">
           <span class="tab-num">U1</span>
           <span class="tab-label">Estudo de Caso</span>
         </button>
-        <button class="tab" data-tab="2" onclick="switchTab(2)">
+        <button class="tab" data-tab="u2" onclick="switchTab('u2')">
           <span class="tab-num">U2</span>
           <span class="tab-label">Resolução de Problemas</span>
         </button>
-        <button class="tab" data-tab="3" onclick="switchTab(3)">
+        <button class="tab" data-tab="u3" onclick="switchTab('u3')">
           <span class="tab-num">U3</span>
           <span class="tab-label">Simulação Profissional</span>
         </button>
-        <button class="tab" data-tab="4" onclick="switchTab(4)">
+        <button class="tab" data-tab="u4" onclick="switchTab('u4')">
           <span class="tab-num">U4</span>
           <span class="tab-label">Aprendizagem entre Pares</span>
+        </button>
+        <button class="tab" data-tab="docs" onclick="switchTab('docs')">
+          <span class="tab-num">📄</span>
+          <span class="tab-label">Documentos</span>
+        </button>
+        <button class="tab" data-tab="perfil" onclick="switchTab('perfil')">
+          <span class="tab-num">👤</span>
+          <span class="tab-label">Perfil</span>
+        </button>
+        <button class="tab" data-tab="admin" onclick="switchTab('admin')" id="tabAdmin" style="display:none;">
+          <span class="tab-num">⚙️</span>
+          <span class="tab-label">Admin</span>
         </button>
       </div>
     </nav>
 
     <!-- Main Content -->
     <main class="main-content">
+
       <!-- ==================== UNIDADE 1 ==================== -->
-      <section id="tab-1" class="tab-content active">
+      <section id="tab-u1" class="tab-content active">
         <div class="unit-header">
           <h2>📋 Unidade 1 – Estudo de Caso</h2>
           <p class="unit-desc">Gestão de Projetos, Matriz RACI, Ciclo de Vida Híbrido e Arquitetura de Software</p>
         </div>
 
-        <!-- Conceitos -->
         <div class="concepts-section">
           <h3 class="section-title">📖 Conceitos Fundamentais</h3>
 
@@ -111,25 +137,10 @@
             <div class="concept-body">
               <p>A <strong>Matriz RACI</strong> é uma ferramenta de gestão que define responsabilidades em um projeto:</p>
               <div class="grid-2">
-                <div class="mini-card accent-blue">
-                  <strong>R – Responsável</strong>
-                  <p>Quem executa a tarefa. É quem "faz o trabalho".</p>
-                </div>
-                <div class="mini-card accent-green">
-                  <strong>A – Aprovador</strong>
-                  <p>Quem aprova o resultado. Garante que o trabalho está correto.</p>
-                </div>
-                <div class="mini-card accent-yellow">
-                  <strong>C – Consultado</strong>
-                  <p>Quem deve ser consultado antes de tomar decisões. Comunicação bidirecional.</p>
-                </div>
-                <div class="mini-card accent-purple">
-                  <strong>I – Informado</strong>
-                  <p>Quem precisa ser informado sobre o progresso. Comunicação unidirecional.</p>
-                </div>
-              </div>
-              <div class="example-box">
-                <strong>Exemplo no projeto:</strong> Na tarefa "Definição de Requisitos do Cliente", o <em>Product Owner</em> seria R (Responsável) ou A (Aprovador), pois é quem representa o cliente.
+                <div class="mini-card accent-blue"><strong>R – Responsável</strong><p>Quem executa a tarefa.</p></div>
+                <div class="mini-card accent-green"><strong>A – Aprovador</strong><p>Quem aprova o resultado.</p></div>
+                <div class="mini-card accent-yellow"><strong>C – Consultado</strong><p>Quem deve ser consultado antes de decisões.</p></div>
+                <div class="mini-card accent-purple"><strong>I – Informado</strong><p>Quem precisa ser informado sobre progresso.</p></div>
               </div>
             </div>
           </div>
@@ -142,21 +153,10 @@
             <div class="concept-body">
               <p>O <strong>Ciclo de Vida Híbrido</strong> combina abordagens Preditiva (Cascata) e Adaptativa (Ágil):</p>
               <div class="grid-2">
-                <div class="mini-card accent-blue">
-                  <strong>Abordagem Preditiva (Cascata)</strong>
-                  <p>Ideal para requisitos estáveis e bem definidos. Planejamento detalhado no início. <strong>Aplicação:</strong> Módulo de Produção (integração com sensores/hardware).</p>
-                </div>
-                <div class="mini-card accent-green">
-                  <strong>Abordagem Adaptativa (Ágil)</strong>
-                  <p>Ideal para requisitos que mudam frequentemente. Entregas iterativas. <strong>Aplicação:</strong> Módulo do Cliente (mudanças frequentes do CEO).</p>
-                </div>
+                <div class="mini-card accent-blue"><strong>Abordagem Preditiva (Cascata)</strong><p>Ideal para requisitos estáveis. Aplicação: Módulo de Produção.</p></div>
+                <div class="mini-card accent-green"><strong>Abordagem Adaptativa (Ágil)</strong><p>Ideal para requisitos que mudam. Aplicação: Módulo do Cliente.</p></div>
               </div>
-              <p>As <strong>3 atividades essenciais do planejamento</strong> são:</p>
-              <ol>
-                <li><strong>Detalhamento da Baseline</strong> do Módulo Preditivo (Produção)</li>
-                <li><strong>Definição de Timebox/Sprints</strong> para o Módulo Adaptativo (Cliente)</li>
-                <li><strong>Plano de Comunicação</strong> e gerenciamento de stakeholders</li>
-              </ol>
+              <p>As <strong>3 atividades essenciais</strong>: Detalhamento da Baseline, Definição de Timebox/Sprints, Plano de Comunicação.</p>
             </div>
           </div>
 
@@ -166,24 +166,12 @@
               <span class="toggle-icon">▼</span>
             </div>
             <div class="concept-body">
-              <p>A arquitetura define a estrutura fundamental do sistema:</p>
-              <div class="mini-card accent-blue">
-                <strong>Microservices (Recomendado)</strong>
-                <p>Cada módulo é um serviço independente que pode ser escalado, atualizado e implantado separadamente. Ideal para a Nutrientes Delivery que precisa de escalabilidade e integração com sistemas externos (sensores, APIs de pagamento).</p>
-              </div>
-              <div class="mini-card accent-green">
-                <strong>Padrão MVC (Model-View-Controller)</strong>
-                <p>Recomendado para o <strong>Módulo do Cliente</strong> pois separa:<br>
-                  • <strong>Model:</strong> Regras de negócio (pedidos, nutrição)<br>
-                  • <strong>View:</strong> Interface do usuário (onde o CEO quer mudanças)<br>
-                  • <strong>Controller:</strong> Lógica de controle entre Model e View<br>
-                  Isso permite alterar a interface sem impactar a lógica de negócio.</p>
-              </div>
+              <div class="mini-card accent-blue"><strong>Microservices (Recomendado)</strong><p>Cada módulo é independente. Ideal para escalabilidade.</p></div>
+              <div class="mini-card accent-green" style="margin-top:10px;"><strong>Padrão MVC</strong><p>Recomendado para o Módulo do Cliente: Model (pedidos), View (interface), Controller (lógica).</p></div>
             </div>
           </div>
         </div>
 
-        <!-- Exercícios -->
         <div class="exercises-section">
           <h3 class="section-title">✏️ Exercícios Interativos</h3>
           <div id="exercises-1"></div>
@@ -191,7 +179,7 @@
       </section>
 
       <!-- ==================== UNIDADE 2 ==================== -->
-      <section id="tab-2" class="tab-content">
+      <section id="tab-u2" class="tab-content">
         <div class="unit-header">
           <h2>🧩 Unidade 2 – Resolução de Problemas</h2>
           <p class="unit-desc">Métodos Ágeis, Scrum, MVP, Design Thinking e Gerenciamento de Stakeholders</p>
@@ -206,20 +194,8 @@
               <span class="toggle-icon">▼</span>
             </div>
             <div class="concept-body">
-              <p>A Nutrientes Delivery adotou <strong>Scrum</strong> para o Módulo do Cliente. No meio do Sprint, o CEO exige inclusão de:</p>
-              <div class="grid-2">
-                <div class="mini-card accent-red">
-                  <strong>Calculadora Nutricional em Tempo Real</strong>
-                  <p>Integração complexa com o Módulo de Nutrição. Alto custo técnico.</p>
-                </div>
-                <div class="mini-card accent-red">
-                  <strong>Pagamento Recorrente via PIX</strong>
-                  <p>Integração bancária de alta complexidade e segurança.</p>
-                </div>
-              </div>
-              <div class="warning-box">
-                ⚠️ <strong>Problema:</strong> O Product Owner (PO) está sob pressão para aceitar mudanças no meio do Sprint, comprometendo a entrega do MVP.
-              </div>
+              <p>No meio do Sprint, o CEO exige inclusão de Calculadora Nutricional em Tempo Real e Pagamento Recorrente via PIX.</p>
+              <div class="warning-box">⚠️ <strong>Problema:</strong> O PO está sob pressão para aceitar mudanças no meio do Sprint, comprometendo a entrega do MVP.</div>
             </div>
           </div>
 
@@ -229,16 +205,12 @@
               <span class="toggle-icon">▼</span>
             </div>
             <div class="concept-body">
-              <p>O <strong>Manifesto Ágil</strong> define quatro valores fundamentais:</p>
               <ol>
                 <li><strong>Indivíduos e interações</strong> mais que processos e ferramentas</li>
                 <li><strong>Software funcionando</strong> mais que documentação abrangente</li>
                 <li><strong>Colaboração com o cliente</strong> mais que negociação de contratos</li>
                 <li><strong>Responder a mudanças</strong> mais que seguir um plano</li>
               </ol>
-              <div class="info-box">
-                <strong>Princípio chave:</strong> "Entregar software funcionando frequentemente" e "Mudanças nos requisitos são bem-vindas, mesmo tardiamente no desenvolvimento" — porém isso não significa aceitar mudanças no meio de um Sprint!
-              </div>
             </div>
           </div>
 
@@ -248,23 +220,10 @@
               <span class="toggle-icon">▼</span>
             </div>
             <div class="concept-body">
-              <p>Os <strong>Artefatos</strong> do Scrum são:</p>
               <div class="grid-2">
-                <div class="mini-card accent-blue">
-                  <strong>Product Backlog</strong>
-                  <p>Lista ordenada de tudo que pode ser necessário no produto. Gerenciado pelo PO.</p>
-                </div>
-                <div class="mini-card accent-green">
-                  <strong>Sprint Backlog</strong>
-                  <p>Conjunto de itens selecionados para o Sprint + plano para entregá-los. Protegido pelo time.</p>
-                </div>
-                <div class="mini-card accent-purple">
-                  <strong>Incremento</strong>
-                  <p>A soma de todos os itens do Product Backlog completados durante o Sprint. Deve estar "Pronto".</p>
-                </div>
-              </div>
-              <div class="info-box">
-                <strong>Papel do PO:</strong> Proteger o Sprint Backlog, rejeitando mudanças que impeçam a entrega da meta definida na Sprint Planning. Novas demandas devem ir para o Product Backlog e serem priorizadas para Sprints futuros.
+                <div class="mini-card accent-blue"><strong>Product Backlog</strong><p>Lista ordenada de necessidades do produto. Gerenciado pelo PO.</p></div>
+                <div class="mini-card accent-green"><strong>Sprint Backlog</strong><p>Itens selecionados para o Sprint. Protegido pelo time.</p></div>
+                <div class="mini-card accent-purple"><strong>Incremento</strong><p>Soma dos itens completados durante o Sprint.</p></div>
               </div>
             </div>
           </div>
@@ -275,8 +234,7 @@
               <span class="toggle-icon">▼</span>
             </div>
             <div class="concept-body">
-              <p>O <strong>MVP (Minimum Viable Product)</strong> é a versão mais simples do produto que permite obter máximo de aprendizado com o menor esforço.</p>
-              <p><strong>Design Thinking</strong> é uma abordagem para solução de problemas centrada no usuário:</p>
+              <p>O <strong>MVP</strong> é a versão mais simples do produto que permite máximo aprendizado.</p>
               <div class="process-flow">
                 <div class="process-step">Empatia</div>
                 <div class="process-arrow">→</div>
@@ -287,9 +245,6 @@
                 <div class="process-step">Prototipação</div>
                 <div class="process-arrow">→</div>
                 <div class="process-step">Teste</div>
-              </div>
-              <div class="example-box">
-                <strong>Aplicação:</strong> Antes de investir na Calculadora Nutricional ou PIX Recorrente, valide com testes de conceito e entrevistas se esses recursos realmente resolvem problemas reais dos usuários.
               </div>
             </div>
           </div>
@@ -302,7 +257,7 @@
       </section>
 
       <!-- ==================== UNIDADE 3 ==================== -->
-      <section id="tab-3" class="tab-content">
+      <section id="tab-u3" class="tab-content">
         <div class="unit-header">
           <h2>🎯 Unidade 3 – Simulação de Situações Profissionais</h2>
           <p class="unit-desc">Gestão de Riscos, Qualidade, Métricas de Software e Documentação Técnica</p>
@@ -317,16 +272,9 @@
               <span class="toggle-icon">▼</span>
             </div>
             <div class="concept-body">
-              <p>Dois problemas surgiram após a implementação do Módulo de Produção:</p>
               <div class="grid-2">
-                <div class="mini-card accent-red">
-                  <strong>Risco Materializado (Estoque)</strong>
-                  <p>Falha no Adaptador de Protocolo que traduz dados dos sensores de estoque. Perda de <strong>R$ 15.000</strong> em insumos por não registrar temperatura real de um lote.</p>
-                </div>
-                <div class="mini-card accent-yellow">
-                  <strong>Problema de Documentação</strong>
-                  <p>Um desenvolvedor júnior gastou <strong>2 dias</strong> tentando entender código do Módulo de Nutrição sem documentação, causando atraso no Sprint.</p>
-                </div>
+                <div class="mini-card accent-red"><strong>Risco Materializado (Estoque)</strong><p>Falha no Adaptador de Protocolo. Perda de R$ 15.000 em insumos.</p></div>
+                <div class="mini-card accent-yellow"><strong>Problema de Documentação</strong><p>Desenvolvedor júnior gastou 2 dias sem documentação, causando atraso.</p></div>
               </div>
             </div>
           </div>
@@ -337,33 +285,9 @@
               <span class="toggle-icon">▼</span>
             </div>
             <div class="concept-body">
-              <p>A <strong>Gestão de Riscos</strong> envolve identificar, analisar e responder a riscos do projeto:</p>
-              <p><strong>Natureza dos Riscos:</strong></p>
-              <ul>
-                <li><strong>Técnico:</strong> Falhas de software, hardware, integração</li>
-                <li><strong>Organizacional:</strong> Conflitos de equipe, mudança de escopo</li>
-                <li><strong>Financeiro:</strong> Perdas monetárias, estouros de orçamento</li>
-              </ul>
-              <div class="matrix-example">
-                <h5>Matriz de Risco (Probabilidade x Impacto)</h5>
-                <table class="risk-matrix">
-                  <tr>
-                    <th></th><th>Baixo Impacto</th><th>Médio Impacto</th><th>Alto Impacto</th>
-                  </tr>
-                  <tr>
-                    <th>Alta Prob.</th><td class="risk-medium">Médio</td><td class="risk-high">Alto</td><td class="risk-critical">Crítico ⬅️</td>
-                  </tr>
-                  <tr>
-                    <th>Média Prob.</th><td class="risk-low">Baixo</td><td class="risk-medium">Médio</td><td class="risk-high">Alto</td>
-                  </tr>
-                  <tr>
-                    <th>Baixa Prob.</th><td class="risk-low">Baixo</td><td class="risk-low">Baixo</td><td class="risk-medium">Médio</td>
-                  </tr>
-                </table>
-                <p class="small-text">⬅️ A falha no Adaptador se posiciona como <strong>Alto Impacto + Média/Alta Probabilidade = Risco Crítico</strong></p>
-              </div>
+              <p><strong>Natureza dos Riscos:</strong> Técnico, Organizacional, Financeiro.</p>
               <div class="info-box">
-                <strong>Ações de Contingência:</strong> Mecanismo de Failover (alerta automático), Redundância de Sensores (compara leituras), Backup manual de chaveamento.
+                <strong>Ações de Contingência:</strong> Mecanismo de Failover, Redundância de Sensores, Backup manual.
               </div>
             </div>
           </div>
@@ -376,21 +300,8 @@
             <div class="concept-body">
               <div class="formula-box">
                 <strong>Métrica de Esforço Perdido (MEP)</strong>
-                <div class="formula">
-                  MEP = (Tempo Perdido / Duração Total do Sprint) × 100
-                </div>
-                <p>Exemplo: (2 dias / 10 dias) × 100 = <strong>20%</strong> do Sprint perdido em retrabalho!</p>
-              </div>
-              <p>Outras métricas importantes:</p>
-              <div class="grid-2">
-                <div class="mini-card accent-blue">
-                  <strong>Densidade de Defeitos</strong>
-                  <p>Número de defeitos encontrados por mil linhas de código. Mede a qualidade do código produzido.</p>
-                </div>
-                <div class="mini-card accent-green">
-                  <strong>Aderência à Documentação</strong>
-                  <p>Percentual de componentes documentados. Se documentação é obrigatória, sua ausência é um defeito de qualidade.</p>
-                </div>
+                <div class="formula">MEP = (Tempo Perdido / Duração Total do Sprint) × 100</div>
+                <p>Exemplo: (2 dias / 10 dias) × 100 = <strong>20%</strong> do Sprint perdido.</p>
               </div>
             </div>
           </div>
@@ -401,18 +312,11 @@
               <span class="toggle-icon">▼</span>
             </div>
             <div class="concept-body">
-              <p>A ausência de documentação gera riscos reais:</p>
               <ol>
-                <li><strong>Bus Factor:</strong> Dependência de um único desenvolvedor — se ele sair, o conhecimento se perde</li>
-                <li><strong>Custo de Manutenção:</strong> Time-to-Market lento — novas funcionalidades demoram mais</li>
-                <li><strong>Risco de Segurança:</strong> Erros de integração por falta de especificação</li>
+                <li><strong>Bus Factor:</strong> Dependência de um único desenvolvedor</li>
+                <li><strong>Custo de Manutenção:</strong> Time-to-Market lento</li>
+                <li><strong>Risco de Segurança:</strong> Erros por falta de especificação</li>
               </ol>
-              <div class="info-box">
-                <strong>Plano de Documentação Mínima Obrigatória:</strong><br>
-                1. <strong>Diagrama de Classes/Componentes</strong> (estrutura do código)<br>
-                2. <strong>Regras de Negócio do Cálculo</strong> (lógica do Módulo de Nutrição)<br>
-                3. <strong>Manual de Integração da API</strong> (como consumir o serviço)
-              </div>
             </div>
           </div>
         </div>
@@ -424,7 +328,7 @@
       </section>
 
       <!-- ==================== UNIDADE 4 ==================== -->
-      <section id="tab-4" class="tab-content">
+      <section id="tab-u4" class="tab-content">
         <div class="unit-header">
           <h2>🤝 Unidade 4 – Aprendizagem entre Pares</h2>
           <p class="unit-desc">CI/CD, UX, Governança de TI (COBIT/ITIL), ESG e Mapa Mental Estratégico</p>
@@ -439,30 +343,16 @@
               <span class="toggle-icon">▼</span>
             </div>
             <div class="concept-body">
-              <p>Práticas essenciais para entregas ágeis e com qualidade:</p>
               <div class="grid-2">
-                <div class="mini-card accent-blue">
-                  <strong>CI – Integração Contínua</strong>
-                  <p>Toda alteração de código é automaticamente testada e integrada ao repositório central. Detecta erros cedo.</p>
-                </div>
-                <div class="mini-card accent-green">
-                  <strong>CD – Entrega Contínua</strong>
-                  <p>O código testado é automaticamente disponibilizado para produção. Entregas frequentes e confiáveis.</p>
-                </div>
+                <div class="mini-card accent-blue"><strong>CI – Integração Contínua</strong><p>Toda alteração é automaticamente testada e integrada.</p></div>
+                <div class="mini-card accent-green"><strong>CD – Entrega Contínua</strong><p>Código testado é automaticamente disponibilizado para produção.</p></div>
               </div>
               <div class="process-flow">
-                <div class="process-step">Commit</div>
-                <div class="process-arrow">→</div>
-                <div class="process-step">Build</div>
-                <div class="process-arrow">→</div>
-                <div class="process-step">Testes</div>
-                <div class="process-arrow">→</div>
-                <div class="process-step">Deploy</div>
-                <div class="process-arrow">→</div>
+                <div class="process-step">Commit</div><div class="process-arrow">→</div>
+                <div class="process-step">Build</div><div class="process-arrow">→</div>
+                <div class="process-step">Testes</div><div class="process-arrow">→</div>
+                <div class="process-step">Deploy</div><div class="process-arrow">→</div>
                 <div class="process-step">Produção</div>
-              </div>
-              <div class="example-box">
-                <strong>Aplicação:</strong> O Módulo do Cliente (Scrum/Ágil) se beneficia diretamente do CI/CD para entregas frequentes sem comprometer qualidade. As mudanças exigidas pelo CEO podem ser testadas e implantadas automaticamente.
               </div>
             </div>
           </div>
@@ -473,15 +363,11 @@
               <span class="toggle-icon">▼</span>
             </div>
             <div class="concept-body">
-              <p>O <strong>Projeto da Experiência do Usuário (UX)</strong> vai além da funcionalidade:</p>
               <ul>
-                <li><strong>Usabilidade:</strong> O sistema deve ser fácil de usar, intuitivo</li>
-                <li><strong>Acessibilidade:</strong> Deve ser acessível para todos os usuários</li>
-                <li><strong>Retenção:</strong> Uma boa experiência mantém os usuários na plataforma</li>
+                <li><strong>Usabilidade:</strong> Sistema fácil e intuitivo</li>
+                <li><strong>Acessibilidade:</strong> Acessível para todos</li>
+                <li><strong>Retenção:</strong> Boa experiência mantém usuários</li>
               </ul>
-              <div class="info-box">
-                <strong>Conexão com U1:</strong> Os requisitos do Módulo do Cliente não são apenas funcionais. Devem ser baseados em elementos de UX para garantir retenção dos clientes na plataforma de delivery.
-              </div>
             </div>
           </div>
 
@@ -492,17 +378,8 @@
             </div>
             <div class="concept-body">
               <div class="grid-2">
-                <div class="mini-card accent-blue">
-                  <strong>COBIT</strong>
-                  <p>Framework de <strong>governança</strong> que garante alinhamento da TI com os objetivos de negócio. Foco em decisões estratégicas e auditoria.</p>
-                </div>
-                <div class="mini-card accent-green">
-                  <strong>ITIL</strong>
-                  <p>Framework de <strong>gerenciamento de serviços</strong> de TI. Padroniza operações, gestão de incidentes, mudanças e problemas.</p>
-                </div>
-              </div>
-              <div class="example-box">
-                <strong>Aplicação:</strong> COBIT traz ordem ao caos organizacional (conflitos CEO vs. equipe), enquanto ITIL garante que os serviços de TI funcionem de forma eficiente e previsível.
+                <div class="mini-card accent-blue"><strong>COBIT</strong><p>Governança: alinhamento da TI com objetivos de negócio.</p></div>
+                <div class="mini-card accent-green"><strong>ITIL</strong><p>Gerenciamento de serviços de TI. Padroniza operações.</p></div>
               </div>
             </div>
           </div>
@@ -513,20 +390,10 @@
               <span class="toggle-icon">▼</span>
             </div>
             <div class="concept-body">
-              <p><strong>ESG (Environmental, Social e Governance)</strong> aplicado à TI:</p>
               <div class="grid-3">
-                <div class="mini-card accent-green">
-                  <strong>🌍 Environmental (E)</strong>
-                  <p>Otimização de rotas de entrega para reduzir emissão de carbono. Eficiência energética dos servidores.</p>
-                </div>
-                <div class="mini-card accent-blue">
-                  <strong>👥 Social (S)</strong>
-                  <p>Proteção de dados dos clientes (LGPD). Interface inclusiva e acessível.</p>
-                </div>
-                <div class="mini-card accent-purple">
-                  <strong>🏛️ Governance (G)</strong>
-                  <p>Transparência nos processos de decisão. Auditoria de sistemas. Ética corporativa.</p>
-                </div>
+                <div class="mini-card accent-green"><strong>🌍 Environmental</strong><p>Otimização de rotas, eficiência energética.</p></div>
+                <div class="mini-card accent-blue"><strong>👥 Social</strong><p>Proteção de dados (LGPD), interface inclusiva.</p></div>
+                <div class="mini-card accent-purple"><strong>🏛️ Governance</strong><p>Transparência, auditoria, ética corporativa.</p></div>
               </div>
             </div>
           </div>
@@ -537,30 +404,13 @@
               <span class="toggle-icon">▼</span>
             </div>
             <div class="concept-body">
-              <p>O <strong>Mapa Mental</strong> integra todos os conceitos da disciplina em quatro nós:</p>
               <div class="mind-map">
                 <div class="mind-node central">Projeto de Software<br>Nutrientes Delivery</div>
                 <div class="mind-branches">
-                  <div class="mind-node node-1">
-                    <strong>Nó 1: Gestão Inicial</strong><br>
-                    Ciclo Híbrido + <em>UX</em><br>
-                    <small>Requisitos baseados em experiência do usuário</small>
-                  </div>
-                  <div class="mind-node node-2">
-                    <strong>Nó 2: Execução Ágil</strong><br>
-                    Scrum/MVP + <em>CI/CD</em><br>
-                    <small>Entregas frequentes com automação</small>
-                  </div>
-                  <div class="mind-node node-3">
-                    <strong>Nó 3: Qualidade</strong><br>
-                    Documentação + <em>Controle de Versão</em><br>
-                    <small>Código rastreável e auditável via Git</small>
-                  </div>
-                  <div class="mind-node node-4">
-                    <strong>Nó 4: Governança</strong><br>
-                    Stakeholders + <em>COBIT/ITIL/ESG</em><br>
-                    <small>Alinhamento estratégico e sustentabilidade</small>
-                  </div>
+                  <div class="mind-node node-1"><strong>Nó 1: Gestão Inicial</strong><br>Ciclo Híbrido + UX</div>
+                  <div class="mind-node node-2"><strong>Nó 2: Execução Ágil</strong><br>Scrum/MVP + CI/CD</div>
+                  <div class="mind-node node-3"><strong>Nó 3: Qualidade</strong><br>Documentação + Controle de Versão</div>
+                  <div class="mind-node node-4"><strong>Nó 4: Governança</strong><br>Stakeholders + COBIT/ITIL/ESG</div>
                 </div>
               </div>
             </div>
@@ -572,12 +422,126 @@
           <div id="exercises-4"></div>
         </div>
       </section>
+
+      <!-- ==================== DOCUMENTOS ==================== -->
+      <section id="tab-docs" class="tab-content">
+        <div class="unit-header">
+          <h2>📄 Biblioteca de Documentos</h2>
+          <p class="unit-desc">Materiais de apoio, atividades e gabaritos</p>
+        </div>
+        <div id="docsContainer" class="docs-grid">
+          <div class="loading">Carregando documentos</div>
+        </div>
+      </section>
+
+      <!-- ==================== PERFIL ==================== -->
+      <section id="tab-perfil" class="tab-content">
+        <div class="unit-header">
+          <h2>👤 Meu Perfil</h2>
+          <p class="unit-desc">Suas informações e progresso</p>
+        </div>
+        <div class="profile-section">
+          <div class="profile-card">
+            <div class="profile-avatar" id="profileAvatar">👤</div>
+            <h3 id="profileNome"></h3>
+            <p id="profileEmail" class="profile-email"></p>
+            <span id="profileRole" class="role-badge"></span>
+          </div>
+          <div class="profile-stats" id="profileStats">
+            <div class="stat-card">
+              <span class="stat-value" id="statRespostas">0</span>
+              <span class="stat-label">Respostas Enviadas</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="statMedia">0.0</span>
+              <span class="stat-label">Média Geral</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="statUnidades">0/4</span>
+              <span class="stat-label">Unidades com Resposta</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== ADMIN ==================== -->
+      <section id="tab-admin" class="tab-content">
+        <div class="unit-header">
+          <h2>⚙️ Painel Administrativo</h2>
+          <p class="unit-desc">Visão geral dos alunos e evolução</p>
+        </div>
+
+        <div class="admin-stats" id="adminStats">
+          <div class="stat-card"><span class="stat-value" id="adminTotalAlunos">0</span><span class="stat-label">Alunos</span></div>
+          <div class="stat-card"><span class="stat-value" id="adminTotalRespostas">0</span><span class="stat-label">Respostas</span></div>
+          <div class="stat-card"><span class="stat-value" id="adminMediaGeral">0.0</span><span class="stat-label">Média Geral</span></div>
+        </div>
+
+        <div class="admin-section">
+          <h3 class="section-title">📊 Média por Unidade</h3>
+          <div class="chart-container">
+            <canvas id="chartUnidades" width="400" height="200"></canvas>
+          </div>
+        </div>
+
+        <div class="admin-section">
+          <h3 class="section-title">👥 Alunos</h3>
+          <div id="adminAlunosList" class="alunos-grid"></div>
+        </div>
+
+        <div id="adminEvolucao" class="admin-section hidden">
+          <h3 class="section-title">📈 Evolução do Aluno: <span id="evolucaoNome"></span></h3>
+          <div class="chart-container">
+            <canvas id="chartEvolucao" width="400" height="200"></canvas>
+          </div>
+          <div id="evolucaoDetalhes"></div>
+        </div>
+      </section>
+
     </main>
 
     <!-- Footer -->
     <footer class="footer">
-      <p>ADS Anhanguera – Projeto de Software | Disciplina: Oficina de Soluções Profissionais | Caso Nutrientes Delivery</p>
+      <div class="footer-content">
+        <p class="footer-main">ADS Anhanguera – Projeto de Software | Oficina de Soluções Profissionais</p>
+        <div class="footer-dev">
+          <span>Desenvolvido por <strong>Davi Antonino Nunes da Silva</strong></span>
+          <div class="footer-links">
+            <a href="mailto:professordavi85@gmail.com" title="Email">📧 professordavi85@gmail.com</a>
+            <a href="https://wa.me/5516992604315" target="_blank" title="WhatsApp">📱 (16) 992604315</a>
+            <a href="https://open.spotify.com/intl-pt/artist/0IBe0S81z4uWoscwHEOQ1f" target="_blank" title="Spotify">🐾 Artigli Notturni</a>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-outline footer-readme-btn" onclick="openReadmeModal()">📖 README</button>
+      </div>
     </footer>
+
+  </div>
+
+  <!-- ===== MODAL README ===== -->
+  <div id="readmeModal" class="modal-overlay hidden" onclick="closeReadmeModal(event)">
+    <div class="modal-box">
+      <div class="modal-box-header">
+        <h3>📖 README do Projeto</h3>
+        <button class="modal-close" onclick="closeReadmeModal()">&times;</button>
+      </div>
+      <div class="modal-box-body readme-content" id="readmeContent">
+        <div class="loading">Carregando README</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL DOC VIEWER ===== -->
+  <div id="docViewerModal" class="modal-overlay hidden" onclick="closeDocViewer(event)">
+    <div class="modal-box modal-box-large">
+      <div class="modal-box-header">
+        <h3 id="docViewerTitle">Documento</h3>
+        <button class="modal-close" onclick="closeDocViewer()">&times;</button>
+      </div>
+      <div class="modal-box-body">
+        <iframe id="docViewerFrame" class="doc-iframe"></iframe>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>
