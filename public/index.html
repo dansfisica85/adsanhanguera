@@ -67,6 +67,9 @@
         <div class="header-right">
           <span id="userNameDisplay" class="user-name"></span>
           <span id="roleBadge" class="role-badge"></span>
+          <button class="btn-admin-header" id="tabAdmin" style="display:none;" onclick="switchTab('admin')">
+            ⚙️ Painel Admin
+          </button>
           <!-- Toggle coordenador -->
           <div id="coordToggle" class="coord-toggle hidden">
             <label class="switch">
@@ -106,10 +109,6 @@
         <button class="tab" data-tab="perfil" onclick="switchTab('perfil')">
           <span class="tab-num">👤</span>
           <span class="tab-label">Perfil</span>
-        </button>
-        <button class="tab tab-admin" data-tab="admin" onclick="switchTab('admin')" id="tabAdmin" style="display:none;">
-          <span class="tab-num">⚙️</span>
-          <span class="tab-label">Painel Admin</span>
         </button>
       </div>
     </nav>

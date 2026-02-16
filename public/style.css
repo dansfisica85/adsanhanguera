@@ -541,56 +541,33 @@ body {
 
 .tab-label { font-size: 0.82rem; }
 
-/* ===== Admin Tab Highlight ===== */
-.tab.tab-admin {
+/* ===== Admin Button in Header ===== */
+.btn-admin-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
   background: linear-gradient(135deg, #ff6b35, #e74c3c);
   color: #fff;
+  border: none;
   border-radius: 8px;
-  margin: 6px 4px;
-  border-bottom: none;
-  padding: 8px 18px;
-  box-shadow: 0 2px 12px rgba(231, 76, 60, 0.35);
-  position: relative;
-  animation: adminPulse 2.5s ease-in-out infinite;
-}
-
-.tab.tab-admin .tab-num {
-  background: rgba(255,255,255,0.25);
-  color: #fff;
-  font-size: 1rem;
-  padding: 2px 6px;
-}
-
-.tab.tab-admin .tab-label {
-  color: #fff;
+  font-size: 0.82rem;
   font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  font-size: 0.75rem;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(231, 76, 60, 0.3);
+  transition: all var(--transition);
 }
 
-.tab.tab-admin:hover {
+.btn-admin-header:hover {
   background: linear-gradient(135deg, #e74c3c, #c0392b);
-  color: #fff;
-  box-shadow: 0 4px 20px rgba(231, 76, 60, 0.5);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(231, 76, 60, 0.45);
+  transform: translateY(-1px);
 }
 
-.tab.tab-admin.active {
-  background: linear-gradient(135deg, #c0392b, #96281b);
-  color: #fff;
-  border-bottom-color: transparent;
-  box-shadow: 0 4px 24px rgba(231, 76, 60, 0.55);
-}
-
-.tab.tab-admin.active .tab-num {
-  background: rgba(255,255,255,0.3);
-  color: #fff;
-}
-
-@keyframes adminPulse {
-  0%, 100% { box-shadow: 0 2px 12px rgba(231, 76, 60, 0.35); }
-  50% { box-shadow: 0 2px 20px rgba(231, 76, 60, 0.6); }
+.btn-admin-header:active {
+  transform: translateY(0);
 }
 
 /* ===== Main Content ===== */
