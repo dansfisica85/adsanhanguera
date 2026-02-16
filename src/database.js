@@ -9,7 +9,7 @@ const db = createClient({
 
 const USUARIOS_SEED = [
   { nome: 'Davi Antonino Nunes da Silva', email: 'professordavi85@gmail.com', senha: 'Ads@Admin#', role: 'admin' },
-  { nome: 'Coordenadora Priscila', email: 'coordenadora', senha: 'Coord@Priscila#', role: 'coordenador' },
+  { nome: 'Coordenadora Priscila', email: 'p.cunha@kroton.com.br', senha: 'Coord@Priscila#', role: 'coordenador' },
   { nome: 'Allan Casanova', email: 'allancasanova724@gmail.com', senha: 'allancasanova724@Ads2026', role: 'aluno' },
   { nome: 'Vitor Muniz', email: 'vitorlgmuniz@gmail.com', senha: 'vitorlgmuniz@Ads2026', role: 'aluno' },
   { nome: 'Eduardo Jordão', email: 'eduardosarnejordao@gmail.com', senha: 'eduardosarnejordao@Ads2026', role: 'aluno' },
