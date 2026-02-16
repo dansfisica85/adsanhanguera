@@ -92,6 +92,15 @@ async function handleLogin(e) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, senha }),
     });
+
+    // Proteger contra resposta não-JSON (ex: Vercel retornando HTML de erro)
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await res.text();
+      console.error('Resposta não-JSON do servidor:', text.substring(0, 200));
+      throw new Error('Erro de servidor. Tente novamente em instantes.');
+    }
+
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erro ao logar.');
 

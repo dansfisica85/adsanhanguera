@@ -28,6 +28,16 @@ const dbInit = initDB()
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Health check — registrado ANTES do middleware de DB para funcionar mesmo sem banco
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: dbReady ? 'ok' : 'db_unavailable',
+    dbReady,
+    dbError: dbInitError ? dbInitError.message : null,
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Middleware para garantir que o DB está pronto antes de processar requests de API
 app.use('/api', async (req, res, next) => {
   try {
