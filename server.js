@@ -12,9 +12,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Inicialização do banco (precisa estar antes do middleware que usa dbInit)
-const dbInit = initDB().catch(err => {
-  console.error('Erro fatal na inicialização do DB:', err);
-});
+let dbReady = false;
+let dbInitError = null;
+
+const dbInit = initDB()
+  .then(() => {
+    dbReady = true;
+    console.log('✅ DB pronto para receber requests.');
+  })
+  .catch(err => {
+    dbInitError = err;
+    console.error('❌ Erro fatal na inicialização do DB:', err.message || err);
+  });
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -22,11 +31,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Middleware para garantir que o DB está pronto antes de processar requests de API
 app.use('/api', async (req, res, next) => {
   try {
-    await dbInit;
+    if (!dbReady) {
+      await dbInit;
+    }
+    if (!dbReady) {
+      return res.status(503).json({
+        error: dbInitError
+          ? `Banco de dados indisponível: ${dbInitError.message}`
+          : 'Banco de dados ainda não está pronto. Tente novamente em instantes.'
+      });
+    }
     next();
   } catch (err) {
-    console.error('Erro na inicialização do DB:', err);
-    res.status(500).json({ error: 'Erro interno do servidor.' });
+    console.error('Erro no middleware de DB:', err);
+    res.status(503).json({ error: 'Banco de dados indisponível.' });
   }
 });
 
@@ -359,7 +377,18 @@ app.get('/api/readme', (req, res) => {
 
 // SPA fallback
 app.get('/{*splat}', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  try {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  } catch (err) {
+    res.status(404).json({ error: 'Página não encontrada.' });
+  }
+});
+
+// Global error handler — garante que TODA resposta de erro seja JSON, não HTML
+app.use((err, req, res, next) => {
+  console.error('❌ Erro não tratado:', err.message || err);
+  if (res.headersSent) return next(err);
+  res.status(err.status || 500).json({ error: err.message || 'Erro interno do servidor.' });
 });
 
 // Start server (apenas quando executado diretamente, não na Vercel)

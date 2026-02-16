@@ -2,10 +2,19 @@ const { createClient } = require('@libsql/client');
 const { hashSenha } = require('./auth');
 require('dotenv').config();
 
-const db = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
+let db = null;
+try {
+  if (!process.env.TURSO_DATABASE_URL) {
+    console.error('⚠️ TURSO_DATABASE_URL não definida! Verifique as variáveis de ambiente.');
+  } else {
+    db = createClient({
+      url: process.env.TURSO_DATABASE_URL,
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    });
+  }
+} catch (err) {
+  console.error('⚠️ Erro ao criar cliente Turso:', err.message);
+}
 
 const USUARIOS_SEED = [
   { nome: 'Davi Antonino Nunes da Silva', email: 'professordavi85@gmail.com', senha: 'Ads@Admin#', role: 'admin' },
@@ -19,6 +28,10 @@ const USUARIOS_SEED = [
 ];
 
 async function initDB() {
+  if (!db) {
+    throw new Error('Cliente de banco de dados não inicializado. Verifique TURSO_DATABASE_URL e TURSO_AUTH_TOKEN.');
+  }
+
   await db.batch([
     `CREATE TABLE IF NOT EXISTS usuarios (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
