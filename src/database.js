@@ -58,6 +58,14 @@ async function initDB() {
     }
   }
 
+  // Migration: adicionar coluna tentativa se não existir
+  try {
+    await db.execute(`ALTER TABLE respostas ADD COLUMN tentativa INTEGER DEFAULT 1`);
+    console.log('  ✅ Coluna tentativa adicionada.');
+  } catch (e) {
+    // Coluna já existe, ignorar
+  }
+
   console.log('✅ Banco de dados inicializado com sucesso!');
 }
 

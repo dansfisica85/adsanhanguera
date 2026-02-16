@@ -11,8 +11,24 @@ const { verificarSenha, gerarToken, middlewareAuth, middlewareRole } = require('
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Inicialização do banco (precisa estar antes do middleware que usa dbInit)
+const dbInit = initDB().catch(err => {
+  console.error('Erro fatal na inicialização do DB:', err);
+});
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Middleware para garantir que o DB está pronto antes de processar requests de API
+app.use('/api', async (req, res, next) => {
+  try {
+    await dbInit;
+    next();
+  } catch (err) {
+    console.error('Erro na inicialização do DB:', err);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
 
 // ===== AUTH ROUTES =====
 
@@ -345,10 +361,6 @@ app.get('/api/readme', (req, res) => {
 app.get('/{*splat}', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
-// Inicialização do banco
-let dbReady = false;
-const dbInit = initDB().then(() => { dbReady = true; });
 
 // Start server (apenas quando executado diretamente, não na Vercel)
 if (require.main === module) {
