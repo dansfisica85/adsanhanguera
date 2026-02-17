@@ -435,6 +435,22 @@ function renderExercicios(container, unidade, data) {
 
       if (resposta) {
         html += renderFeedback(resposta, respKey);
+
+        // Mostrar imagens enviadas
+        const imgUploadHtml = uploadEnabled ? `
+          <div class="upload-area" style="margin-top:8px;">
+            <label class="upload-label">
+              <span class="upload-icon">📷</span> Anexar mais imagens
+              <input type="file" accept="image/*" class="upload-input"
+                onchange="uploadImagem(this, ${unidade}, ${etapaKey}, ${exKey})" />
+            </label>
+            <span id="upload-status-${unidade}-${etapaKey}-${exKey}" class="upload-status"></span>
+          </div>
+        ` : '';
+        const imgsHtml = `<div id="imgs-${respKey}" class="uploaded-images">${renderImagensUpload(respKey)}</div>`;
+
+        html += imgUploadHtml;
+        html += imgsHtml;
         html += `<div class="exercise-actions">`;
         html += `<button class="btn btn-sm btn-outline" onclick="reDoExercise('${respKey}', ${unidade}, ${etapaKey}, ${exKey})">Refazer</button>`;
         // Gabarito button
