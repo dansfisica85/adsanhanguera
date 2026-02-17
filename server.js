@@ -1,12 +1,27 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');
 require('dotenv').config();
 
 const { dbExecute, initDB } = require('./src/database');
 const gabaritos = require('./src/gabaritos');
 const { avaliarResposta } = require('./src/avaliador');
 const { verificarSenha, gerarToken, middlewareAuth, middlewareRole } = require('./src/auth');
+const { uploadImagemAluno, isConfigured: gdriveConfigured } = require('./src/gdrive');
+
+// Multer — upload em memória (max 5MB, apenas imagens)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    if (/^image\/(jpeg|jpg|png|gif|webp)$/.test(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Apenas imagens são permitidas (JPEG, PNG, GIF, WebP).'));
+    }
+  },
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
