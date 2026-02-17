@@ -3,17 +3,84 @@ const { hashSenha } = require('./auth');
 require('dotenv').config();
 
 let db = null;
-try {
+
+function criarClienteTurso() {
   if (!process.env.TURSO_DATABASE_URL) {
     console.error('⚠️ TURSO_DATABASE_URL não definida! Verifique as variáveis de ambiente.');
-  } else {
-    db = createClient({
+    return null;
+  }
+  try {
+    return createClient({
       url: process.env.TURSO_DATABASE_URL,
       authToken: process.env.TURSO_AUTH_TOKEN,
     });
+  } catch (err) {
+    console.error('⚠️ Erro ao criar cliente Turso:', err.message);
+    return null;
   }
-} catch (err) {
-  console.error('⚠️ Erro ao criar cliente Turso:', err.message);
+}
+
+db = criarClienteTurso();
+
+// Utilitário de delay para retry
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Executa uma operação no DB com retry automático em caso de erro transitório
+async function dbExecute(sqlOrObj, args) {
+  if (!db) {
+    db = criarClienteTurso();
+    if (!db) throw new Error('Cliente de banco de dados não inicializado. Verifique TURSO_DATABASE_URL e TURSO_AUTH_TOKEN.');
+  }
+
+  const maxRetries = 3;
+  const baseDelay = 1000; // 1 segundo
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      if (typeof sqlOrObj === 'string') {
+        return await db.execute(args ? { sql: sqlOrObj, args } : sqlOrObj);
+      }
+      return await db.execute(sqlOrObj);
+    } catch (err) {
+      const isTransient = /ECONNRESET|ETIMEDOUT|ENOTFOUND|ECONNREFUSED|fetch failed|network|socket hang up|503|502/i.test(err.message);
+      if (isTransient && attempt < maxRetries) {
+        const waitMs = baseDelay * Math.pow(2, attempt - 1); // backoff exponencial
+        console.warn(`⚠️ Tentativa ${attempt}/${maxRetries} falhou (${err.message}). Retentando em ${waitMs}ms...`);
+        // Recria o cliente para limpar conexão quebrada
+        db = criarClienteTurso();
+        await delay(waitMs);
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
+// Executa batch com retry automático
+async function dbBatch(statements) {
+  if (!db) {
+    db = criarClienteTurso();
+    if (!db) throw new Error('Cliente de banco de dados não inicializado. Verifique TURSO_DATABASE_URL e TURSO_AUTH_TOKEN.');
+  }
+
+  const maxRetries = 3;
+  const baseDelay = 1000;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await db.batch(statements);
+    } catch (err) {
+      const isTransient = /ECONNRESET|ETIMEDOUT|ENOTFOUND|ECONNREFUSED|fetch failed|network|socket hang up|503|502/i.test(err.message);
+      if (isTransient && attempt < maxRetries) {
+        const waitMs = baseDelay * Math.pow(2, attempt - 1);
+        console.warn(`⚠️ Batch tentativa ${attempt}/${maxRetries} falhou (${err.message}). Retentando em ${waitMs}ms...`);
+        db = criarClienteTurso();
+        await delay(waitMs);
+      } else {
+        throw err;
+      }
+    }
+  }
 }
 
 const USUARIOS_SEED = [
@@ -29,10 +96,11 @@ const USUARIOS_SEED = [
 
 async function initDB() {
   if (!db) {
-    throw new Error('Cliente de banco de dados não inicializado. Verifique TURSO_DATABASE_URL e TURSO_AUTH_TOKEN.');
+    db = criarClienteTurso();
+    if (!db) throw new Error('Cliente de banco de dados não inicializado. Verifique TURSO_DATABASE_URL e TURSO_AUTH_TOKEN.');
   }
 
-  await db.batch([
+  await dbBatch([
     `CREATE TABLE IF NOT EXISTS usuarios (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nome TEXT NOT NULL,
@@ -60,10 +128,10 @@ async function initDB() {
 
   // Seed users
   for (const u of USUARIOS_SEED) {
-    const exists = await db.execute({ sql: 'SELECT id FROM usuarios WHERE email = ?', args: [u.email] });
+    const exists = await dbExecute({ sql: 'SELECT id FROM usuarios WHERE email = ?', args: [u.email] });
     if (exists.rows.length === 0) {
       const hash = await hashSenha(u.senha);
-      await db.execute({
+      await dbExecute({
         sql: 'INSERT INTO usuarios (nome, email, senha_hash, role) VALUES (?, ?, ?, ?)',
         args: [u.nome, u.email, hash, u.role],
       });
@@ -73,7 +141,7 @@ async function initDB() {
 
   // Migration: adicionar coluna tentativa se não existir
   try {
-    await db.execute(`ALTER TABLE respostas ADD COLUMN tentativa INTEGER DEFAULT 1`);
+    await dbExecute(`ALTER TABLE respostas ADD COLUMN tentativa INTEGER DEFAULT 1`);
     console.log('  ✅ Coluna tentativa adicionada.');
   } catch (e) {
     // Coluna já existe, ignorar
@@ -82,4 +150,24 @@ async function initDB() {
   console.log('✅ Banco de dados inicializado com sucesso!');
 }
 
-module.exports = { db, initDB };
+// initDB com retry em caso de falha transitória na inicialização
+async function initDBWithRetry(maxRetries = 5) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await initDB();
+      return; // sucesso
+    } catch (err) {
+      const isTransient = /ECONNRESET|ETIMEDOUT|ENOTFOUND|ECONNREFUSED|fetch failed|network|socket hang up|503|502/i.test(err.message);
+      if (isTransient && attempt < maxRetries) {
+        const waitMs = 2000 * Math.pow(2, attempt - 1); // 2s, 4s, 8s, 16s, 32s
+        console.warn(`⚠️ initDB tentativa ${attempt}/${maxRetries} falhou (${err.message}). Retentando em ${waitMs / 1000}s...`);
+        db = criarClienteTurso();
+        await delay(waitMs);
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
+module.exports = { dbExecute, dbBatch, initDB: initDBWithRetry };

@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 
-const { db, initDB } = require('./src/database');
+const { dbExecute, initDB } = require('./src/database');
 const gabaritos = require('./src/gabaritos');
 const { avaliarResposta } = require('./src/avaliador');
 const { verificarSenha, gerarToken, middlewareAuth, middlewareRole } = require('./src/auth');
@@ -11,19 +11,27 @@ const { verificarSenha, gerarToken, middlewareAuth, middlewareRole } = require('
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Inicialização do banco (precisa estar antes do middleware que usa dbInit)
+// Inicialização do banco com retry
 let dbReady = false;
 let dbInitError = null;
+let dbInitPromise = null;
 
-const dbInit = initDB()
-  .then(() => {
-    dbReady = true;
-    console.log('✅ DB pronto para receber requests.');
-  })
-  .catch(err => {
-    dbInitError = err;
-    console.error('❌ Erro fatal na inicialização do DB:', err.message || err);
-  });
+function startDBInit() {
+  dbInitPromise = initDB()
+    .then(() => {
+      dbReady = true;
+      dbInitError = null;
+      console.log('✅ DB pronto para receber requests.');
+    })
+    .catch(err => {
+      dbInitError = err;
+      dbReady = false;
+      console.error('❌ Erro na inicialização do DB:', err.message || err);
+    });
+  return dbInitPromise;
+}
+
+startDBInit();
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -42,7 +50,13 @@ app.get('/api/health', (req, res) => {
 app.use('/api', async (req, res, next) => {
   try {
     if (!dbReady) {
-      await dbInit;
+      // Se houve erro anterior, tenta re-inicializar
+      if (dbInitError) {
+        console.log('🔄 Retentando inicialização do DB...');
+        await startDBInit();
+      } else {
+        await dbInitPromise;
+      }
     }
     if (!dbReady) {
       return res.status(503).json({
@@ -54,7 +68,7 @@ app.use('/api', async (req, res, next) => {
     next();
   } catch (err) {
     console.error('Erro no middleware de DB:', err);
-    res.status(503).json({ error: 'Banco de dados indisponível.' });
+    res.status(503).json({ error: 'Banco de dados indisponível. Tente novamente em instantes.' });
   }
 });
 
@@ -66,7 +80,7 @@ app.post('/api/auth/login', async (req, res) => {
     const { email, senha } = req.body;
     if (!email || !senha) return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
 
-    const result = await db.execute({ sql: 'SELECT * FROM usuarios WHERE email = ?', args: [email] });
+    const result = await dbExecute({ sql: 'SELECT * FROM usuarios WHERE email = ?', args: [email] });
     if (result.rows.length === 0) return res.status(401).json({ error: 'Credenciais inválidas.' });
 
     const user = result.rows[0];
@@ -87,7 +101,7 @@ app.post('/api/auth/login', async (req, res) => {
 // Verificar token
 app.get('/api/auth/me', middlewareAuth, async (req, res) => {
   try {
-    const result = await db.execute({ sql: 'SELECT id, nome, email, role FROM usuarios WHERE id = ?', args: [req.user.id] });
+    const result = await dbExecute({ sql: 'SELECT id, nome, email, role FROM usuarios WHERE id = ?', args: [req.user.id] });
     if (result.rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
     res.json({ user: result.rows[0] });
   } catch (err) {
@@ -132,7 +146,7 @@ app.post('/api/respostas', middlewareAuth, async (req, res) => {
     const aluno_id = req.user.id;
 
     // Calcular tentativa
-    const tentResult = await db.execute({
+    const tentResult = await dbExecute({
       sql: 'SELECT COUNT(*) as cnt FROM respostas WHERE aluno_id = ? AND unidade = ? AND etapa = ? AND exercicio = ?',
       args: [aluno_id, unidade, etapa, exercicio],
     });
@@ -141,7 +155,7 @@ app.post('/api/respostas', middlewareAuth, async (req, res) => {
     // Avaliar a resposta
     const avaliacao = avaliarResposta(unidade, etapa, exercicio, resposta);
 
-    await db.execute({
+    await dbExecute({
       sql: `INSERT INTO respostas (aluno_id, unidade, etapa, exercicio, resposta, nota, feedback, tentativa)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [aluno_id, unidade, etapa, exercicio, resposta, avaliacao.nota, JSON.stringify(avaliacao), tentativa],
@@ -167,7 +181,7 @@ app.get('/api/respostas', middlewareAuth, async (req, res) => {
     }
     sql += ' ORDER BY enviado_em DESC';
 
-    const result = await db.execute({ sql, args });
+    const result = await dbExecute({ sql, args });
     res.json({ respostas: result.rows });
   } catch (err) {
     console.error(err);
@@ -183,7 +197,7 @@ app.put('/api/respostas/:id', middlewareAuth, async (req, res) => {
     if (!resposta) return res.status(400).json({ error: 'Resposta é obrigatória.' });
 
     // Verificar propriedade
-    const existing = await db.execute({ sql: 'SELECT * FROM respostas WHERE id = ?', args: [id] });
+    const existing = await dbExecute({ sql: 'SELECT * FROM respostas WHERE id = ?', args: [id] });
     if (existing.rows.length === 0) return res.status(404).json({ error: 'Resposta não encontrada.' });
 
     const row = existing.rows[0];
@@ -193,7 +207,7 @@ app.put('/api/respostas/:id', middlewareAuth, async (req, res) => {
     // Reavaliar
     const avaliacao = avaliarResposta(Number(row.unidade), Number(row.etapa), Number(row.exercicio), resposta);
 
-    await db.execute({
+    await dbExecute({
       sql: 'UPDATE respostas SET resposta = ?, nota = ?, feedback = ?, enviado_em = datetime(\'now\') WHERE id = ?',
       args: [resposta, avaliacao.nota, JSON.stringify(avaliacao), id],
     });
@@ -209,14 +223,14 @@ app.put('/api/respostas/:id', middlewareAuth, async (req, res) => {
 app.delete('/api/respostas/:id', middlewareAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const existing = await db.execute({ sql: 'SELECT * FROM respostas WHERE id = ?', args: [id] });
+    const existing = await dbExecute({ sql: 'SELECT * FROM respostas WHERE id = ?', args: [id] });
     if (existing.rows.length === 0) return res.status(404).json({ error: 'Resposta não encontrada.' });
 
     const row = existing.rows[0];
     if (req.user.role === 'coordenador') return res.status(403).json({ error: 'Coordenadores não podem deletar respostas.' });
     if (req.user.role === 'aluno' && Number(row.aluno_id) !== req.user.id) return res.status(403).json({ error: 'Sem permissão.' });
 
-    await db.execute({ sql: 'DELETE FROM respostas WHERE id = ?', args: [id] });
+    await dbExecute({ sql: 'DELETE FROM respostas WHERE id = ?', args: [id] });
     res.json({ message: 'Resposta removida.' });
   } catch (err) {
     console.error(err);
@@ -243,7 +257,7 @@ app.get('/api/gabarito/:unidade/:etapa/:exercicio', middlewareAuth, async (req, 
     }
 
     // Aluno: precisa de 3+ tentativas todas com nota < 10
-    const tentativas = await db.execute({
+    const tentativas = await dbExecute({
       sql: 'SELECT nota FROM respostas WHERE aluno_id = ? AND unidade = ? AND etapa = ? AND exercicio = ? ORDER BY tentativa ASC',
       args: [req.user.id, u, e, ex],
     });
@@ -269,7 +283,7 @@ app.get('/api/gabarito/:unidade/:etapa/:exercicio', middlewareAuth, async (req, 
 // Listar todos alunos
 app.get('/api/admin/alunos', middlewareAuth, middlewareRole('admin', 'coordenador'), async (req, res) => {
   try {
-    const result = await db.execute(
+    const result = await dbExecute(
       `SELECT u.id, u.nome, u.email, u.role, u.criado_em,
         COUNT(r.id) as total_respostas,
         COALESCE(AVG(r.nota), 0) as media_nota
@@ -290,7 +304,7 @@ app.get('/api/admin/alunos', middlewareAuth, middlewareRole('admin', 'coordenado
 app.get('/api/admin/alunos/:id/evolucao', middlewareAuth, middlewareRole('admin', 'coordenador'), async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await db.execute({
+    const result = await dbExecute({
       sql: `SELECT unidade, etapa, exercicio, nota, tentativa, enviado_em
             FROM respostas WHERE aluno_id = ? ORDER BY unidade, etapa, exercicio, tentativa`,
       args: [id],
@@ -323,10 +337,10 @@ app.get('/api/admin/alunos/:id/evolucao', middlewareAuth, middlewareRole('admin'
 // Estatísticas gerais
 app.get('/api/admin/estatisticas', middlewareAuth, middlewareRole('admin', 'coordenador'), async (req, res) => {
   try {
-    const totalAlunos = await db.execute("SELECT COUNT(*) as total FROM usuarios WHERE role = 'aluno'");
-    const totalRespostas = await db.execute('SELECT COUNT(*) as total FROM respostas');
-    const mediaNotas = await db.execute('SELECT AVG(nota) as media FROM respostas');
-    const porUnidade = await db.execute(
+    const totalAlunos = await dbExecute("SELECT COUNT(*) as total FROM usuarios WHERE role = 'aluno'");
+    const totalRespostas = await dbExecute('SELECT COUNT(*) as total FROM respostas');
+    const mediaNotas = await dbExecute('SELECT AVG(nota) as media FROM respostas');
+    const porUnidade = await dbExecute(
       'SELECT unidade, COUNT(*) as total, AVG(nota) as media FROM respostas GROUP BY unidade ORDER BY unidade'
     );
 
@@ -403,7 +417,7 @@ app.use((err, req, res, next) => {
 
 // Start server (apenas quando executado diretamente, não na Vercel)
 if (require.main === module) {
-  dbInit.then(() => {
+  dbInitPromise.then(() => {
     app.listen(PORT, () => {
       console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
     });

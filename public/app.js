@@ -16,6 +16,30 @@ function authHeaders() {
   };
 }
 
+// Fetch com retry automático para erros transitórios (503, network errors)
+async function fetchWithRetry(url, options = {}, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.status === 503 && attempt < maxRetries) {
+        const waitMs = 1000 * Math.pow(2, attempt - 1);
+        console.warn(`⚠️ 503 em ${url}, retentando em ${waitMs}ms (${attempt}/${maxRetries})...`);
+        await new Promise(r => setTimeout(r, waitMs));
+        continue;
+      }
+      return res;
+    } catch (err) {
+      if (attempt < maxRetries) {
+        const waitMs = 1000 * Math.pow(2, attempt - 1);
+        console.warn(`⚠️ Erro de rede em ${url}, retentando em ${waitMs}ms (${attempt}/${maxRetries})...`);
+        await new Promise(r => setTimeout(r, waitMs));
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
 function isAdmin() {
   return currentUser && currentUser.role === 'admin';
 }
@@ -55,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function verifyAndShow() {
   try {
-    const res = await fetch('/api/auth/me', { headers: authHeaders() });
+    const res = await fetchWithRetry('/api/auth/me', { headers: authHeaders() });
     if (!res.ok) throw new Error();
     const data = await res.json();
     currentUser = data.user;
@@ -264,7 +288,7 @@ async function loadExercicios(unidade) {
   container.innerHTML = '<div class="loading">Carregando exercícios</div>';
 
   try {
-    const res = await fetch(`/api/exercicios/${unidade}`);
+    const res = await fetchWithRetry(`/api/exercicios/${unidade}`);
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
     exerciciosCache[unidade] = data;
@@ -388,7 +412,7 @@ async function submitResposta(e, unidade, etapa, exercicio) {
   btn.textContent = 'Avaliando...';
 
   try {
-    const res = await fetch('/api/respostas', {
+    const res = await fetchWithRetry('/api/respostas', {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify({ unidade, etapa, exercicio, resposta }),
@@ -429,7 +453,7 @@ async function deleteResposta(id, respKey, unidade) {
   if (!confirm('Tem certeza que deseja excluir esta resposta?')) return;
 
   try {
-    const res = await fetch(`/api/respostas/${id}`, {
+    const res = await fetchWithRetry(`/api/respostas/${id}`, {
       method: 'DELETE',
       headers: authHeaders(),
     });
@@ -452,7 +476,7 @@ async function deleteResposta(id, respKey, unidade) {
 // ===== Ver Gabarito =====
 async function verGabarito(unidade, etapa, exercicio) {
   try {
-    const res = await fetch(`/api/gabarito/${unidade}/${etapa}/${exercicio}`, {
+    const res = await fetchWithRetry(`/api/gabarito/${unidade}/${etapa}/${exercicio}`, {
       headers: authHeaders(),
     });
     const data = await res.json();
@@ -486,7 +510,7 @@ async function loadRespostasAluno() {
   if (!authToken) return;
 
   try {
-    const res = await fetch('/api/respostas', { headers: authHeaders() });
+    const res = await fetchWithRetry('/api/respostas', { headers: authHeaders() });
     const data = await res.json();
     if (!res.ok) return;
 
@@ -556,7 +580,7 @@ async function loadAdminData() {
 
   try {
     // Stats
-    const statsRes = await fetch('/api/admin/estatisticas', { headers: authHeaders() });
+    const statsRes = await fetchWithRetry('/api/admin/estatisticas', { headers: authHeaders() });
     if (statsRes.ok) {
       const stats = await statsRes.json();
       document.getElementById('adminTotalAlunos').textContent = stats.totalAlunos;
@@ -568,7 +592,7 @@ async function loadAdminData() {
     }
 
     // Alunos list
-    const alunosRes = await fetch('/api/admin/alunos', { headers: authHeaders() });
+    const alunosRes = await fetchWithRetry('/api/admin/alunos', { headers: authHeaders() });
     if (alunosRes.ok) {
       const data = await alunosRes.json();
       renderAlunosList(data.alunos);
@@ -644,7 +668,7 @@ async function loadEvolucao(alunoId, nome) {
   document.getElementById('evolucaoNome').textContent = nome;
 
   try {
-    const res = await fetch(`/api/admin/alunos/${alunoId}/evolucao`, { headers: authHeaders() });
+    const res = await fetchWithRetry(`/api/admin/alunos/${alunoId}/evolucao`, { headers: authHeaders() });
     if (!res.ok) throw new Error();
     const data = await res.json();
 
@@ -707,7 +731,7 @@ async function loadDocumentos() {
   if (!container) return;
 
   try {
-    const res = await fetch('/api/documentos');
+    const res = await fetchWithRetry('/api/documentos');
     const data = await res.json();
     if (!res.ok) throw new Error();
 
@@ -758,7 +782,7 @@ async function openReadmeModal() {
   content.innerHTML = '<div class="loading">Carregando README</div>';
 
   try {
-    const res = await fetch('/api/readme');
+    const res = await fetchWithRetry('/api/readme');
     const data = await res.json();
     content.innerHTML = renderMarkdown(data.content);
   } catch {
