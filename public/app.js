@@ -7,6 +7,8 @@ let respostasCache = {};
 let coordView = false; // false = visao aluno, true = visao admin
 let chartEvolucao = null;
 let chartUnidades = null;
+let uploadEnabled = false; // Google Drive upload habilitado?
+let imagensCache = {}; // cache de imagens por exercício: "u-e-ex" => [...]
 
 // ===== Helpers =====
 function authHeaders() {
@@ -58,6 +60,116 @@ function canSeeAdmin() {
 
 function canMutate() {
   return isAdmin() || isAluno();
+}
+
+// ===== Upload de Imagens =====
+async function checkUploadStatus() {
+  try {
+    const res = await fetchWithRetry('/api/upload/status');
+    const data = await res.json();
+    uploadEnabled = data.enabled;
+  } catch {
+    uploadEnabled = false;
+  }
+}
+
+async function loadImagensAluno() {
+  if (!authToken || !uploadEnabled) return;
+  try {
+    const res = await fetchWithRetry('/api/upload/imagens', { headers: authHeaders() });
+    const data = await res.json();
+    if (res.ok && data.imagens) {
+      imagensCache = {};
+      for (const img of data.imagens) {
+        const key = `${img.unidade}-${img.etapa}-${img.exercicio}`;
+        if (!imagensCache[key]) imagensCache[key] = [];
+        imagensCache[key].push(img);
+      }
+    }
+  } catch (err) {
+    console.error('Erro ao carregar imagens:', err);
+  }
+}
+
+async function uploadImagem(inputEl, unidade, etapa, exercicio) {
+  const file = inputEl.files[0];
+  if (!file) return;
+
+  // Validar no cliente
+  if (!file.type.startsWith('image/')) {
+    alert('Apenas imagens são permitidas.');
+    inputEl.value = '';
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Imagem muito grande. Máximo: 5MB.');
+    inputEl.value = '';
+    return;
+  }
+
+  const statusEl = document.getElementById(`upload-status-${unidade}-${etapa}-${exercicio}`);
+  if (statusEl) {
+    statusEl.textContent = 'Enviando imagem...';
+    statusEl.className = 'upload-status uploading';
+  }
+
+  const formData = new FormData();
+  formData.append('imagem', file);
+  formData.append('unidade', unidade);
+  formData.append('etapa', etapa);
+  formData.append('exercicio', exercicio);
+
+  try {
+    const res = await fetchWithRetry('/api/upload/imagem', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${authToken}` },
+      body: formData,
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error);
+
+    if (statusEl) {
+      statusEl.textContent = '✅ Imagem enviada!';
+      statusEl.className = 'upload-status success';
+    }
+
+    // Atualizar cache e re-renderizar
+    const key = `${unidade}-${etapa}-${exercicio}`;
+    if (!imagensCache[key]) imagensCache[key] = [];
+    imagensCache[key].push({
+      nome_arquivo: data.imagem.nome,
+      gdrive_direct_link: data.imagem.directLink,
+      gdrive_view_link: data.imagem.viewLink,
+    });
+
+    // Re-render imagens
+    const imgContainer = document.getElementById(`imgs-${key}`);
+    if (imgContainer) {
+      imgContainer.innerHTML = renderImagensUpload(key);
+    }
+
+    inputEl.value = '';
+  } catch (err) {
+    if (statusEl) {
+      statusEl.textContent = `❌ ${err.message}`;
+      statusEl.className = 'upload-status error';
+    }
+  }
+}
+
+function renderImagensUpload(respKey) {
+  const imagens = imagensCache[respKey];
+  if (!imagens || imagens.length === 0) return '';
+
+  return imagens.map(img => `
+    <div class="uploaded-image-thumb">
+      <a href="${img.gdrive_view_link}" target="_blank" title="${img.nome_arquivo}">
+        <img src="${img.gdrive_direct_link}" alt="${img.nome_arquivo}" loading="lazy" />
+      </a>
+      <span class="img-name">${img.nome_arquivo}</span>
+    </div>
+  `).join('');
 }
 
 // ===== Inicialização =====
@@ -167,8 +279,10 @@ function showApp() {
   }
 
   // Load data
+  checkUploadStatus();
   loadExercicios(1);
   loadRespostasAluno();
+  loadImagensAluno();
   loadProfileData();
 
   if (canSeeAdmin()) {
@@ -341,12 +455,26 @@ function renderExercicios(container, unidade, data) {
 }
 
 function renderExerciseForm(unidade, etapa, exercicio) {
+  const respKey = `${unidade}-${etapa}-${exercicio}`;
+  const uploadHtml = uploadEnabled ? `
+      <div class="upload-area">
+        <label class="upload-label">
+          <span class="upload-icon">📷</span> Anexar Imagem
+          <input type="file" accept="image/*" class="upload-input"
+            onchange="uploadImagem(this, ${unidade}, ${etapa}, ${exercicio})" />
+        </label>
+        <span id="upload-status-${unidade}-${etapa}-${exercicio}" class="upload-status"></span>
+      </div>
+      <div id="imgs-${respKey}" class="uploaded-images">${renderImagensUpload(respKey)}</div>
+  ` : '';
+
   return `
     <form class="exercise-form" onsubmit="submitResposta(event, ${unidade}, ${etapa}, ${exercicio})">
       <div class="form-group">
         <label>Sua Resposta</label>
         <textarea id="resp-${unidade}-${etapa}-${exercicio}" placeholder="Escreva sua resposta... (mínimo 15 palavras)" required></textarea>
       </div>
+      ${uploadHtml}
       <button type="submit" class="btn btn-primary">Enviar Resposta</button>
     </form>
   `;
