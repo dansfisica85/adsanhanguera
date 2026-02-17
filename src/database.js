@@ -122,25 +122,8 @@ async function initDB() {
       enviado_em TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (aluno_id) REFERENCES usuarios(id)
     )`,
-    `CREATE TABLE IF NOT EXISTS imagens_respostas (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      aluno_id INTEGER NOT NULL,
-      unidade INTEGER NOT NULL,
-      etapa INTEGER NOT NULL,
-      exercicio INTEGER NOT NULL,
-      nome_arquivo TEXT NOT NULL,
-      mime_type TEXT NOT NULL,
-      gdrive_file_id TEXT NOT NULL,
-      gdrive_view_link TEXT NOT NULL,
-      gdrive_direct_link TEXT NOT NULL,
-      gdrive_pasta_id TEXT NOT NULL,
-      enviado_em TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY (aluno_id) REFERENCES usuarios(id)
-    )`,
     `CREATE INDEX IF NOT EXISTS idx_respostas_aluno ON respostas(aluno_id)`,
     `CREATE INDEX IF NOT EXISTS idx_respostas_unidade ON respostas(unidade, etapa, exercicio)`,
-    `CREATE INDEX IF NOT EXISTS idx_imagens_aluno ON imagens_respostas(aluno_id)`,
-    `CREATE INDEX IF NOT EXISTS idx_imagens_exercicio ON imagens_respostas(unidade, etapa, exercicio)`,
   ]);
 
   // Seed users

@@ -1,27 +1,12 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const multer = require('multer');
 require('dotenv').config();
 
 const { dbExecute, initDB } = require('./src/database');
 const gabaritos = require('./src/gabaritos');
 const { avaliarResposta } = require('./src/avaliador');
 const { verificarSenha, gerarToken, middlewareAuth, middlewareRole } = require('./src/auth');
-const { uploadImagemAluno, isConfigured: gdriveConfigured } = require('./src/gdrive');
-
-// Multer — upload em memória (max 5MB, apenas imagens)
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  fileFilter: (req, file, cb) => {
-    if (/^image\/(jpeg|jpg|png|gif|webp)$/.test(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Apenas imagens são permitidas (JPEG, PNG, GIF, WebP).'));
-    }
-  },
-});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -250,102 +235,6 @@ app.delete('/api/respostas/:id', middlewareAuth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro ao deletar resposta.' });
-  }
-});
-
-// ===== UPLOAD DE IMAGENS (Google Drive) =====
-
-// Verificar se Google Drive está configurado
-app.get('/api/upload/status', (req, res) => {
-  res.json({ enabled: gdriveConfigured() });
-});
-
-// Upload de imagem
-app.post('/api/upload/imagem', middlewareAuth, (req, res, next) => {
-  upload.single('imagem')(req, res, (err) => {
-    if (err instanceof multer.MulterError) {
-      if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ error: 'Imagem muito grande. Máximo: 5MB.' });
-      }
-      return res.status(400).json({ error: `Erro no upload: ${err.message}` });
-    }
-    if (err) return res.status(400).json({ error: err.message });
-    next();
-  });
-}, async (req, res) => {
-  try {
-    if (!gdriveConfigured()) {
-      return res.status(503).json({ error: 'Upload de imagens não está configurado. Configure as variáveis do Google Drive.' });
-    }
-
-    if (!req.file) {
-      return res.status(400).json({ error: 'Nenhuma imagem enviada.' });
-    }
-
-    const { unidade, etapa, exercicio } = req.body;
-    if (!unidade || !etapa || !exercicio) {
-      return res.status(400).json({ error: 'unidade, etapa e exercicio são obrigatórios.' });
-    }
-
-    // Upload para Google Drive (cria pasta com data + nome do aluno)
-    const resultado = await uploadImagemAluno(
-      req.file.buffer,
-      req.file.originalname,
-      req.file.mimetype,
-      req.user.nome
-    );
-
-    // Salvar referência no banco
-    await dbExecute({
-      sql: `INSERT INTO imagens_respostas (aluno_id, unidade, etapa, exercicio, nome_arquivo, mime_type, gdrive_file_id, gdrive_view_link, gdrive_direct_link, gdrive_pasta_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      args: [
-        req.user.id,
-        parseInt(unidade),
-        parseInt(etapa),
-        parseInt(exercicio),
-        req.file.originalname,
-        req.file.mimetype,
-        resultado.fileId,
-        resultado.viewLink,
-        resultado.directLink,
-        resultado.pastaId,
-      ],
-    });
-
-    res.json({
-      message: 'Imagem enviada com sucesso!',
-      imagem: {
-        nome: req.file.originalname,
-        viewLink: resultado.viewLink,
-        directLink: resultado.directLink,
-        pasta: resultado.nomePasta,
-      },
-    });
-  } catch (err) {
-    console.error('❌ Erro no upload de imagem:', err);
-    res.status(500).json({ error: `Erro ao enviar imagem: ${err.message}` });
-  }
-});
-
-// Listar imagens de um exercício do aluno
-app.get('/api/upload/imagens', middlewareAuth, async (req, res) => {
-  try {
-    const { unidade, etapa, exercicio } = req.query;
-    let sql = 'SELECT * FROM imagens_respostas WHERE aluno_id = ?';
-    const args = [req.user.id];
-
-    if (unidade) { sql += ' AND unidade = ?'; args.push(parseInt(unidade)); }
-    if (etapa) { sql += ' AND etapa = ?'; args.push(parseInt(etapa)); }
-    if (exercicio) { sql += ' AND exercicio = ?'; args.push(parseInt(exercicio)); }
-
-    sql += ' ORDER BY enviado_em DESC';
-
-    const result = await dbExecute({ sql, args });
-    res.json({ imagens: result.rows });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Erro ao buscar imagens.' });
   }
 });
 
