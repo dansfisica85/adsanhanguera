@@ -19,8 +19,9 @@ function avaliarResposta(unidade, etapa, exercicio, respostaAluno) {
   const totalPalavras = gab.palavrasChave.length;
   const percentual = totalPalavras > 0 ? (palavrasEncontradas.length / totalPalavras) * 100 : 0;
 
-  // Nota de 0 a 10
-  let nota = Math.round((percentual / 10)) ;
+  // Nota de 0 a 10 com curva generosa para conjuntos expandidos de palavras-chave
+  // 60% de acerto = nota 10 (fator de escala 1.67)
+  let nota = Math.round((percentual * 10) / 60);
   nota = Math.min(10, Math.max(0, nota));
 
   // Verificar tamanho mínimo da resposta

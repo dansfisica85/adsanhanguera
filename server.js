@@ -163,8 +163,8 @@ app.post('/api/respostas', middlewareAuth, async (req, res) => {
 
     res.json({ avaliacao, tentativa });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Erro ao salvar resposta.' });
+    console.error('Erro ao salvar resposta:', err.message || err);
+    res.status(500).json({ error: 'Erro ao salvar resposta: ' + (err.message || 'erro desconhecido') });
   }
 });
 
@@ -279,6 +279,42 @@ app.get('/api/gabarito/:unidade/:etapa/:exercicio', middlewareAuth, async (req, 
 });
 
 // ===== ADMIN / COORDENADOR ROUTES =====
+
+// Recalcular todas as notas existentes com os novos gabaritos
+app.post('/api/admin/recalcular', middlewareAuth, middlewareRole('admin'), async (req, res) => {
+  try {
+    const result = await dbExecute('SELECT id, unidade, etapa, exercicio, resposta FROM respostas ORDER BY id');
+    const rows = result.rows;
+    let atualizadas = 0;
+    const detalhes = [];
+
+    for (const row of rows) {
+      const avaliacao = avaliarResposta(Number(row.unidade), Number(row.etapa), Number(row.exercicio), row.resposta);
+      await dbExecute({
+        sql: 'UPDATE respostas SET nota = ?, feedback = ? WHERE id = ?',
+        args: [avaliacao.nota, JSON.stringify(avaliacao), row.id],
+      });
+      detalhes.push({
+        id: row.id,
+        unidade: row.unidade,
+        etapa: row.etapa,
+        exercicio: row.exercicio,
+        novaNota: avaliacao.nota,
+        percentualAcerto: avaliacao.percentualAcerto,
+      });
+      atualizadas++;
+    }
+
+    res.json({
+      message: `${atualizadas} respostas recalculadas com sucesso.`,
+      total: atualizadas,
+      detalhes,
+    });
+  } catch (err) {
+    console.error('Erro ao recalcular notas:', err);
+    res.status(500).json({ error: 'Erro ao recalcular notas: ' + (err.message || 'erro desconhecido') });
+  }
+});
 
 // Listar todos alunos
 app.get('/api/admin/alunos', middlewareAuth, middlewareRole('admin', 'coordenador'), async (req, res) => {

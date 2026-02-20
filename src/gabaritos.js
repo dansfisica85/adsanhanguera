@@ -11,6 +11,8 @@ const gabaritos = {
               "Crie a Matriz de Responsabilidades (RACI) para a Equipe do Projeto Nutrientes Delivery, focando nas tarefas críticas: 'Definição de Requisitos do Cliente', 'Desenvolvimento do Módulo de Nutrição' e 'Decisão de Arquitetura'. Atribua os papéis R, A, C e I para cada membro da equipe.",
             gabarito:
               "A matriz deve listar as tarefas críticas e atribuir Responsável (R), Aprovador (A), Consultado (C) e Informado (I) de forma coerente com os papéis da equipe. O Product Owner deve ser A ou R na 'Definição de Requisitos do Cliente'. Os programadores juniores devem ser R no desenvolvimento. O Analista Sênior deve ser C ou R na Decisão de Arquitetura.",
+            respostaModelo:
+              "A Matriz RACI para o Projeto Nutrientes Delivery deve atribuir os papéis de Responsável (R), Aprovador (A), Consultado (C) e Informado (I) para cada membro da equipe nas tarefas críticas. Na tarefa 'Definição de Requisitos do Cliente', o Product Owner deve ser o Aprovador (A) ou Responsável (R), pois é quem representa as necessidades do cliente. Os programadores juniores devem ser Informados (I) nesta etapa. Na tarefa 'Desenvolvimento do Módulo de Nutrição', os programadores juniores devem ser os Responsáveis (R) pela execução, o Analista Sênior deve ser Consultado (C) para garantir a qualidade técnica, e o Product Owner deve ser Informado (I) do progresso. Na 'Decisão de Arquitetura', o Analista Sênior deve ser o Responsável (R) ou Consultado (C), pois possui a expertise técnica necessária. A matriz garante clareza na delegação de responsabilidades e evita sobreposição de papéis no projeto.",
             palavrasChave: [
               "RACI",
               "Responsável",
@@ -22,6 +24,20 @@ const gabaritos = {
               "programadores",
               "requisitos",
               "arquitetura",
+              "matriz",
+              "papéis",
+              "tarefas",
+              "equipe",
+              "desenvolvimento",
+              "módulo",
+              "nutrição",
+              "decisão",
+              "delegação",
+              "projeto",
+              "cliente",
+              "atribuir",
+              "coerente",
+              "críticas",
             ],
             conceitos: [
               "Matriz RACI",
@@ -34,6 +50,8 @@ const gabaritos = {
               "Identifique e analise o conflito principal entre o Analista Sênior (Preditivo) e o Product Owner/CEO (Adaptativo). Proponha uma estratégia de mitigação para garantir o andamento do projeto.",
             gabarito:
               "O estudante deve identificar o conflito de Metodologia (Analista Sênior – Preditivo vs. PO/CEO – Adaptativo). A estratégia de mitigação deve propor uma solução de consenso ou mediação, como a criação de um Comitê de Mudanças ou a adoção de uma abordagem híbrida (conectando com a Etapa 2).",
+            respostaModelo:
+              "O conflito principal é entre o Analista Sênior, que defende a metodologia Preditiva com planejamento detalhado e documentação completa, e o Product Owner/CEO, que prefere a abordagem Adaptativa com flexibilidade para mudanças. Este conflito de metodologia impacta diretamente o andamento do projeto. A estratégia de mitigação proposta envolve a mediação entre as partes, buscando consenso através da criação de um Comitê de Mudanças que avalie cada solicitação de alteração. Outra solução viável é a adoção de uma abordagem híbrida que combine elementos do modelo preditivo e adaptativo, equilibrando estabilidade e flexibilidade. A negociação deve promover conciliação e integração das visões, garantindo que a gestão de conflitos resulte em um projeto mais robusto e alinhado com os objetivos de todos os stakeholders.",
             palavrasChave: [
               "conflito",
               "preditivo",
@@ -43,6 +61,19 @@ const gabaritos = {
               "Comitê de Mudanças",
               "híbrido",
               "mitigação",
+              "Analista Sênior",
+              "Product Owner",
+              "CEO",
+              "metodologia",
+              "abordagem",
+              "estratégia",
+              "solução",
+              "negociação",
+              "equilíbrio",
+              "gestão de conflitos",
+              "projeto",
+              "flexibilidade",
+              "planejamento",
             ],
             conceitos: [
               "Gestão de conflitos",
@@ -60,6 +91,8 @@ const gabaritos = {
               "Proponha um Ciclo de Vida Híbrido (combinando Preditivo e Adaptativo) para a Nutrientes Delivery. Justifique qual parte do sistema deve seguir cada abordagem.",
             gabarito:
               "O estudante deve propor um modelo híbrido. Módulo de Produção (integração com hardware/sensores, requisitos estáveis) utiliza abordagem Preditiva/Cascata (mais detalhamento no início). Módulo do Cliente (mudanças frequentes, feedback do CEO) utiliza abordagem Adaptativa/Ágil (entregas iterativas/incrementais).",
+            respostaModelo:
+              "O Ciclo de Vida Híbrido proposto para a Nutrientes Delivery combina as abordagens preditiva e adaptativa de forma estratégica. O Módulo de Produção, que envolve integração com hardware e sensores e possui requisitos estáveis e bem definidos, deve seguir a abordagem Preditiva/Cascata com planejamento detalhado no início do projeto. A justificativa é que este módulo exige maior controle e previsibilidade. Já o Módulo do Cliente, sujeito a mudanças frequentes e feedback constante do CEO, deve seguir a abordagem Adaptativa/Ágil com entregas iterativas e incrementais em sprints curtos. Este modelo híbrido permite que cada parte do sistema utilize a metodologia mais adequada às suas características, garantindo qualidade no módulo de produção e flexibilidade no módulo do cliente.",
             palavrasChave: [
               "híbrido",
               "preditivo",
@@ -71,6 +104,19 @@ const gabaritos = {
               "iterativo",
               "incremental",
               "sensores",
+              "ciclo de vida",
+              "requisitos",
+              "estáveis",
+              "mudanças",
+              "entregas",
+              "feedback",
+              "hardware",
+              "integração",
+              "modelo",
+              "abordagem",
+              "sprint",
+              "planejamento",
+              "justificativa",
             ],
             conceitos: [
               "Ciclo de vida híbrido",
@@ -83,6 +129,8 @@ const gabaritos = {
               "Descreva, em alto nível, as três atividades essenciais que devem ser realizadas durante o Processo de Planejamento deste projeto.",
             gabarito:
               "As três atividades essenciais devem focar em mitigação de riscos e alinhamento: 1. Detalhamento da Baseline do Módulo Preditivo (Produção); 2. Definição do Timebox e tamanho dos Sprints (Módulo Adaptativo); 3. Plano de Comunicação/Gerenciamento de Stakeholders (para gerenciar o CEO e os conflitos).",
+            respostaModelo:
+              "As três atividades essenciais do Processo de Planejamento são: 1. Detalhamento da Baseline do Módulo Preditivo de Produção, definindo escopo, cronograma e custos para mitigação de riscos e garantir alinhamento do time; 2. Definição do Timebox e tamanho dos Sprints do Módulo Adaptativo do Cliente, estabelecendo a cadência das entregas iterativas; 3. Elaboração do Plano de Comunicação e Gerenciamento de Stakeholders para gerenciar as expectativas do CEO, resolver conflitos e manter todos informados sobre o progresso do projeto. Estas atividades de planejamento são fundamentais para o sucesso do projeto e devem considerar a mitigação de riscos em todas as etapas.",
             palavrasChave: [
               "baseline",
               "timebox",
@@ -92,6 +140,20 @@ const gabaritos = {
               "planejamento",
               "riscos",
               "alinhamento",
+              "atividades",
+              "essenciais",
+              "módulo",
+              "preditivo",
+              "adaptativo",
+              "gerenciamento",
+              "definição",
+              "plano",
+              "produção",
+              "mitigação",
+              "processo",
+              "entregas",
+              "cronograma",
+              "escopo",
             ],
             conceitos: [
               "Processo de planejamento",
@@ -110,6 +172,8 @@ const gabaritos = {
               "Proponha um Estilo Arquitetônico adequado para o Sistema Integrado da Nutrientes Delivery e justifique a escolha considerando escalabilidade e integração com sensores.",
             gabarito:
               "O estudante deve propor Microservices (mais adequado para escalabilidade e isolamento de módulos) ou Arquitetura Orientada a Serviços (SOA). A justificativa deve citar a necessidade de escalar os diferentes módulos de forma independente e a necessidade de integração com sistemas externos (sensores, roteirização).",
+            respostaModelo:
+              "O Estilo Arquitetônico mais adequado para o Sistema Integrado da Nutrientes Delivery é Microservices ou SOA (Arquitetura Orientada a Serviços). A justificativa para esta escolha considera a escalabilidade necessária para escalar os diferentes módulos de forma independente, permitindo que cada serviço cresça conforme a demanda. O isolamento entre módulos e componentes garante que falhas em um serviço não afetem os demais, proporcionando maior resiliência. A integração com sistemas externos como sensores e roteirização é facilitada por interfaces bem definidas entre os serviços. O desacoplamento e a separação de responsabilidades permitem que equipes diferentes trabalhem em módulos distintos de forma autônoma.",
             palavrasChave: [
               "microservices",
               "SOA",
@@ -119,6 +183,17 @@ const gabaritos = {
               "integração",
               "sensores",
               "independente",
+              "arquitetura",
+              "estilo",
+              "serviços",
+              "falhas",
+              "sistemas externos",
+              "escalar",
+              "roteirização",
+              "componentes",
+              "desacoplamento",
+              "separação",
+              "resiliência",
             ],
             conceitos: [
               "Arquitetura de Microservices",
@@ -132,6 +207,8 @@ const gabaritos = {
               "Considerando a insistência do CEO em mudanças no Módulo do Cliente, qual Padrão Arquitetônico você aplicaria especificamente ao Módulo do Cliente para isolar as mudanças? Justifique.",
             gabarito:
               "O estudante deve propor o Padrão Arquitetônico MVC (Model-View-Controller) ou MVVM (Model-View-ViewModel) para o Módulo do Cliente. A justificativa deve focar na separação de interesses, isolando a interface (View) da lógica de negócio (Model). Isso permite que a View (onde o CEO exige mudanças) seja alterada sem impactar a regra de negócio central.",
+            respostaModelo:
+              "O Padrão Arquitetônico ideal para o Módulo do Cliente é o MVC (Model-View-Controller) ou MVVM (Model-View-ViewModel). A justificativa principal é a separação de interesses, que isola a interface do usuário (View) da lógica de negócio (Model) e do controlador (Controller). Com este padrão, as mudanças exigidas pelo CEO na camada de apresentação (View) podem ser realizadas com flexibilidade, sem impacto na regra de negócio central. A View pode ser alterada de forma independente, testada e implantada sem afetar a lógica do sistema. Esta arquitetura permite isolar as mudanças frequentes solicitadas pelo CEO ao Módulo do Cliente, mantendo a estabilidade do restante do sistema.",
             palavrasChave: [
               "MVC",
               "MVVM",
@@ -142,6 +219,18 @@ const gabaritos = {
               "isolamento",
               "interface",
               "lógica de negócio",
+              "padrão",
+              "arquitetônico",
+              "módulo",
+              "cliente",
+              "camada",
+              "apresentação",
+              "mudanças",
+              "CEO",
+              "flexibilidade",
+              "regra",
+              "ViewModel",
+              "isolar",
             ],
             conceitos: [
               "Padrão MVC",
@@ -164,6 +253,8 @@ const gabaritos = {
               "Identifique e cite o Valor do Manifesto Ágil que está sendo violado pela exigência do CEO de mudanças no meio do Sprint. Justifique por que proteger o Sprint é mais importante.",
             gabarito:
               "O estudante deve citar o valor 'Software funcionando mais que documentação abrangente' e o princípio 'Entregar software funcionando frequentemente'. O argumento deve focar em proteger o Sprint para manter o ritmo sustentável do time, entregar a funcionalidade acordada (MVP), cumprir a promessa do Sprint Backlog e garantir transparência.",
+            respostaModelo:
+              "O Valor do Manifesto Ágil que está sendo violado é 'Software funcionando mais que documentação abrangente', juntamente com o princípio 'Entregar software funcionando frequentemente'. Proteger o Sprint é mais importante porque garante o ritmo sustentável do time de desenvolvimento, permitindo que a equipe entregue a funcionalidade acordada no MVP sem interrupções. Ao proteger o Sprint Backlog, o time cumpre a promessa feita na Sprint Planning e mantém a transparência com todos os stakeholders. Aceitar mudanças no meio do Sprint comprometeria a entrega, reduziria a qualidade e quebraria o comprometimento da equipe. O Sprint deve ser protegido como um período inviolável para garantir valor ao produto.",
             palavrasChave: [
               "Manifesto Ágil",
               "software funcionando",
@@ -172,6 +263,17 @@ const gabaritos = {
               "transparência",
               "MVP",
               "Sprint Backlog",
+              "valor",
+              "princípio",
+              "proteger",
+              "entrega",
+              "time",
+              "funcionalidade",
+              "acordada",
+              "frequentemente",
+              "comprometimento",
+              "qualidade",
+              "equipe",
             ],
             conceitos: [
               "Valores do Manifesto Ágil",
@@ -184,6 +286,8 @@ const gabaritos = {
               "Defina quais Artefatos do Scrum seriam diretamente impactados pela aceitação imediata das duas novas funcionalidades e qual é o papel do PO em protegê-los.",
             gabarito:
               "O estudante deve identificar que o Sprint Backlog e o Incremento (a meta do Sprint) seriam diretamente impactados. O papel do PO é proteger o Sprint Backlog, rejeitando mudanças que impeçam a entrega da meta definida na Sprint Planning.",
+            respostaModelo:
+              "Os Artefatos do Scrum diretamente impactados pela aceitação imediata das duas novas funcionalidades seriam o Sprint Backlog e o Incremento (meta do Sprint). O Sprint Backlog seria alterado com itens não planejados, comprometendo o trabalho já comprometido pelo time. O Incremento, que representa a entrega de valor ao final do Sprint, ficaria em risco. O papel do Product Owner (PO) é proteger o Sprint Backlog, rejeitando mudanças que impeçam a entrega da meta definida na Sprint Planning. O PO deve garantir que novas funcionalidades sejam adicionadas ao Product Backlog para priorização futura, não ao Sprint corrente. Os artefatos do Scrum existem para dar visibilidade e controle ao processo de desenvolvimento.",
             palavrasChave: [
               "Sprint Backlog",
               "Incremento",
@@ -192,6 +296,18 @@ const gabaritos = {
               "Sprint Planning",
               "proteger",
               "rejeitar",
+              "artefatos",
+              "Scrum",
+              "funcionalidades",
+              "impactados",
+              "papel",
+              "mudanças",
+              "entrega",
+              "PO",
+              "Product Backlog",
+              "priorização",
+              "desenvolvimento",
+              "comprometido",
             ],
             conceitos: [
               "Artefatos do Scrum",
@@ -210,6 +326,8 @@ const gabaritos = {
               "Formule a resposta oficial do PO ao CEO, utilizando um Princípio Ágil para iniciar a negociação, e argumente por que as novas funcionalidades devem ser tratadas como futuras.",
             gabarito:
               "A resposta deve ser uma rejeição formal, mas respeitosa, utilizando o princípio 'Mudanças nos requisitos são bem-vindas, mesmo tardiamente no desenvolvimento'. O PO deve afirmar que as mudanças serão incluídas no Product Backlog, não no Sprint atual. O MVP deve ser entregue primeiro para obter máximo de aprendizado com menor esforço.",
+            respostaModelo:
+              "A resposta oficial do PO ao CEO deve ser uma rejeição formal, porém respeitosa, utilizando o princípio ágil 'Mudanças nos requisitos são bem-vindas, mesmo tardiamente no desenvolvimento'. O PO deve argumentar que as novas funcionalidades serão incluídas no Product Backlog para priorização futura, mas não podem entrar no Sprint atual. O MVP deve ser entregue primeiro para obter o máximo de aprendizado com o menor esforço possível, seguindo a abordagem Lean. As mudanças são bem-vindas, porém devem ser incorporadas de forma planejada no próximo Sprint, após refinamento e estimativa pelo time de desenvolvimento. Esta negociação garante a entrega de valor contínuo sem comprometer o trabalho em andamento.",
             palavrasChave: [
               "rejeição formal",
               "mudanças bem-vindas",
@@ -218,6 +336,18 @@ const gabaritos = {
               "aprendizado",
               "menor esforço",
               "Lean",
+              "PO",
+              "CEO",
+              "princípio ágil",
+              "negociação",
+              "Sprint",
+              "funcionalidades",
+              "requisitos",
+              "priorização",
+              "entrega",
+              "resposta",
+              "futuro",
+              "valor",
             ],
             conceitos: [
               "Princípios Ágeis",
@@ -230,6 +360,8 @@ const gabaritos = {
               "Proponha usar um ciclo de Design Thinking para validar a real necessidade dos novos recursos (Calculadora Nutricional e PIX Recorrente) antes de investir no desenvolvimento.",
             gabarito:
               "A proposta deve incluir uma etapa leve de Teste de Conceito ou entrevistas antes de priorizar o desenvolvimento, garantindo que as funcionalidades complexas resolvam problemas reais e não apenas desejos do CEO. As funcionalidades devem ser tratadas como riscos e hipóteses a serem validadas (abordagem Lean/Design Thinking).",
+            respostaModelo:
+              "A proposta de ciclo de Design Thinking para validar a necessidade da Calculadora Nutricional e PIX Recorrente deve seguir estas etapas: primeiro, uma fase de empatia com entrevistas com usuários reais para entender seus problemas reais e necessidades. Em seguida, um Teste de Conceito leve com protótipo ou pesquisa para validar as hipóteses de que estas funcionalidades resolvem problemas concretos e não são apenas desejos do CEO. As funcionalidades devem ser tratadas como riscos e hipóteses a serem validadas com abordagem Lean, priorizando o desenvolvimento apenas após confirmação de demanda real. Este ciclo de prototipação e feedback reduz desperdício e garante que o investimento em desenvolvimento gere valor.",
             palavrasChave: [
               "Design Thinking",
               "Teste de Conceito",
@@ -238,6 +370,19 @@ const gabaritos = {
               "hipóteses",
               "Lean",
               "problemas reais",
+              "ciclo",
+              "funcionalidades",
+              "Calculadora Nutricional",
+              "PIX Recorrente",
+              "usuários",
+              "priorizar",
+              "desenvolvimento",
+              "necessidade",
+              "riscos",
+              "prototipação",
+              "empatia",
+              "feedback",
+              "pesquisa",
             ],
             conceitos: [
               "Design Thinking",
@@ -256,6 +401,8 @@ const gabaritos = {
               "Descreva o Plano de Ação que você, como PO, executaria imediatamente após a reunião para incorporar as novas funcionalidades ao processo Scrum.",
             gabarito:
               "O plano deve ser sequencial e aderente ao Scrum: 1. Transformar as exigências do CEO em novas User Stories; 2. Inserir essas Stories no Product Backlog (Artefato); 3. Agendar uma Reunião de Refinamento do Product Backlog (Evento), envolvendo o Time de Desenvolvimento para estimar o esforço e priorizar as novas Stories para o próximo Sprint.",
+            respostaModelo:
+              "O Plano de Ação como PO, a ser executado imediatamente após a reunião, deve ser sequencial e aderente ao Scrum: 1. Transformar as exigências do CEO em novas User Stories bem definidas, com critérios de aceitação claros; 2. Inserir essas Stories no Product Backlog (Artefato do Scrum), documentando a origem e prioridade; 3. Agendar uma Reunião de Refinamento do Product Backlog (Evento do Scrum), envolvendo o Time de Desenvolvimento para estimar o esforço utilizando story points e priorizar as novas Stories para o próximo Sprint. Este plano garante que as funcionalidades sejam incorporadas de forma organizada ao processo Scrum, respeitando os eventos e artefatos do framework.",
             palavrasChave: [
               "User Stories",
               "Product Backlog",
@@ -264,6 +411,20 @@ const gabaritos = {
               "priorizar",
               "próximo Sprint",
               "Time de Desenvolvimento",
+              "plano",
+              "ação",
+              "PO",
+              "CEO",
+              "exigências",
+              "funcionalidades",
+              "inserir",
+              "reunião",
+              "evento",
+              "artefato",
+              "Scrum",
+              "esforço",
+              "sequencial",
+              "agendar",
             ],
             conceitos: [
               "User Stories",
@@ -287,6 +448,8 @@ const gabaritos = {
               "Identifique a Natureza do Risco que se materializou na perda de R$ 15.000 (problema do Adaptador de Protocolo) e classifique-o.",
             gabarito:
               "O estudante deve identificar a Natureza do Risco como Técnico (falha no componente de software Adaptador e no protocolo) com forte impacto Financeiro (perda de R$ 15.000). A análise deve reconhecer que a falha técnica se materializou em perda financeira real.",
+            respostaModelo:
+              "A Natureza do Risco que se materializou é Técnico, classificado como uma falha no componente de software do Adaptador de Protocolo. Este risco técnico teve forte impacto Financeiro, resultando na perda concreta de R$ 15.000. A análise identifica que a falha técnica no adaptador de protocolo se materializou em uma consequência financeira real e mensurável. O risco deveria ter sido identificado previamente na análise de riscos do projeto, com plano de mitigação para evitar perdas dessa magnitude. A classificação confirma que riscos técnicos podem gerar impactos financeiros significativos quando não são gerenciados adequadamente.",
             palavrasChave: [
               "risco técnico",
               "financeiro",
@@ -295,6 +458,17 @@ const gabaritos = {
               "materializado",
               "R$ 15.000",
               "falha",
+              "natureza",
+              "classificação",
+              "impacto",
+              "componente",
+              "software",
+              "perda",
+              "análise",
+              "identificar",
+              "integração",
+              "consequência",
+              "mitigação",
             ],
             conceitos: [
               "Natureza de riscos",
@@ -308,6 +482,8 @@ const gabaritos = {
               "Crie uma Matriz de Risco bidimensional (Probabilidade x Impacto) e posicione o risco de 'Falha no Componente de Integração Crítico'. Defina a Ação de Contingência imediata.",
             gabarito:
               "O risco deve ser posicionado com Alto Impacto e Média/Alta Probabilidade. A Ação de Contingência deve incluir: implementação de um Mecanismo de Failover (emissor de alerta automático ou chaveamento para backup manual) ou Redundância de Sensores para comparar leituras antes de acionar alertas críticos.",
+            respostaModelo:
+              "Na Matriz de Risco bidimensional (Probabilidade x Impacto), o risco de 'Falha no Componente de Integração Crítico' deve ser posicionado com Alto Impacto e Média/Alta Probabilidade, colocando-o na zona crítica da matriz. A Ação de Contingência imediata deve incluir: implementação de um Mecanismo de Failover com emissor de alerta automático para notificação imediata da equipe; chaveamento para sistema de backup manual em caso de falha; e Redundância de Sensores para comparar leituras de múltiplas fontes antes de acionar alertas críticos. Estas medidas de contingência garantem a continuidade do serviço mesmo em caso de falha no componente de integração, minimizando perdas financeiras.",
             palavrasChave: [
               "matriz de risco",
               "probabilidade",
@@ -318,6 +494,18 @@ const gabaritos = {
               "alerta",
               "backup",
               "contingência",
+              "bidimensional",
+              "componente",
+              "integração",
+              "crítico",
+              "ação",
+              "mecanismo",
+              "automático",
+              "sensores",
+              "implementação",
+              "chaveamento",
+              "leituras",
+              "falha",
             ],
             conceitos: [
               "Matriz de Risco",
@@ -336,6 +524,8 @@ const gabaritos = {
               "Calcule a Métrica de Esforço Perdido (MEP) causada pelo retrabalho do desenvolvedor júnior. Sprint tem 10 dias úteis e o desenvolvedor gastou 2 dias no retrabalho.",
             gabarito:
               "MEP = (Tempo Perdido / Duração Total do Sprint) x 100. Cálculo: (2 dias / 10 dias) × 100 = 20%. A interpretação deve ser que 20% do esforço planejado para o Sprint foi consumido por retrabalho não planejado.",
+            respostaModelo:
+              "A Métrica de Esforço Perdido (MEP) é calculada pela fórmula: MEP = (Tempo Perdido / Duração Total do Sprint) × 100. Aplicando os valores: MEP = (2 dias / 10 dias) × 100 = 20%. A interpretação do resultado é que 20% do esforço planejado para o Sprint foi consumido por retrabalho não planejado do desenvolvedor júnior. Este percentual de esforço perdido é significativo e indica que o retrabalho comprometeu um quinto da capacidade produtiva do Sprint. A métrica evidencia a necessidade de melhorar processos de revisão de código e documentação para reduzir o retrabalho em Sprints futuros.",
             palavrasChave: [
               "MEP",
               "20%",
@@ -344,6 +534,19 @@ const gabaritos = {
               "2 dias",
               "10 dias",
               "Sprint",
+              "métrica",
+              "cálculo",
+              "tempo",
+              "perdido",
+              "duração",
+              "total",
+              "planejado",
+              "desenvolvedor",
+              "júnior",
+              "consumido",
+              "não planejado",
+              "fórmula",
+              "percentual",
             ],
             conceitos: [
               "Métrica de Esforço Perdido",
@@ -356,6 +559,8 @@ const gabaritos = {
               "Proponha uma Métrica de Maturidade em Projeto de Software (SQS) para medir a qualidade dos processos de desenvolvimento e justifique como evitaria o problema de retrabalho.",
             gabarito:
               "O estudante deve propor: Métrica de Densidade de Defeitos (defeitos por mil linhas de código) ou Métrica de Aderência à Documentação (percentual de componentes documentados). A justificativa deve ligar a métrica ao problema: se o código fosse revisado sob uma métrica de Densidade de Defeitos, a falta de documentação seria considerada um defeito de qualidade.",
+            respostaModelo:
+              "A proposta de Métrica de Maturidade em Projeto de Software (SQS) para medir a qualidade dos processos de desenvolvimento inclui: 1. Densidade de Defeitos — medindo defeitos por mil linhas de código, permitindo identificar componentes problemáticos antes que causem retrabalho; 2. Aderência à Documentação — medindo o percentual de componentes documentados, garantindo que todo código tenha especificação adequada. A justificativa é que se o código do desenvolvedor júnior fosse revisado sob uma métrica de Densidade de Defeitos, a falta de documentação seria identificada como um defeito de qualidade antes de causar o retrabalho. Estas métricas elevam a maturidade do processo de desenvolvimento e melhoram a qualidade do software entregue.",
             palavrasChave: [
               "Densidade de Defeitos",
               "Aderência à Documentação",
@@ -363,6 +568,18 @@ const gabaritos = {
               "qualidade",
               "maturidade",
               "SQS",
+              "defeitos",
+              "linhas de código",
+              "percentual",
+              "revisão",
+              "processo",
+              "desenvolvimento",
+              "código",
+              "retrabalho",
+              "software",
+              "métrica",
+              "proposta",
+              "melhoria",
             ],
             conceitos: [
               "Sistema de Qualidade",
@@ -381,6 +598,8 @@ const gabaritos = {
               "Explique o custo do problema de retrabalho em termos de Riscos pela Ausência de Documentação.",
             gabarito:
               "A explicação deve citar: 1. Alto Risco de Bus Factor (dependência de um único desenvolvedor); 2. Aumento do Custo de Manutenção (Time-to-Market lento); 3. Risco de Segurança (erros de integração por falta de especificação).",
+            respostaModelo:
+              "O custo do retrabalho em termos de Riscos pela Ausência de Documentação envolve três aspectos críticos: 1. Alto Risco de Bus Factor — a dependência de um único desenvolvedor que detém o conhecimento do código significa que, caso ele se ausente, o projeto fica paralisado, gerando perda de conhecimento organizacional; 2. Aumento do Custo de Manutenção — sem documentação, o Time-to-Market fica lento porque cada alteração requer tempo adicional para compreender o código existente; 3. Risco de Segurança — erros de integração ocorrem pela falta de especificação clara dos componentes, podendo gerar vulnerabilidades e falhas no sistema. A ausência de documentação transforma a manutenção em um processo custoso e arriscado.",
             palavrasChave: [
               "Bus Factor",
               "custo de manutenção",
@@ -388,6 +607,20 @@ const gabaritos = {
               "segurança",
               "dependência",
               "especificação",
+              "risco",
+              "documentação",
+              "ausência",
+              "alto",
+              "desenvolvedor",
+              "único",
+              "aumento",
+              "lento",
+              "erros",
+              "integração",
+              "conhecimento",
+              "retrabalho",
+              "falhas",
+              "vulnerabilidades",
             ],
             conceitos: [
               "Bus Factor",
@@ -401,6 +634,8 @@ const gabaritos = {
               "Proponha um Plano de Documentação Mínima Obrigatória para o Módulo de Nutrição, focando em três itens essenciais que teriam evitado o retrabalho.",
             gabarito:
               "Os três itens essenciais são: 1. Diagrama de Classes/Componentes (para entender a estrutura do código); 2. Especificação das Regras de Negócio do Cálculo (a lógica do Módulo de Nutrição); 3. Manual de Integração da API/Microservice (como consumir o componente sem olhar o código fonte).",
+            respostaModelo:
+              "O Plano de Documentação Mínima Obrigatória para o Módulo de Nutrição inclui três itens essenciais que teriam evitado o retrabalho: 1. Diagrama de Classes/Componentes — para permitir que qualquer desenvolvedor entenda a estrutura do código e a organização dos módulos sem precisar ler todo o código fonte; 2. Especificação das Regras de Negócio do Cálculo — documentando a lógica completa do Módulo de Nutrição, incluindo fórmulas, validações e exceções do cálculo nutricional; 3. Manual de Integração da API/Microservice — descrevendo endpoints, parâmetros e respostas para consumir o componente de forma correta sem depender do desenvolvedor original. Esta documentação mínima obrigatória garante a continuidade do projeto independentemente de mudanças na equipe.",
             palavrasChave: [
               "Diagrama de Classes",
               "Regras de Negócio",
@@ -408,6 +643,21 @@ const gabaritos = {
               "API",
               "documentação mínima",
               "estrutura do código",
+              "plano",
+              "componentes",
+              "obrigatória",
+              "módulo",
+              "nutrição",
+              "cálculo",
+              "lógica",
+              "microservice",
+              "consumir",
+              "código fonte",
+              "três",
+              "itens",
+              "essenciais",
+              "retrabalho",
+              "evitado",
             ],
             conceitos: [
               "Documentação técnica mínima",
@@ -431,6 +681,8 @@ const gabaritos = {
               "Revise as soluções propostas nas atividades anteriores e identifique como CI/CD, ITIL/COBIT e ESG poderiam ter melhorado essas soluções para a Nutrientes Delivery.",
             gabarito:
               "O aluno deve demonstrar visão sistêmica: CI/CD permite entregas frequentes do Módulo Cliente (conexão com Scrum/Encontro 2); COBIT/ITIL traz governança para decisões (conexão com conflito Preditivo x Adaptativo/Encontro 1); ESG garante responsabilidade social e ambiental (otimização de rotas, LGPD, transparência).",
+            respostaModelo:
+              "Revisando as soluções propostas com visão sistêmica, identifica-se que: CI/CD (Integração Contínua e Entrega Contínua) permite entregas frequentes do Módulo Cliente, conectando-se com os princípios Scrum do Encontro 2 e garantindo que mudanças sejam testadas e implantadas rapidamente. COBIT e ITIL trazem governança para as decisões do projeto, resolvendo o conflito entre as abordagens Preditiva e Adaptativa do Encontro 1, com frameworks que proporcionam ordem e controle. ESG garante responsabilidade social e ambiental: na dimensão Environmental, com otimização de rotas para reduzir emissões; na dimensão Social, com conformidade à LGPD e proteção de dados dos clientes; na dimensão Governance, com transparência nos processos de decisão. Estas melhorias proporcionam evolução sustentável ao negócio.",
             palavrasChave: [
               "CI/CD",
               "ITIL",
@@ -440,6 +692,20 @@ const gabaritos = {
               "governança",
               "LGPD",
               "responsabilidade social",
+              "visão sistêmica",
+              "módulo",
+              "cliente",
+              "Scrum",
+              "conflito",
+              "preditivo",
+              "adaptativo",
+              "decisões",
+              "ambiental",
+              "otimização",
+              "rotas",
+              "transparência",
+              "melhoria",
+              "soluções",
             ],
             conceitos: [
               "Integração Contínua (CI)",
@@ -459,6 +725,8 @@ const gabaritos = {
               "Para o Nó 1 (Gestão Inicial e Estrutura), correlacione o Projeto da Experiência do Usuário (UX) com a Análise de Requisitos do Módulo Cliente.",
             gabarito:
               "O aluno deve demonstrar que os requisitos do Módulo Cliente não são apenas funcionais, mas devem ser baseados em Elementos de UX, como usabilidade e acessibilidade, para garantir a retenção de usuários na plataforma de delivery.",
+            respostaModelo:
+              "Os requisitos do Módulo Cliente não devem ser apenas funcionais, mas precisam incorporar Elementos de UX (Experiência do Usuário) fundamentais. A análise de requisitos deve incluir usabilidade, garantindo que a interface seja intuitiva e fácil de usar; acessibilidade, assegurando que todos os usuários possam utilizar a plataforma; e uma experiência do usuário agradável que promova a retenção de usuários na plataforma de delivery. O design da interface deve ser responsivo e focar na satisfação do cliente, com navegabilidade clara. Requisitos não-funcionais de UX são tão importantes quanto os funcionais para o sucesso do Módulo Cliente, pois impactam diretamente a adoção e permanência dos usuários.",
             palavrasChave: [
               "UX",
               "usabilidade",
@@ -466,6 +734,20 @@ const gabaritos = {
               "requisitos",
               "retenção",
               "experiência do usuário",
+              "módulo",
+              "cliente",
+              "análise",
+              "não-funcionais",
+              "funcional",
+              "design",
+              "plataforma",
+              "delivery",
+              "interface",
+              "satisfação",
+              "navegabilidade",
+              "intuitivo",
+              "responsivo",
+              "usuários",
             ],
             conceitos: [
               "UX Design",
@@ -479,6 +761,8 @@ const gabaritos = {
               "Para o Nó 2 (Execução e Agilidade), correlacione Evolução de Software (CI/CD) com a necessidade de Entrega Frequente do Módulo Cliente.",
             gabarito:
               "Para que o Módulo Cliente cumpra o princípio ágil de 'entregas frequentes', é necessária a implementação de CI (Integração Contínua) e CD (Entrega Contínua). Isso permite que as mudanças exigidas pelo CEO sejam testadas e implantadas automaticamente, reduzindo o risco de erros em produção.",
+            respostaModelo:
+              "Para que o Módulo Cliente cumpra o princípio ágil de entregas frequentes, é fundamental a implementação de CI (Integração Contínua) e CD (Entrega Contínua). Com um pipeline de deploy automatizado, as mudanças exigidas pelo CEO são testadas automaticamente com suítes de testes e implantadas em produção de forma segura, reduzindo significativamente o risco de erros em produção. A automação do processo de build, testes e deploy garante velocidade no desenvolvimento sem perder qualidade. O CI/CD permite que o software evolua continuamente com entregas frequentes e confiáveis, atendendo às demandas de mudança do Módulo Cliente de forma ágil e controlada.",
             palavrasChave: [
               "CI",
               "CD",
@@ -488,6 +772,21 @@ const gabaritos = {
               "testes",
               "produção",
               "entregas frequentes",
+              "módulo",
+              "cliente",
+              "princípio",
+              "ágil",
+              "mudanças",
+              "CEO",
+              "implantadas",
+              "risco",
+              "erros",
+              "pipeline",
+              "deploy",
+              "automação",
+              "software",
+              "desenvolvimento",
+              "velocidade",
             ],
             conceitos: [
               "CI/CD",
@@ -500,6 +799,8 @@ const gabaritos = {
               "Para o Nó 3 (Qualidade e Prevenção), correlacione Gerenciamento de Configuração (Controle de Versão) com a necessidade de Documentação.",
             gabarito:
               "A falha de documentação do Encontro 3 é resolvida pelo Controle de Versão. A documentação técnica e o código do Módulo de Produção devem ser rastreáveis e versionados (ex: via Git), garantindo que qualquer mudança na lógica de cálculo nutricional seja auditável e reversível.",
+            respostaModelo:
+              "A falha de documentação identificada no Encontro 3 é resolvida pelo Controle de Versão e Gerenciamento de Configuração. A documentação técnica e o código do Módulo de Produção devem ser rastreáveis e versionados utilizando Git, com histórico de commits, branches e tags organizados em repositório. Qualquer mudança na lógica de cálculo nutricional torna-se auditável e reversível, permitindo identificar quando, por quem e por que cada alteração foi feita. O versionamento garante que a documentação acompanhe a evolução do código, eliminando o risco de documentação desatualizada. O gerenciamento de configuração assegura a integridade e consistência de todos os artefatos do projeto.",
             palavrasChave: [
               "controle de versão",
               "Git",
@@ -508,6 +809,20 @@ const gabaritos = {
               "auditável",
               "reversível",
               "documentação",
+              "gerenciamento",
+              "configuração",
+              "código",
+              "módulo",
+              "produção",
+              "cálculo",
+              "nutricional",
+              "mudança",
+              "lógica",
+              "técnica",
+              "histórico",
+              "branches",
+              "commits",
+              "repositório",
             ],
             conceitos: [
               "Gerenciamento de Configuração",
@@ -521,6 +836,8 @@ const gabaritos = {
               "Para o Nó 4 (Evolução e Governança), correlacione o Paradigma ESG com a necessidade de Governança de TI (COBIT/ITIL).",
             gabarito:
               "O projeto deve ser governado por COBIT (alinhamento estratégico) e ITIL (gestão de serviços de TI). A Nutrientes Delivery deve aplicar ESG: Environmental (E): Otimização de rotas de entrega para reduzir emissão de carbono; Social (S): Proteção de dados sensíveis dos clientes (LGPD) e interface inclusiva; Governance (G): Transparência nos processos de decisão e auditoria de sistemas.",
+            respostaModelo:
+              "O projeto da Nutrientes Delivery deve ser governado por frameworks de Governança de TI: COBIT para alinhamento estratégico entre TI e negócio, garantindo que decisões de tecnologia suportem os objetivos empresariais; e ITIL para gestão de serviços de TI, assegurando qualidade e eficiência operacional. A aplicação do paradigma ESG deve seguir três dimensões: Environmental (E) — otimização de rotas de entrega para reduzir emissão de carbono e minimizar impacto ambiental; Social (S) — proteção de dados sensíveis dos clientes conforme a LGPD e desenvolvimento de interface inclusiva e acessível; Governance (G) — transparência nos processos de decisão, auditoria de sistemas e conformidade regulatória. A integração de ESG com COBIT e ITIL garante que a governança seja ética, sustentável e alinhada com as melhores práticas do mercado.",
             palavrasChave: [
               "ESG",
               "COBIT",
@@ -532,6 +849,22 @@ const gabaritos = {
               "carbono",
               "transparência",
               "auditoria",
+              "governança de TI",
+              "alinhamento",
+              "estratégico",
+              "gestão",
+              "serviços",
+              "otimização",
+              "rotas",
+              "emissão",
+              "proteção",
+              "dados",
+              "sensíveis",
+              "inclusiva",
+              "processos",
+              "decisão",
+              "clientes",
+              "interface",
             ],
             conceitos: [
               "ESG (Environmental, Social, Governance)",
@@ -551,6 +884,8 @@ const gabaritos = {
               "Prepare um pitch de 5 minutos focando na visão de futuro da Nutrientes Delivery: como a adoção de CI/CD e Governança garantirá a qualidade do produto e a evolução sustentável do negócio.",
             gabarito:
               "O Pitch deve seguir: Início (1 min): Resumo do cenário híbrido e desafios superados; Desenvolvimento (3 min): Explicação de como Governança (COBIT/ITIL) traz ordem ao caos e CI/CD traz velocidade sem perder qualidade; Conclusão (1 min): Visão de futuro com ESG tornando a startup mais atraente para investidores e ética perante consumidores.",
+            respostaModelo:
+              "O Pitch da Nutrientes Delivery deve seguir esta estrutura: Início (1 minuto) — resumo do cenário híbrido adotado no projeto, destacando os desafios superados entre metodologias preditiva e adaptativa, e como a equipe encontrou equilíbrio. Desenvolvimento (3 minutos) — explicação detalhada de como a Governança com frameworks COBIT e ITIL traz ordem ao caos, organizando processos e decisões de TI, enquanto CI/CD traz velocidade nas entregas sem perder qualidade, com pipeline automatizado de testes e deploy. Conclusão (1 minuto) — visão de futuro com ESG tornando a startup mais atraente para investidores que buscam empresas sustentáveis, e demonstrando ética perante consumidores com proteção de dados e transparência. A evolução sustentável do negócio depende desta combinação de governança, automação e responsabilidade socioambiental.",
             palavrasChave: [
               "pitch",
               "governança",
@@ -560,6 +895,21 @@ const gabaritos = {
               "investidores",
               "ESG",
               "cenário híbrido",
+              "apresentação",
+              "visão",
+              "futuro",
+              "negócio",
+              "startup",
+              "desafios",
+              "velocidade",
+              "ética",
+              "consumidores",
+              "COBIT",
+              "ITIL",
+              "ordem",
+              "caos",
+              "entregas",
+              "transparência",
             ],
             conceitos: [
               "Pitch de negócios",

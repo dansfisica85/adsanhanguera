@@ -120,8 +120,7 @@ async function initDB() {
       nota REAL DEFAULT 0,
       feedback TEXT DEFAULT '',
       tentativa INTEGER DEFAULT 1,
-      enviado_em TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY (aluno_id) REFERENCES usuarios(id)
+      enviado_em TEXT DEFAULT (datetime('now'))
     )`,
     `CREATE INDEX IF NOT EXISTS idx_respostas_aluno ON respostas(aluno_id)`,
     `CREATE INDEX IF NOT EXISTS idx_respostas_unidade ON respostas(unidade, etapa, exercicio)`,
