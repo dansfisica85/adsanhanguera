@@ -251,27 +251,33 @@ app.get('/api/gabarito/:unidade/:etapa/:exercicio', middlewareAuth, async (req, 
 
     const gabData = gab.etapas[e].exercicios[ex];
 
-    // Admin e coordenador sempre veem
+    // Admin e coordenador sempre veem tudo
     if (req.user.role === 'admin' || req.user.role === 'coordenador') {
-      return res.json({ gabarito: gabData.resposta, palavrasChave: gabData.palavrasChave });
+      return res.json({
+        gabarito: gabData.gabarito,
+        respostaModelo: gabData.respostaModelo,
+        palavrasChave: gabData.palavrasChave,
+      });
     }
 
-    // Aluno: precisa de 3+ tentativas todas com nota < 10
+    // Aluno: precisa de 3+ tentativas OU ter obtido nota 10
     const tentativas = await dbExecute({
       sql: 'SELECT nota FROM respostas WHERE aluno_id = ? AND unidade = ? AND etapa = ? AND exercicio = ? ORDER BY tentativa ASC',
       args: [req.user.id, u, e, ex],
     });
 
-    if (tentativas.rows.length < 3) {
-      return res.status(403).json({ error: `Você precisa de pelo menos 3 tentativas para ver o gabarito. Tentativas: ${tentativas.rows.length}/3` });
+    const temNota10 = tentativas.rows.some(r => Number(r.nota) >= 10);
+    const tem3Tentativas = tentativas.rows.length >= 3;
+
+    if (!temNota10 && !tem3Tentativas) {
+      return res.status(403).json({ error: `Você precisa de pelo menos 3 tentativas ou nota 10 para ver o gabarito. Tentativas: ${tentativas.rows.length}/3` });
     }
 
-    const todasAbaixo = tentativas.rows.every(r => Number(r.nota) < 10);
-    if (!todasAbaixo) {
-      return res.status(403).json({ error: 'Você já obteve nota 10 em alguma tentativa.' });
-    }
-
-    return res.json({ gabarito: gabData.resposta, palavrasChave: gabData.palavrasChave });
+    return res.json({
+      gabarito: gabData.gabarito,
+      respostaModelo: gabData.respostaModelo,
+      palavrasChave: gabData.palavrasChave,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro ao buscar gabarito.' });

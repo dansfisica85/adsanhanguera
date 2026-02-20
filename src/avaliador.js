@@ -17,18 +17,21 @@ function avaliarResposta(unidade, etapa, exercicio, respostaAluno) {
   }
 
   const totalPalavras = gab.palavrasChave.length;
-  const percentual = totalPalavras > 0 ? (palavrasEncontradas.length / totalPalavras) * 100 : 0;
+  const qtdAcertos = palavrasEncontradas.length;
+  const percentual = totalPalavras > 0 ? (qtdAcertos / totalPalavras) * 100 : 0;
 
-  // Nota de 0 a 10 com curva generosa para conjuntos expandidos de palavras-chave
-  // 60% de acerto = nota 10 (fator de escala 1.67)
-  let nota = Math.round((percentual * 10) / 60);
-  nota = Math.min(10, Math.max(0, nota));
-
-  // Verificar tamanho mínimo da resposta
-  const palavrasResposta = respostaAluno.trim().split(/\s+/).length;
-  if (palavrasResposta < 15) {
-    nota = Math.max(0, nota - 2);
-  }
+  // Tabela fixa de notas por quantidade de palavras-chave acertadas:
+  // 0 = nota 0, 1 = nota 1, 2 = nota 3, 3 = nota 5,
+  // 4 = nota 7, 5 = nota 8, 6 = nota 9, 7+ = nota 10
+  let nota;
+  if (qtdAcertos >= 7) nota = 10;
+  else if (qtdAcertos === 6) nota = 9;
+  else if (qtdAcertos === 5) nota = 8;
+  else if (qtdAcertos === 4) nota = 7;
+  else if (qtdAcertos === 3) nota = 5;
+  else if (qtdAcertos === 2) nota = 3;
+  else if (qtdAcertos === 1) nota = 1;
+  else nota = 0;
 
   // Gerar feedback detalhado
   let feedback = "";
