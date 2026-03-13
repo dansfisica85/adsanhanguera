@@ -398,6 +398,144 @@ app.get('/api/admin/estatisticas', middlewareAuth, middlewareRole('admin', 'coor
   }
 });
 
+// ===== PROJETOS DE CÓDIGO =====
+
+// Listar todos os projetos (admin/coord vê todos, aluno vê só o seu)
+app.get('/api/projetos', middlewareAuth, async (req, res) => {
+  try {
+    let result;
+    if (req.user.role === 'admin' || req.user.role === 'coordenador') {
+      result = await dbExecute(
+        `SELECT p.*, u.nome as autor_nome FROM projetos_codigo p
+         JOIN usuarios u ON p.aluno_id = u.id
+         ORDER BY p.atualizado_em DESC`
+      );
+    } else {
+      result = await dbExecute({
+        sql: `SELECT p.*, u.nome as autor_nome FROM projetos_codigo p
+              JOIN usuarios u ON p.aluno_id = u.id
+              WHERE p.aluno_id = ?
+              ORDER BY p.atualizado_em DESC`,
+        args: [req.user.id],
+      });
+    }
+    res.json({ projetos: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao buscar projetos.' });
+  }
+});
+
+// Buscar projeto específico
+app.get('/api/projetos/:id', middlewareAuth, async (req, res) => {
+  try {
+    const result = await dbExecute({
+      sql: 'SELECT p.*, u.nome as autor_nome FROM projetos_codigo p JOIN usuarios u ON p.aluno_id = u.id WHERE p.id = ?',
+      args: [req.params.id],
+    });
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Projeto não encontrado.' });
+    const projeto = result.rows[0];
+    if (req.user.role === 'aluno' && Number(projeto.aluno_id) !== req.user.id) {
+      return res.status(403).json({ error: 'Sem permissão.' });
+    }
+    res.json({ projeto });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao buscar projeto.' });
+  }
+});
+
+// Criar novo projeto
+app.post('/api/projetos', middlewareAuth, async (req, res) => {
+  try {
+    const { nome, html, css, js } = req.body;
+    const result = await dbExecute({
+      sql: `INSERT INTO projetos_codigo (aluno_id, nome, html, css, js) VALUES (?, ?, ?, ?, ?)`,
+      args: [req.user.id, nome || 'Meu Projeto', html || '', css || '', js || ''],
+    });
+    res.json({ id: Number(result.lastInsertRowid), message: 'Projeto criado.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao criar projeto.' });
+  }
+});
+
+// Atualizar projeto
+app.put('/api/projetos/:id', middlewareAuth, async (req, res) => {
+  try {
+    const existing = await dbExecute({ sql: 'SELECT * FROM projetos_codigo WHERE id = ?', args: [req.params.id] });
+    if (existing.rows.length === 0) return res.status(404).json({ error: 'Projeto não encontrado.' });
+    const projeto = existing.rows[0];
+    if (req.user.role === 'aluno' && Number(projeto.aluno_id) !== req.user.id) {
+      return res.status(403).json({ error: 'Sem permissão.' });
+    }
+    if (req.user.role === 'coordenador') return res.status(403).json({ error: 'Coordenadores não podem editar projetos.' });
+
+    const { nome, html, css, js } = req.body;
+    await dbExecute({
+      sql: `UPDATE projetos_codigo SET nome = ?, html = ?, css = ?, js = ?, atualizado_em = datetime('now') WHERE id = ?`,
+      args: [nome || projeto.nome, html ?? projeto.html, css ?? projeto.css, js ?? projeto.js, req.params.id],
+    });
+    res.json({ message: 'Projeto atualizado.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao atualizar projeto.' });
+  }
+});
+
+// Deletar projeto
+app.delete('/api/projetos/:id', middlewareAuth, async (req, res) => {
+  try {
+    const existing = await dbExecute({ sql: 'SELECT * FROM projetos_codigo WHERE id = ?', args: [req.params.id] });
+    if (existing.rows.length === 0) return res.status(404).json({ error: 'Projeto não encontrado.' });
+    const projeto = existing.rows[0];
+    if (req.user.role === 'coordenador') return res.status(403).json({ error: 'Coordenadores não podem deletar projetos.' });
+    if (req.user.role === 'aluno' && Number(projeto.aluno_id) !== req.user.id) {
+      return res.status(403).json({ error: 'Sem permissão.' });
+    }
+    await dbExecute({ sql: 'DELETE FROM projetos_codigo WHERE id = ?', args: [req.params.id] });
+    res.json({ message: 'Projeto removido.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao deletar projeto.' });
+  }
+});
+
+// Listar todos os alunos (para admin/coord verem sub-abas)
+app.get('/api/projetos-alunos', middlewareAuth, middlewareRole('admin', 'coordenador'), async (req, res) => {
+  try {
+    const result = await dbExecute(
+      `SELECT u.id, u.nome, COUNT(p.id) as total_projetos
+       FROM usuarios u
+       LEFT JOIN projetos_codigo p ON u.id = p.aluno_id
+       WHERE u.role = 'aluno'
+       GROUP BY u.id
+       ORDER BY u.nome`
+    );
+    res.json({ alunos: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao buscar alunos.' });
+  }
+});
+
+// Buscar projetos de um aluno específico (admin/coord)
+app.get('/api/projetos-aluno/:id', middlewareAuth, middlewareRole('admin', 'coordenador'), async (req, res) => {
+  try {
+    const result = await dbExecute({
+      sql: `SELECT p.*, u.nome as autor_nome FROM projetos_codigo p
+            JOIN usuarios u ON p.aluno_id = u.id
+            WHERE p.aluno_id = ?
+            ORDER BY p.atualizado_em DESC`,
+      args: [req.params.id],
+    });
+    res.json({ projetos: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao buscar projetos do aluno.' });
+  }
+});
+
 // ===== DOCUMENTOS =====
 app.get('/api/documentos', (req, res) => {
   const docsDir = path.join(__dirname, 'public', 'docs');

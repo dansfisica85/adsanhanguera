@@ -106,6 +106,10 @@
           <span class="tab-num">📄</span>
           <span class="tab-label">Documentos</span>
         </button>
+        <button class="tab" data-tab="codigo" onclick="switchTab('codigo')">
+          <span class="tab-num">💻</span>
+          <span class="tab-label">Code Editor</span>
+        </button>
         <button class="tab" data-tab="perfil" onclick="switchTab('perfil')">
           <span class="tab-num">👤</span>
           <span class="tab-label">Perfil</span>
@@ -450,6 +454,67 @@
         <div class="exercises-section">
           <h3 class="section-title">✏️ Exercícios Interativos</h3>
           <div id="exercises-4"></div>
+        </div>
+      </section>
+
+      <!-- ==================== CODE EDITOR ==================== -->
+      <section id="tab-codigo" class="tab-content">
+        <div class="unit-header">
+          <h2>💻 Code Editor</h2>
+          <p class="unit-desc">Escreva HTML, CSS e JavaScript, visualize o resultado e salve seus projetos</p>
+        </div>
+
+        <!-- Sub-abas de usuários (admin/coord) ou lista de projetos (aluno) -->
+        <div id="codeUserTabs" class="code-user-tabs"></div>
+
+        <!-- Área do editor -->
+        <div id="codeEditorArea" class="code-editor-area">
+          <!-- Header do projeto -->
+          <div class="code-project-header">
+            <div class="code-project-info">
+              <input type="text" id="codeProjectName" class="code-project-name-input" value="Meu Projeto" placeholder="Nome do projeto" />
+              <select id="codeProjectSelect" class="code-project-select">
+                <option value="new">+ Novo Projeto</option>
+              </select>
+            </div>
+            <div class="code-project-actions">
+              <button class="btn btn-primary btn-sm" onclick="salvarProjeto()">Salvar</button>
+              <button class="btn btn-success btn-sm" onclick="runCode()">Executar</button>
+              <button class="btn btn-outline btn-sm" onclick="downloadProjeto()">Download</button>
+              <button class="btn btn-danger btn-sm" id="btnDeleteProjeto" onclick="deletarProjeto()" style="display:none;">Excluir</button>
+            </div>
+          </div>
+
+          <!-- Abas HTML/CSS/JS -->
+          <div class="code-lang-tabs">
+            <button class="code-lang-tab active" data-lang="html" onclick="switchCodeLang('html')">HTML</button>
+            <button class="code-lang-tab" data-lang="css" onclick="switchCodeLang('css')">CSS</button>
+            <button class="code-lang-tab" data-lang="js" onclick="switchCodeLang('js')">JavaScript</button>
+          </div>
+
+          <!-- Editores -->
+          <div class="code-editors-wrapper">
+            <div id="editorHTML" class="code-editor-pane active">
+              <textarea id="codeHTML" class="code-textarea" placeholder="<!-- Escreva seu HTML aqui -->" spellcheck="false"></textarea>
+            </div>
+            <div id="editorCSS" class="code-editor-pane">
+              <textarea id="codeCSS" class="code-textarea" placeholder="/* Escreva seu CSS aqui */" spellcheck="false"></textarea>
+            </div>
+            <div id="editorJS" class="code-editor-pane">
+              <textarea id="codeJS" class="code-textarea" placeholder="// Escreva seu JavaScript aqui" spellcheck="false"></textarea>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="code-preview-section">
+            <div class="code-preview-header">
+              <h4>Resultado</h4>
+              <button class="btn btn-sm btn-outline" onclick="runCode()">Atualizar</button>
+            </div>
+            <div class="code-preview-container">
+              <iframe id="codePreview" class="code-preview-iframe" sandbox="allow-scripts allow-modals"></iframe>
+            </div>
+          </div>
         </div>
       </section>
 

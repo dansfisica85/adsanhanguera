@@ -124,6 +124,17 @@ async function initDB() {
     )`,
     `CREATE INDEX IF NOT EXISTS idx_respostas_aluno ON respostas(aluno_id)`,
     `CREATE INDEX IF NOT EXISTS idx_respostas_unidade ON respostas(unidade, etapa, exercicio)`,
+    `CREATE TABLE IF NOT EXISTS projetos_codigo (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      aluno_id INTEGER NOT NULL,
+      nome TEXT NOT NULL DEFAULT 'Meu Projeto',
+      html TEXT DEFAULT '',
+      css TEXT DEFAULT '',
+      js TEXT DEFAULT '',
+      atualizado_em TEXT DEFAULT (datetime('now')),
+      criado_em TEXT DEFAULT (datetime('now'))
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_projetos_aluno ON projetos_codigo(aluno_id)`,
   ]);
 
   // Seed users

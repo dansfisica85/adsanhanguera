@@ -222,6 +222,7 @@ function switchTab(tabId) {
   if (tabId === 'docs') loadDocumentos();
   if (tabId === 'perfil') loadProfileData();
   if (tabId === 'admin') loadAdminData();
+  if (tabId === 'codigo') loadCodeEditor();
 }
 
 // ===== Conceitos Toggle =====
@@ -813,4 +814,282 @@ function renderMarkdown(md) {
     .replace(/\n/g, '<br>')
     .replace(/^/, '<p>')
     .replace(/$/, '</p>');
+}
+
+// ===== CODE EDITOR =====
+let currentCodeLang = 'html';
+let currentProjectId = null;
+let currentCodeUserId = null; // para admin/coord navegar entre alunos
+let projetosCache = [];
+
+function switchCodeLang(lang) {
+  currentCodeLang = lang;
+  document.querySelectorAll('.code-lang-tab').forEach(t => t.classList.remove('active'));
+  const btn = document.querySelector(`.code-lang-tab[data-lang="${lang}"]`);
+  if (btn) btn.classList.add('active');
+
+  document.querySelectorAll('.code-editor-pane').forEach(p => p.classList.remove('active'));
+  const pane = document.getElementById(`editor${lang.toUpperCase()}`);
+  if (pane) pane.classList.add('active');
+}
+
+async function loadCodeEditor() {
+  const tabArea = document.getElementById('codeUserTabs');
+
+  if (isAdmin() || isCoord()) {
+    // Carregar lista de alunos como sub-abas
+    try {
+      const res = await fetchWithRetry('/api/projetos-alunos', { headers: authHeaders() });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      let html = '<div class="code-user-tabs-container">';
+      // Aba "Meus Projetos" para admin
+      if (isAdmin()) {
+        html += `<button class="code-user-tab active" data-userid="${currentUser.id}" onclick="switchCodeUser(${currentUser.id}, this)">
+          <span class="code-user-icon">👤</span> Meus Projetos
+        </button>`;
+      }
+      (data.alunos || []).forEach(a => {
+        const isActive = !isAdmin() && a.id === (data.alunos[0] || {}).id ? ' active' : '';
+        html += `<button class="code-user-tab${isActive}" data-userid="${a.id}" onclick="switchCodeUser(${a.id}, this)">
+          <span class="code-user-icon">👤</span> ${a.nome.split(' ')[0]}
+          <span class="code-user-count">${a.total_projetos}</span>
+        </button>`;
+      });
+      html += '</div>';
+      tabArea.innerHTML = html;
+
+      // Carregar projetos do primeiro usuário
+      const firstUserId = isAdmin() ? currentUser.id : (data.alunos[0] ? data.alunos[0].id : null);
+      if (firstUserId) {
+        currentCodeUserId = firstUserId;
+        await loadUserProjects(firstUserId);
+      }
+    } catch (err) {
+      console.error('Erro ao carregar alunos:', err);
+      tabArea.innerHTML = '';
+      await loadUserProjects(currentUser.id);
+    }
+  } else {
+    // Aluno: sem sub-abas, carregar direto os próprios projetos
+    tabArea.innerHTML = '';
+    currentCodeUserId = currentUser.id;
+    await loadUserProjects(currentUser.id);
+  }
+}
+
+async function switchCodeUser(userId, btn) {
+  currentCodeUserId = userId;
+  document.querySelectorAll('.code-user-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  await loadUserProjects(userId);
+}
+
+async function loadUserProjects(userId) {
+  try {
+    let res;
+    if ((isAdmin() || isCoord()) && userId !== currentUser.id) {
+      res = await fetchWithRetry(`/api/projetos-aluno/${userId}`, { headers: authHeaders() });
+    } else {
+      res = await fetchWithRetry('/api/projetos', { headers: authHeaders() });
+    }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    projetosCache = (data.projetos || []).filter(p => Number(p.aluno_id) === userId);
+
+    const select = document.getElementById('codeProjectSelect');
+    select.innerHTML = '<option value="new">+ Novo Projeto</option>';
+    projetosCache.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.nome;
+      select.appendChild(opt);
+    });
+
+    // Se há projetos, selecionar o primeiro
+    if (projetosCache.length > 0) {
+      select.value = projetosCache[0].id;
+      loadProjectIntoEditor(projetosCache[0]);
+    } else {
+      select.value = 'new';
+      clearEditor();
+    }
+
+    updateEditorPermissions();
+  } catch (err) {
+    console.error('Erro ao carregar projetos:', err);
+  }
+}
+
+function loadProjectIntoEditor(projeto) {
+  currentProjectId = projeto.id;
+  document.getElementById('codeProjectName').value = projeto.nome;
+  document.getElementById('codeHTML').value = projeto.html || '';
+  document.getElementById('codeCSS').value = projeto.css || '';
+  document.getElementById('codeJS').value = projeto.js || '';
+  document.getElementById('btnDeleteProjeto').style.display = canMutate() ? '' : 'none';
+  runCode();
+}
+
+function clearEditor() {
+  currentProjectId = null;
+  document.getElementById('codeProjectName').value = 'Meu Projeto';
+  document.getElementById('codeHTML').value = '';
+  document.getElementById('codeCSS').value = '';
+  document.getElementById('codeJS').value = '';
+  document.getElementById('btnDeleteProjeto').style.display = 'none';
+  const iframe = document.getElementById('codePreview');
+  iframe.srcdoc = '';
+}
+
+function updateEditorPermissions() {
+  const isOwner = currentCodeUserId === currentUser.id;
+  const canEdit = isAdmin() || (isAluno() && isOwner);
+  const editors = document.querySelectorAll('.code-textarea');
+  editors.forEach(el => el.readOnly = !canEdit);
+  document.getElementById('codeProjectName').readOnly = !canEdit;
+
+  // Esconder botões de ação se não pode editar
+  const saveBtn = document.querySelector('.code-project-actions .btn-primary');
+  if (saveBtn) saveBtn.style.display = canEdit ? '' : 'none';
+  document.getElementById('btnDeleteProjeto').style.display = canEdit && currentProjectId ? '' : 'none';
+}
+
+// Evento ao trocar de projeto no select
+document.addEventListener('DOMContentLoaded', () => {
+  const select = document.getElementById('codeProjectSelect');
+  if (select) {
+    select.addEventListener('change', function () {
+      if (this.value === 'new') {
+        clearEditor();
+      } else {
+        const projeto = projetosCache.find(p => String(p.id) === this.value);
+        if (projeto) loadProjectIntoEditor(projeto);
+      }
+    });
+  }
+});
+
+function runCode() {
+  const html = document.getElementById('codeHTML').value;
+  const css = document.getElementById('codeCSS').value;
+  const js = document.getElementById('codeJS').value;
+
+  const fullCode = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><style>${css}</style></head>
+<body>${html}<script>${js}<\/script></body>
+</html>`;
+
+  const iframe = document.getElementById('codePreview');
+  iframe.srcdoc = fullCode;
+}
+
+async function salvarProjeto() {
+  const nome = document.getElementById('codeProjectName').value.trim() || 'Meu Projeto';
+  const html = document.getElementById('codeHTML').value;
+  const css = document.getElementById('codeCSS').value;
+  const js = document.getElementById('codeJS').value;
+
+  try {
+    let res;
+    if (currentProjectId) {
+      res = await fetchWithRetry(`/api/projetos/${currentProjectId}`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({ nome, html, css, js }),
+      });
+    } else {
+      res = await fetchWithRetry('/api/projetos', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ nome, html, css, js }),
+      });
+    }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    if (data.id) currentProjectId = data.id;
+
+    // Recarregar lista de projetos
+    await loadUserProjects(currentCodeUserId || currentUser.id);
+
+    // Selecionar o projeto salvo
+    if (currentProjectId) {
+      document.getElementById('codeProjectSelect').value = currentProjectId;
+    }
+
+    showCodeNotification('Projeto salvo com sucesso!', 'success');
+  } catch (err) {
+    showCodeNotification('Erro ao salvar: ' + err.message, 'error');
+  }
+}
+
+async function deletarProjeto() {
+  if (!currentProjectId) return;
+  if (!confirm('Tem certeza que deseja excluir este projeto?')) return;
+
+  try {
+    const res = await fetchWithRetry(`/api/projetos/${currentProjectId}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error);
+    }
+    clearEditor();
+    await loadUserProjects(currentCodeUserId || currentUser.id);
+    showCodeNotification('Projeto excluído.', 'success');
+  } catch (err) {
+    showCodeNotification('Erro ao excluir: ' + err.message, 'error');
+  }
+}
+
+function downloadProjeto() {
+  const nome = document.getElementById('codeProjectName').value.trim() || 'projeto';
+  const html = document.getElementById('codeHTML').value;
+  const css = document.getElementById('codeCSS').value;
+  const js = document.getElementById('codeJS').value;
+
+  const fullCode = `<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${nome}</title>
+  <style>
+${css}
+  </style>
+</head>
+<body>
+${html}
+  <script>
+${js}
+  </script>
+</body>
+</html>`;
+
+  const blob = new Blob([fullCode], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${nome.replace(/[^a-zA-Z0-9_-]/g, '_')}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function showCodeNotification(msg, type) {
+  const existing = document.querySelector('.code-notification');
+  if (existing) existing.remove();
+
+  const div = document.createElement('div');
+  div.className = `code-notification code-notification-${type}`;
+  div.textContent = msg;
+  document.getElementById('codeEditorArea').prepend(div);
+  setTimeout(() => div.remove(), 3000);
 }
