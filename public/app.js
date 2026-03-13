@@ -970,6 +970,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Suporte à tecla Tab nos editores de código
+  document.querySelectorAll('.code-textarea').forEach(textarea => {
+    textarea.addEventListener('keydown', function (e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+        this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+        this.selectionStart = this.selectionEnd = start + 2;
+      }
+    });
+  });
 });
 
 function runCode() {
