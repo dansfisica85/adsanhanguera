@@ -1160,25 +1160,82 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function runCode() {
-  const html = document.getElementById('codeHTML').value;
-  const css = document.getElementById('codeCSS').value;
-  const js = document.getElementById('codeJS').value;
+  const html = getEditorValue('html');
+  const css = getEditorValue('css');
+  const js = getEditorValue('js');
 
-  const fullCode = `<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><style>${css}</style></head>
-<body>${html}<script>${js}<\/script></body>
-</html>`;
+  clearConsole();
+
+  // Script injetado no iframe para capturar console e erros
+  const consoleCapture = `
+<script>
+(function(){
+  var _origLog = console.log, _origWarn = console.warn,
+      _origError = console.error, _origInfo = console.info;
+  function send(type, args) {
+    try {
+      var parts = [];
+      for (var i = 0; i < args.length; i++) {
+        var a = args[i];
+        if (typeof a === 'object') {
+          try { parts.push(JSON.stringify(a, null, 2)); } catch(e) { parts.push(String(a)); }
+        } else { parts.push(String(a)); }
+      }
+      parent.postMessage({ _consoleMsg: true, type: type, text: parts.join(' ') }, '*');
+    } catch(e){}
+  }
+  console.log = function(){ send('log', arguments); _origLog.apply(console, arguments); };
+  console.warn = function(){ send('warn', arguments); _origWarn.apply(console, arguments); };
+  console.error = function(){ send('error', arguments); _origError.apply(console, arguments); };
+  console.info = function(){ send('info', arguments); _origInfo.apply(console, arguments); };
+  window.onerror = function(msg, url, line, col) {
+    send('error', ['Erro: ' + msg + ' (linha ' + line + ')']);
+  };
+  window.addEventListener('unhandledrejection', function(e) {
+    send('error', ['Promise rejeitada: ' + (e.reason || e)]);
+  });
+})();
+<\\/script>`;
+
+  const fullCode = '<!DOCTYPE html>\\n<html>\\n<head><meta charset="UTF-8"><style>'
+    + css + '</style></head>\\n<body>'
+    + html + consoleCapture + '<script>' + js + '<\\/script></body>\\n</html>';
 
   const iframe = document.getElementById('codePreview');
   iframe.srcdoc = fullCode;
 }
 
+// Listener para mensagens do console do iframe
+window.addEventListener('message', function (e) {
+  if (e.data && e.data._consoleMsg) {
+    appendConsole(e.data.type, e.data.text);
+  }
+});
+
+function appendConsole(type, text) {
+  const consoleEl = document.getElementById('codeConsole');
+  if (!consoleEl) return;
+  const line = document.createElement('div');
+  line.className = 'console-line console-' + type;
+
+  const icon = { log: '›', warn: '⚠', error: '✕', info: 'ℹ' }[type] || '›';
+  line.innerHTML = '<span class="console-icon">' + icon + '</span><span class="console-text"></span>';
+  line.querySelector('.console-text').textContent = text;
+
+  consoleEl.appendChild(line);
+  consoleEl.scrollTop = consoleEl.scrollHeight;
+}
+
+function clearConsole() {
+  const consoleEl = document.getElementById('codeConsole');
+  if (consoleEl) consoleEl.innerHTML = '';
+}
+
 async function salvarProjeto() {
   const nome = document.getElementById('codeProjectName').value.trim() || 'Meu Projeto';
-  const html = document.getElementById('codeHTML').value;
-  const css = document.getElementById('codeCSS').value;
-  const js = document.getElementById('codeJS').value;
+  const html = getEditorValue('html');
+  const css = getEditorValue('css');
+  const js = getEditorValue('js');
 
   try {
     let res;
@@ -1237,9 +1294,9 @@ async function deletarProjeto() {
 
 function downloadProjeto() {
   const nome = document.getElementById('codeProjectName').value.trim() || 'projeto';
-  const html = document.getElementById('codeHTML').value;
-  const css = document.getElementById('codeCSS').value;
-  const js = document.getElementById('codeJS').value;
+  const html = getEditorValue('html');
+  const css = getEditorValue('css');
+  const js = getEditorValue('js');
 
   const fullCode = `<!DOCTYPE html>
 <html lang="pt-br">
