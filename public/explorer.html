@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Explorer – ADS Anhanguera</title>
+  <link rel="stylesheet" href="explorer.css" />
+</head>
+<body>
+  <div class="explorer-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">📁 EXPLORER</span>
+        <button class="btn-icon" onclick="loadTree()" title="Atualizar">⟳</button>
+      </div>
+      <div class="sidebar-project">
+        <span class="project-name">ADSANHANGUERA</span>
+      </div>
+      <div class="tree-container" id="treeContainer">
+        <div class="tree-loading">Carregando...</div>
+      </div>
+    </aside>
+
+    <!-- Main content area -->
+    <main class="main-content">
+      <!-- Tabs bar -->
+      <div class="tabs-bar" id="tabsBar">
+        <div class="tab-welcome active" data-tab="welcome">
+          <span>Bem-vindo</span>
+        </div>
+      </div>
+
+      <!-- Content panels -->
+      <div class="panels-container" id="panelsContainer">
+        <div class="panel active" id="panel-welcome">
+          <div class="welcome-screen">
+            <div class="welcome-icon">🎓</div>
+            <h1>ADS Anhanguera – Explorer</h1>
+            <p>Navegue pelas pastas no painel lateral e clique nos arquivos para visualizá-los.</p>
+            <div class="welcome-shortcuts">
+              <div class="shortcut-item">
+                <span class="shortcut-icon">📄</span>
+                <span>Clique em um arquivo para abrir</span>
+              </div>
+              <div class="shortcut-item">
+                <span class="shortcut-icon">📂</span>
+                <span>Clique em uma pasta para expandir/recolher</span>
+              </div>
+              <div class="shortcut-item">
+                <span class="shortcut-icon">🏠</span>
+                <span><a href="/" class="welcome-link">Voltar ao App Principal</a></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const treeContainer = document.getElementById('treeContainer');
+    const tabsBar = document.getElementById('tabsBar');
+    const panelsContainer = document.getElementById('panelsContainer');
+    const openTabs = new Map(); // path -> { tabEl, panelEl }
+
+    // File icons by extension
+    const FILE_ICONS = {
+      '.js': '📜', '.ts': '🔷', '.json': '📋', '.html': '🌐', '.css': '🎨',
+      '.md': '📝', '.txt': '📄', '.pdf': '📕', '.png': '🖼️', '.jpg': '🖼️',
+      '.jpeg': '🖼️', '.gif': '🖼️', '.svg': '🖼️', '.webp': '🖼️',
+      '.sh': '⚙️', '.sql': '🗃️', '.py': '🐍', '.yaml': '⚙️', '.yml': '⚙️',
+    };
+
+    const FOLDER_ICONS = { open: '📂', closed: '📁' };
+
+    function getFileIcon(name) {
+      const ext = '.' + name.split('.').pop().toLowerCase();
+      return FILE_ICONS[ext] || '📄';
+    }
+
+    function sanitize(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // Load tree from API
+    async function loadTree() {
+      treeContainer.innerHTML = '<div class="tree-loading">Carregando...</div>';
+      try {
+        const res = await fetch('/api/explorer/tree');
+        const data = await res.json();
+        treeContainer.innerHTML = '';
+        renderTree(data.tree, treeContainer, 0);
+      } catch (err) {
+        treeContainer.innerHTML = '<div class="tree-error">Erro ao carregar arquivos</div>';
+      }
+    }
+
+    function renderTree(items, parent, depth) {
+      for (const item of items) {
+        const row = document.createElement('div');
+        row.className = 'tree-item';
+        row.style.paddingLeft = (12 + depth * 16) + 'px';
+
+        if (item.type === 'folder') {
+          row.classList.add('tree-folder');
+          row.innerHTML =
+            '<span class="tree-arrow">▶</span>' +
+            '<span class="tree-icon">' + FOLDER_ICONS.closed + '</span>' +
+            '<span class="tree-name">' + sanitize(item.name) + '</span>';
+
+          const childContainer = document.createElement('div');
+          childContainer.className = 'tree-children hidden';
+
+          row.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = !childContainer.classList.contains('hidden');
+            childContainer.classList.toggle('hidden');
+            row.querySelector('.tree-arrow').textContent = isOpen ? '▶' : '▼';
+            row.querySelector('.tree-icon').textContent = isOpen ? FOLDER_ICONS.closed : FOLDER_ICONS.open;
+            row.classList.toggle('expanded', !isOpen);
+
+            // Lazy-load children
+            if (childContainer.children.length === 0 && item.children) {
+              renderTree(item.children, childContainer, depth + 1);
+            }
+          });
+
+          parent.appendChild(row);
+          parent.appendChild(childContainer);
+
+          // Preload first level children
+          if (depth < 1 && item.children) {
+            renderTree(item.children, childContainer, depth + 1);
+          }
+        } else {
+          row.classList.add('tree-file');
+          row.innerHTML =
+            '<span class="tree-arrow-spacer"></span>' +
+            '<span class="tree-icon">' + getFileIcon(item.name) + '</span>' +
+            '<span class="tree-name">' + sanitize(item.name) + '</span>';
+
+          row.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openFile(item.path, item.name);
+          });
+
+          parent.appendChild(row);
+        }
+      }
+    }
+
+    // Open file in a new tab
+    async function openFile(filePath, fileName) {
+      // If already open, just activate
+      if (openTabs.has(filePath)) {
+        activateTab(filePath);
+        return;
+      }
+
+      const ext = '.' + fileName.split('.').pop().toLowerCase();
+      const imageExts = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico'];
+      const isPdf = ext === '.pdf';
+      const isImage = imageExts.includes(ext);
+
+      // Create tab
+      const tabEl = document.createElement('div');
+      tabEl.className = 'tab-item';
+      tabEl.dataset.tab = filePath;
+      tabEl.innerHTML =
+        '<span class="tab-icon">' + getFileIcon(fileName) + '</span>' +
+        '<span class="tab-name">' + sanitize(fileName) + '</span>' +
+        '<button class="tab-close" title="Fechar">✕</button>';
+
+      tabEl.querySelector('.tab-close').addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeTab(filePath);
+      });
+
+      tabEl.addEventListener('click', () => activateTab(filePath));
+      tabsBar.appendChild(tabEl);
+
+      // Create panel
+      const panelEl = document.createElement('div');
+      panelEl.className = 'panel';
+      panelEl.id = 'panel-' + CSS.escape(filePath);
+
+      if (isPdf || isImage) {
+        const fileUrl = '/api/explorer/file?path=' + encodeURIComponent(filePath);
+        if (isPdf) {
+          panelEl.innerHTML =
+            '<div class="file-viewer">' +
+              '<iframe src="' + fileUrl + '" class="pdf-viewer"></iframe>' +
+            '</div>';
+        } else {
+          panelEl.innerHTML =
+            '<div class="file-viewer image-viewer">' +
+              '<img src="' + fileUrl + '" alt="' + sanitize(fileName) + '" />' +
+            '</div>';
+        }
+      } else {
+        panelEl.innerHTML = '<div class="file-viewer"><div class="code-loading">Carregando...</div></div>';
+        try {
+          const res = await fetch('/api/explorer/file?path=' + encodeURIComponent(filePath));
+          const data = await res.json();
+          if (data.content !== undefined) {
+            const lines = data.content.split('\n');
+            const lineNums = lines.map((_, i) => '<span class="line-num">' + (i + 1) + '</span>').join('\n');
+            const codeContent = lines.map(l => sanitize(l)).join('\n');
+            panelEl.innerHTML =
+              '<div class="file-header">' +
+                '<span class="file-path">' + sanitize(filePath) + '</span>' +
+                '<span class="file-lang">' + sanitize(data.ext || '') + '</span>' +
+              '</div>' +
+              '<div class="code-area">' +
+                '<div class="line-numbers"><pre>' + lineNums + '</pre></div>' +
+                '<div class="code-content"><pre>' + codeContent + '</pre></div>' +
+              '</div>';
+          } else {
+            panelEl.innerHTML = '<div class="file-viewer"><div class="code-error">Não é possível exibir este arquivo.</div></div>';
+          }
+        } catch (err) {
+          panelEl.innerHTML = '<div class="file-viewer"><div class="code-error">Erro ao carregar o arquivo.</div></div>';
+        }
+      }
+
+      panelsContainer.appendChild(panelEl);
+      openTabs.set(filePath, { tabEl, panelEl });
+      activateTab(filePath);
+    }
+
+    function activateTab(filePath) {
+      // Deactivate all
+      tabsBar.querySelectorAll('.tab-item, .tab-welcome').forEach(t => t.classList.remove('active'));
+      panelsContainer.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+
+      if (filePath === 'welcome') {
+        tabsBar.querySelector('.tab-welcome').classList.add('active');
+        document.getElementById('panel-welcome').classList.add('active');
+        return;
+      }
+
+      const entry = openTabs.get(filePath);
+      if (entry) {
+        entry.tabEl.classList.add('active');
+        entry.panelEl.classList.add('active');
+      }
+
+      // Highlight in tree
+      treeContainer.querySelectorAll('.tree-file').forEach(f => f.classList.remove('selected'));
+      // Find in tree by file path data isn't stored yet, use visual cue
+    }
+
+    function closeTab(filePath) {
+      const entry = openTabs.get(filePath);
+      if (!entry) return;
+
+      const wasActive = entry.tabEl.classList.contains('active');
+      entry.tabEl.remove();
+      entry.panelEl.remove();
+      openTabs.delete(filePath);
+
+      if (wasActive) {
+        // Activate last tab or welcome
+        const tabs = [...openTabs.keys()];
+        if (tabs.length > 0) {
+          activateTab(tabs[tabs.length - 1]);
+        } else {
+          activateTab('welcome');
+        }
+      }
+    }
+
+    // Welcome tab click
+    document.querySelector('.tab-welcome').addEventListener('click', () => activateTab('welcome'));
+
+    // Init
+    loadTree();
+  </script>
+</body>
+</html>
