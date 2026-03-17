@@ -579,6 +579,68 @@ app.get('/api/readme', (req, res) => {
   }
 });
 
+// ===== EXPLORER (file browser) =====
+const EXPLORER_ROOT = __dirname;
+const EXPLORER_IGNORE = new Set(['node_modules', '.git', '.env', '.env.local', '.env.production']);
+
+function listDirRecursive(dirPath, basePath) {
+  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+  const items = [];
+  for (const entry of entries) {
+    if (EXPLORER_IGNORE.has(entry.name)) continue;
+    const rel = path.join(basePath, entry.name);
+    if (entry.isDirectory()) {
+      items.push({ name: entry.name, path: rel, type: 'folder', children: listDirRecursive(path.join(dirPath, entry.name), rel) });
+    } else {
+      items.push({ name: entry.name, path: rel, type: 'file' });
+    }
+  }
+  items.sort((a, b) => {
+    if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+  return items;
+}
+
+app.get('/api/explorer/tree', (req, res) => {
+  try {
+    const tree = listDirRecursive(EXPLORER_ROOT, '');
+    res.json({ tree });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao listar diretório.' });
+  }
+});
+
+app.get('/api/explorer/file', (req, res) => {
+  const filePath = req.query.path;
+  if (!filePath) return res.status(400).json({ error: 'Parâmetro path é obrigatório.' });
+
+  const resolved = path.resolve(EXPLORER_ROOT, filePath);
+  if (!resolved.startsWith(EXPLORER_ROOT)) return res.status(403).json({ error: 'Acesso negado.' });
+  if (!fs.existsSync(resolved) || fs.statSync(resolved).isDirectory()) return res.status(404).json({ error: 'Arquivo não encontrado.' });
+
+  const ext = path.extname(resolved).toLowerCase();
+  const textExtensions = new Set(['.js', '.ts', '.json', '.html', '.css', '.md', '.txt', '.yaml', '.yml', '.xml', '.env.example', '.sh', '.sql', '.py']);
+  const imageExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico']);
+
+  if (ext === '.pdf') {
+    res.sendFile(resolved);
+  } else if (imageExtensions.has(ext)) {
+    res.sendFile(resolved);
+  } else if (textExtensions.has(ext) || ext === '') {
+    const content = fs.readFileSync(resolved, 'utf-8');
+    res.json({ content, ext, filename: path.basename(resolved) });
+  } else {
+    res.sendFile(resolved);
+  }
+});
+
+// Explorer page
+app.get('/explorer', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'explorer.html'));
+});
+
 // SPA fallback
 app.get('/{*splat}', (req, res) => {
   try {
