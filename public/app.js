@@ -1020,8 +1020,16 @@ function setEditorsReadOnly(readOnly) {
 async function loadCodeEditor() {
   const tabArea = document.getElementById('codeUserTabs');
 
-  // Inicializar Monaco se ainda não foi feito
-  setupMonacoEditors();
+  // Inicializar Monaco e aguardar estar pronto antes de carregar projetos
+  await new Promise(resolve => {
+    setupMonacoEditors();
+    const check = () => {
+      if (monacoEditors.html) { resolve(); }
+      else { setTimeout(check, 100); }
+    };
+    if (monacoEditors.html) resolve();
+    else check();
+  });
 
   if (isAdmin() || isCoord()) {
     // Carregar lista de alunos como sub-abas
