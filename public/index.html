@@ -6,6 +6,7 @@
   <title>ADS Anhanguera – Projeto de Software</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
 </head>
 <body>
 
@@ -492,27 +493,39 @@
             <button class="code-lang-tab" data-lang="js" onclick="switchCodeLang('js')">JavaScript</button>
           </div>
 
-          <!-- Editores -->
+          <!-- Editores Monaco -->
           <div class="code-editors-wrapper">
             <div id="editorHTML" class="code-editor-pane active">
-              <textarea id="codeHTML" class="code-textarea" placeholder="<!-- Escreva seu HTML aqui -->" spellcheck="false"></textarea>
+              <div id="monacoHTML" class="monaco-container"></div>
             </div>
             <div id="editorCSS" class="code-editor-pane">
-              <textarea id="codeCSS" class="code-textarea" placeholder="/* Escreva seu CSS aqui */" spellcheck="false"></textarea>
+              <div id="monacoCSS" class="monaco-container"></div>
             </div>
             <div id="editorJS" class="code-editor-pane">
-              <textarea id="codeJS" class="code-textarea" placeholder="// Escreva seu JavaScript aqui" spellcheck="false"></textarea>
+              <div id="monacoJS" class="monaco-container"></div>
             </div>
           </div>
 
-          <!-- Preview -->
-          <div class="code-preview-section">
-            <div class="code-preview-header">
-              <h4>Resultado</h4>
-              <button class="btn btn-sm btn-outline" onclick="runCode()">Atualizar</button>
+          <!-- Preview + Console (layout estilo p5.js) -->
+          <div class="code-output-split">
+            <div class="code-preview-section">
+              <div class="code-preview-header">
+                <h4>▶ Resultado</h4>
+                <div class="code-preview-actions">
+                  <label class="auto-run-label"><input type="checkbox" id="autoRunToggle" checked /> Auto-run</label>
+                  <button class="btn btn-sm btn-outline" onclick="runCode()">Executar</button>
+                </div>
+              </div>
+              <div class="code-preview-container">
+                <iframe id="codePreview" class="code-preview-iframe" sandbox="allow-scripts allow-modals"></iframe>
+              </div>
             </div>
-            <div class="code-preview-container">
-              <iframe id="codePreview" class="code-preview-iframe" sandbox="allow-scripts allow-modals"></iframe>
+            <div class="code-console-section">
+              <div class="code-console-header">
+                <h4>🖥 Console</h4>
+                <button class="btn btn-sm btn-outline" onclick="clearConsole()">Limpar</button>
+              </div>
+              <div id="codeConsole" class="code-console"></div>
             </div>
           </div>
         </div>

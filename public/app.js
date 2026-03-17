@@ -822,6 +822,169 @@ let currentProjectId = null;
 let currentCodeUserId = null; // para admin/coord navegar entre alunos
 let projetosCache = [];
 
+// ===== Monaco Editor =====
+let monacoEditors = {};
+let monacoReady = false;
+let autoRunTimer = null;
+
+function initMonaco(callback) {
+  if (monacoReady) { callback(); return; }
+  require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+  require(['vs/editor/editor.main'], function () {
+    // Tema escuro personalizado
+    monaco.editor.defineTheme('p5Dark', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '6A9955', fontStyle: 'italic' },
+        { token: 'keyword', foreground: 'C586C0' },
+        { token: 'string', foreground: 'CE9178' },
+        { token: 'number', foreground: 'B5CEA8' },
+        { token: 'tag', foreground: '569CD6' },
+        { token: 'attribute.name', foreground: '9CDCFE' },
+        { token: 'attribute.value', foreground: 'CE9178' },
+      ],
+      colors: {
+        'editor.background': '#1E293B',
+        'editor.foreground': '#E2E8F0',
+        'editorCursor.foreground': '#F37021',
+        'editor.lineHighlightBackground': '#253349',
+        'editor.selectionBackground': '#3E5575',
+        'editorLineNumber.foreground': '#64748B',
+        'editorLineNumber.activeForeground': '#F37021',
+      }
+    });
+
+    monacoReady = true;
+    callback();
+  });
+}
+
+function createMonacoEditor(containerId, language, value) {
+  const container = document.getElementById(containerId);
+  if (!container) return null;
+  container.innerHTML = '';
+
+  const langMap = { html: 'html', css: 'css', js: 'javascript' };
+  const monacoLang = langMap[language] || language;
+
+  const editor = monaco.editor.create(container, {
+    value: value || '',
+    language: monacoLang,
+    theme: 'p5Dark',
+    automaticLayout: true,
+    fontSize: 14,
+    fontFamily: "'Fira Code', 'Cascadia Code', 'Consolas', monospace",
+    fontLigatures: true,
+    minimap: { enabled: false },
+    lineNumbers: 'on',
+    roundedSelection: true,
+    scrollBeyondLastLine: false,
+    wordWrap: 'on',
+    tabSize: 2,
+    insertSpaces: true,
+    formatOnPaste: true,
+    formatOnType: true,
+    autoClosingBrackets: 'always',
+    autoClosingQuotes: 'always',
+    autoIndent: 'full',
+    suggestOnTriggerCharacters: true,
+    quickSuggestions: { other: true, comments: false, strings: true },
+    parameterHints: { enabled: true },
+    suggest: {
+      showKeywords: true,
+      showSnippets: true,
+      showFunctions: true,
+      showVariables: true,
+      showClasses: true,
+      showMethods: true,
+      showProperties: true,
+      insertMode: 'replace',
+    },
+    bracketPairColorization: { enabled: true },
+    padding: { top: 12, bottom: 12 },
+  });
+
+  // Auto-run com debounce
+  editor.onDidChangeModelContent(() => {
+    if (document.getElementById('autoRunToggle') && document.getElementById('autoRunToggle').checked) {
+      clearTimeout(autoRunTimer);
+      autoRunTimer = setTimeout(() => runCode(), 800);
+    }
+  });
+
+  return editor;
+}
+
+function setupMonacoEditors() {
+  initMonaco(() => {
+    if (!monacoEditors.html) {
+      monacoEditors.html = createMonacoEditor('monacoHTML', 'html', '');
+      monacoEditors.css = createMonacoEditor('monacoCSS', 'css', '');
+      monacoEditors.js = createMonacoEditor('monacoJS', 'js', '');
+
+      // Registrar snippets e completions customizados para JS
+      registerCustomCompletions();
+    }
+    // Forçar layout ao trocar aba
+    setTimeout(() => {
+      Object.values(monacoEditors).forEach(ed => ed && ed.layout());
+    }, 100);
+  });
+}
+
+function registerCustomCompletions() {
+  // Snippets comuns de HTML/CSS/JS para alunos
+  monaco.languages.registerCompletionItemProvider('javascript', {
+    provideCompletionItems: function (model, position) {
+      const word = model.getWordUntilPosition(position);
+      const range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn,
+      };
+      return {
+        suggestions: [
+          { label: 'console.log', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'console.log(${1:valor});', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Imprime no console', range },
+          { label: 'document.getElementById', kind: monaco.languages.CompletionItemKind.Snippet, insertText: "document.getElementById('${1:id}')", insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Seleciona elemento por ID', range },
+          { label: 'document.querySelector', kind: monaco.languages.CompletionItemKind.Snippet, insertText: "document.querySelector('${1:seletor}')", insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Seleciona elemento por seletor CSS', range },
+          { label: 'addEventListener', kind: monaco.languages.CompletionItemKind.Snippet, insertText: "addEventListener('${1:click}', function(e) {\n\t${2}\n});", insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Adicionar listener de evento', range },
+          { label: 'fetch', kind: monaco.languages.CompletionItemKind.Snippet, insertText: "fetch('${1:url}')\n\t.then(res => res.json())\n\t.then(data => {\n\t\t${2:console.log(data);}\n\t})\n\t.catch(err => console.error(err));", insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Requisição HTTP com fetch', range },
+          { label: 'for', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'for (let ${1:i} = 0; ${1:i} < ${2:10}; ${1:i}++) {\n\t${3}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Loop for', range },
+          { label: 'forEach', kind: monaco.languages.CompletionItemKind.Snippet, insertText: '${1:array}.forEach((${2:item}) => {\n\t${3}\n});', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Iterar array com forEach', range },
+          { label: 'function', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'function ${1:nome}(${2:params}) {\n\t${3}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Declaração de função', range },
+          { label: 'arrow function', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'const ${1:nome} = (${2:params}) => {\n\t${3}\n};', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Arrow function', range },
+          { label: 'setTimeout', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'setTimeout(() => {\n\t${1}\n}, ${2:1000});', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Executa após delay', range },
+          { label: 'setInterval', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'setInterval(() => {\n\t${1}\n}, ${2:1000});', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Executa periodicamente', range },
+        ]
+      };
+    }
+  });
+
+  monaco.languages.registerCompletionItemProvider('html', {
+    provideCompletionItems: function (model, position) {
+      const word = model.getWordUntilPosition(position);
+      const range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn,
+      };
+      return {
+        suggestions: [
+          { label: 'html5', kind: monaco.languages.CompletionItemKind.Snippet, insertText: '<!DOCTYPE html>\n<html lang="pt-br">\n<head>\n\t<meta charset="UTF-8">\n\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n\t<title>${1:Título}</title>\n</head>\n<body>\n\t${2}\n</body>\n</html>', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Estrutura HTML5 completa', range },
+          { label: 'div', kind: monaco.languages.CompletionItemKind.Snippet, insertText: '<div class="${1:classe}">\n\t${2}\n</div>', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Div com classe', range },
+          { label: 'button', kind: monaco.languages.CompletionItemKind.Snippet, insertText: '<button onclick="${1:funcao()}">${2:Texto}</button>', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Botão com onclick', range },
+          { label: 'input', kind: monaco.languages.CompletionItemKind.Snippet, insertText: '<input type="${1:text}" id="${2:id}" placeholder="${3:placeholder}" />', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Campo de input', range },
+          { label: 'ul>li', kind: monaco.languages.CompletionItemKind.Snippet, insertText: '<ul>\n\t<li>${1}</li>\n\t<li>${2}</li>\n</ul>', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Lista não-ordenada', range },
+          { label: 'table', kind: monaco.languages.CompletionItemKind.Snippet, insertText: '<table>\n\t<thead>\n\t\t<tr>\n\t\t\t<th>${1:Coluna}</th>\n\t\t</tr>\n\t</thead>\n\t<tbody>\n\t\t<tr>\n\t\t\t<td>${2:Dado}</td>\n\t\t</tr>\n\t</tbody>\n</table>', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, documentation: 'Tabela com thead/tbody', range },
+        ]
+      };
+    }
+  });
+}
+
 function switchCodeLang(lang) {
   currentCodeLang = lang;
   document.querySelectorAll('.code-lang-tab').forEach(t => t.classList.remove('active'));
@@ -831,10 +994,34 @@ function switchCodeLang(lang) {
   document.querySelectorAll('.code-editor-pane').forEach(p => p.classList.remove('active'));
   const pane = document.getElementById(`editor${lang.toUpperCase()}`);
   if (pane) pane.classList.add('active');
+
+  // Forçar layout do editor Monaco ativo
+  if (monacoEditors[lang]) {
+    setTimeout(() => monacoEditors[lang].layout(), 50);
+  }
+}
+
+// Helpers para obter/setar valores dos editores
+function getEditorValue(lang) {
+  if (monacoEditors[lang]) return monacoEditors[lang].getValue();
+  return '';
+}
+
+function setEditorValue(lang, value) {
+  if (monacoEditors[lang]) monacoEditors[lang].setValue(value || '');
+}
+
+function setEditorsReadOnly(readOnly) {
+  Object.values(monacoEditors).forEach(ed => {
+    if (ed) ed.updateOptions({ readOnly });
+  });
 }
 
 async function loadCodeEditor() {
   const tabArea = document.getElementById('codeUserTabs');
+
+  // Inicializar Monaco se ainda não foi feito
+  setupMonacoEditors();
 
   if (isAdmin() || isCoord()) {
     // Carregar lista de alunos como sub-abas
@@ -926,9 +1113,9 @@ async function loadUserProjects(userId) {
 function loadProjectIntoEditor(projeto) {
   currentProjectId = projeto.id;
   document.getElementById('codeProjectName').value = projeto.nome;
-  document.getElementById('codeHTML').value = projeto.html || '';
-  document.getElementById('codeCSS').value = projeto.css || '';
-  document.getElementById('codeJS').value = projeto.js || '';
+  setEditorValue('html', projeto.html);
+  setEditorValue('css', projeto.css);
+  setEditorValue('js', projeto.js);
   document.getElementById('btnDeleteProjeto').style.display = canMutate() ? '' : 'none';
   runCode();
 }
@@ -936,19 +1123,19 @@ function loadProjectIntoEditor(projeto) {
 function clearEditor() {
   currentProjectId = null;
   document.getElementById('codeProjectName').value = 'Meu Projeto';
-  document.getElementById('codeHTML').value = '';
-  document.getElementById('codeCSS').value = '';
-  document.getElementById('codeJS').value = '';
+  setEditorValue('html', '');
+  setEditorValue('css', '');
+  setEditorValue('js', '');
   document.getElementById('btnDeleteProjeto').style.display = 'none';
   const iframe = document.getElementById('codePreview');
   iframe.srcdoc = '';
+  clearConsole();
 }
 
 function updateEditorPermissions() {
   const isOwner = currentCodeUserId === currentUser.id;
   const canEdit = isAdmin() || (isAluno() && isOwner);
-  const editors = document.querySelectorAll('.code-textarea');
-  editors.forEach(el => el.readOnly = !canEdit);
+  setEditorsReadOnly(!canEdit);
   document.getElementById('codeProjectName').readOnly = !canEdit;
 
   // Esconder botões de ação se não pode editar
@@ -970,19 +1157,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
-  // Suporte à tecla Tab nos editores de código
-  document.querySelectorAll('.code-textarea').forEach(textarea => {
-    textarea.addEventListener('keydown', function (e) {
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        const start = this.selectionStart;
-        const end = this.selectionEnd;
-        this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
-        this.selectionStart = this.selectionEnd = start + 2;
-      }
-    });
-  });
 });
 
 function runCode() {
