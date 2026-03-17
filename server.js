@@ -618,6 +618,10 @@ app.get('/api/explorer/file', (req, res) => {
 
   const resolved = path.resolve(EXPLORER_ROOT, filePath);
   if (!resolved.startsWith(EXPLORER_ROOT)) return res.status(403).json({ error: 'Acesso negado.' });
+
+  // Block sensitive files
+  const parts = filePath.split(path.sep);
+  if (parts.some(p => EXPLORER_IGNORE.has(p))) return res.status(403).json({ error: 'Acesso negado.' });
   if (!fs.existsSync(resolved) || fs.statSync(resolved).isDirectory()) return res.status(404).json({ error: 'Arquivo não encontrado.' });
 
   const ext = path.extname(resolved).toLowerCase();
