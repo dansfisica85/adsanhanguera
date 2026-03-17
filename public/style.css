@@ -2165,13 +2165,21 @@ body {
     flex: 1;
   }
 
-  .code-textarea {
-    min-height: 200px;
-    font-size: 0.82rem;
+  .monaco-container {
+    height: 250px;
+  }
+
+  .code-output-split {
+    grid-template-columns: 1fr;
   }
 
   .code-preview-iframe {
-    height: 300px;
+    height: 280px;
+  }
+
+  .code-console {
+    min-height: 200px;
+    max-height: 250px;
   }
 
   .code-user-tab {
