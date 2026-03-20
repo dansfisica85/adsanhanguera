@@ -462,7 +462,7 @@
       <section id="tab-codigo" class="tab-content">
         <div class="unit-header">
           <h2>💻 Code Editor</h2>
-          <p class="unit-desc">Escreva HTML, CSS e JavaScript, visualize o resultado e salve seus projetos</p>
+          <p class="unit-desc">Escreva HTML, CSS e JavaScript, visualize no navegador e salve seus projetos</p>
         </div>
 
         <!-- Sub-abas de usuários (admin/coord) ou lista de projetos (aluno) -->
@@ -479,47 +479,80 @@
               </select>
             </div>
             <div class="code-project-actions">
-              <button class="btn btn-primary btn-sm" onclick="salvarProjeto()">Salvar</button>
-              <button class="btn btn-success btn-sm" onclick="runCode()">Executar</button>
-              <button class="btn btn-outline btn-sm" onclick="downloadProjeto()">Download</button>
-              <button class="btn btn-danger btn-sm" id="btnDeleteProjeto" onclick="deletarProjeto()" style="display:none;">Excluir</button>
+              <button class="btn btn-primary btn-sm" onclick="salvarProjeto()">💾 Salvar</button>
+              <button class="btn btn-success btn-sm" onclick="openLivePreview()" title="Abrir no navegador">🌐 Live Server</button>
+              <button class="btn btn-outline btn-sm" onclick="downloadProjeto()">📦 Download ZIP</button>
+              <button class="btn btn-danger btn-sm" id="btnDeleteProjeto" onclick="deletarProjeto()" style="display:none;">🗑 Excluir</button>
             </div>
           </div>
 
-          <!-- Abas HTML/CSS/JS -->
-          <div class="code-lang-tabs">
-            <button class="code-lang-tab active" data-lang="html" onclick="switchCodeLang('html')">HTML</button>
-            <button class="code-lang-tab" data-lang="css" onclick="switchCodeLang('css')">CSS</button>
-            <button class="code-lang-tab" data-lang="js" onclick="switchCodeLang('js')">JavaScript</button>
-          </div>
-
-          <!-- Editores Monaco -->
-          <div class="code-editors-wrapper">
-            <div id="editorHTML" class="code-editor-pane active">
-              <div id="monacoHTML" class="monaco-container"></div>
-            </div>
-            <div id="editorCSS" class="code-editor-pane">
-              <div id="monacoCSS" class="monaco-container"></div>
-            </div>
-            <div id="editorJS" class="code-editor-pane">
-              <div id="monacoJS" class="monaco-container"></div>
-            </div>
-          </div>
-
-          <!-- Preview + Console (layout estilo p5.js) -->
-          <div class="code-output-split">
-            <div class="code-preview-section">
-              <div class="code-preview-header">
-                <h4>▶ Resultado</h4>
-                <div class="code-preview-actions">
-                  <label class="auto-run-label"><input type="checkbox" id="autoRunToggle" checked /> Auto-run</label>
-                  <button class="btn btn-sm btn-outline" onclick="runCode()">Executar</button>
+          <!-- Layout IDE: File Tree + Editor -->
+          <div class="code-ide-layout">
+            <!-- Painel de Projetos (File Tree) -->
+            <div class="code-file-tree">
+              <div class="code-file-tree-header">
+                <span>📁 PROJETOS</span>
+              </div>
+              <div class="code-file-tree-project" id="fileTreeProjectName">
+                <span class="file-tree-folder">📂 Meu Projeto</span>
+              </div>
+              <div class="code-file-tree-files">
+                <div class="code-file-tree-item active" data-lang="html" onclick="switchCodeLang('html')">
+                  <span class="file-tree-icon">🌐</span>
+                  <span class="file-tree-name">index.html</span>
+                  <div class="file-tree-actions">
+                    <button class="file-tree-btn" onclick="event.stopPropagation(); downloadSingleFile('html')" title="Baixar arquivo">⬇</button>
+                  </div>
+                </div>
+                <div class="code-file-tree-item" data-lang="css" onclick="switchCodeLang('css')">
+                  <span class="file-tree-icon">🎨</span>
+                  <span class="file-tree-name">style.css</span>
+                  <div class="file-tree-actions">
+                    <button class="file-tree-btn" onclick="event.stopPropagation(); downloadSingleFile('css')" title="Baixar arquivo">⬇</button>
+                  </div>
+                </div>
+                <div class="code-file-tree-item" data-lang="js" onclick="switchCodeLang('js')">
+                  <span class="file-tree-icon">📜</span>
+                  <span class="file-tree-name">script.js</span>
+                  <div class="file-tree-actions">
+                    <button class="file-tree-btn" onclick="event.stopPropagation(); downloadSingleFile('js')" title="Baixar arquivo">⬇</button>
+                  </div>
                 </div>
               </div>
-              <div class="code-preview-container">
-                <iframe id="codePreview" class="code-preview-iframe" sandbox="allow-scripts allow-modals"></iframe>
+            </div>
+
+            <!-- Editor principal -->
+            <div class="code-editor-main">
+              <!-- Abas HTML/CSS/JS -->
+              <div class="code-lang-tabs">
+                <button class="code-lang-tab active" data-lang="html" onclick="switchCodeLang('html')">
+                  <span class="lang-tab-icon">🌐</span> index.html
+                </button>
+                <button class="code-lang-tab" data-lang="css" onclick="switchCodeLang('css')">
+                  <span class="lang-tab-icon">🎨</span> style.css
+                </button>
+                <button class="code-lang-tab" data-lang="js" onclick="switchCodeLang('js')">
+                  <span class="lang-tab-icon">📜</span> script.js
+                </button>
+              </div>
+
+              <!-- Editores Monaco -->
+              <div class="code-editors-wrapper">
+                <div id="editorHTML" class="code-editor-pane active">
+                  <div id="monacoHTML" class="monaco-container"></div>
+                </div>
+                <div id="editorCSS" class="code-editor-pane">
+                  <div id="monacoCSS" class="monaco-container"></div>
+                </div>
+                <div id="editorJS" class="code-editor-pane">
+                  <div id="monacoJS" class="monaco-container"></div>
+                </div>
               </div>
             </div>
+          </div>
+
+          <!-- Console -->
+          <div class="code-console-full">
             <div class="code-console-section">
               <div class="code-console-header">
                 <h4>🖥 Console</h4>
@@ -528,6 +561,9 @@
               <div id="codeConsole" class="code-console"></div>
             </div>
           </div>
+
+          <!-- iframe oculto para live preview -->
+          <iframe id="codePreview" style="display:none;" sandbox="allow-scripts allow-modals"></iframe>
         </div>
       </section>
 
