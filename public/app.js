@@ -1130,6 +1130,13 @@ function loadProjectIntoEditor(projeto) {
   setEditorValue('css', projeto.css);
   setEditorValue('js', projeto.js);
   document.getElementById('btnDeleteProjeto').style.display = canMutate() ? '' : 'none';
+
+  // Atualizar nome no file tree
+  const treeProjectName = document.getElementById('fileTreeProjectName');
+  if (treeProjectName) {
+    treeProjectName.querySelector('.file-tree-folder').textContent = '📂 ' + projeto.nome;
+  }
+
   runCode();
 }
 
@@ -1141,8 +1148,14 @@ function clearEditor() {
   setEditorValue('js', '');
   document.getElementById('btnDeleteProjeto').style.display = 'none';
   const iframe = document.getElementById('codePreview');
-  iframe.srcdoc = '';
+  if (iframe) iframe.srcdoc = '';
   clearConsole();
+
+  // Atualizar nome no file tree
+  const treeProjectName = document.getElementById('fileTreeProjectName');
+  if (treeProjectName) {
+    treeProjectName.querySelector('.file-tree-folder').textContent = '📂 Meu Projeto';
+  }
 }
 
 function updateEditorPermissions() {
