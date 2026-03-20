@@ -909,7 +909,13 @@ function createMonacoEditor(containerId, language, value) {
   editor.onDidChangeModelContent(() => {
     if (document.getElementById('autoRunToggle') && document.getElementById('autoRunToggle').checked) {
       clearTimeout(autoRunTimer);
-      autoRunTimer = setTimeout(() => runCode(), 800);
+      autoRunTimer = setTimeout(() => {
+        runCode();
+        // Atualizar live preview se estiver aberto
+        if (livePreviewWindow && !livePreviewWindow.closed) {
+          openLivePreview();
+        }
+      }, 800);
     }
   });
 
