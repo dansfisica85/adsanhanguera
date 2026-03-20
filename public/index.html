@@ -556,7 +556,10 @@
             <div class="code-console-section">
               <div class="code-console-header">
                 <h4>🖥 Console</h4>
-                <button class="btn btn-sm btn-outline" onclick="clearConsole()">Limpar</button>
+                <div class="code-console-actions">
+                  <label class="auto-run-label"><input type="checkbox" id="autoRunToggle" checked /> Auto-refresh</label>
+                  <button class="btn btn-sm btn-outline" onclick="clearConsole()">Limpar</button>
+                </div>
               </div>
               <div id="codeConsole" class="code-console"></div>
             </div>
