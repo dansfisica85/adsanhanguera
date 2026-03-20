@@ -1189,6 +1189,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Sincronizar nome do projeto com file tree
+  const nameInput = document.getElementById('codeProjectName');
+  if (nameInput) {
+    nameInput.addEventListener('input', function () {
+      const treeProjectName = document.getElementById('fileTreeProjectName');
+      if (treeProjectName) {
+        treeProjectName.querySelector('.file-tree-folder').textContent = '📂 ' + (this.value || 'Meu Projeto');
+      }
+    });
+  }
 });
 
 function runCode() {
