@@ -547,6 +547,8 @@ app.get('/api/documentos', (req, res) => {
     { pasta: 'u2', label: 'Unidade 2' },
     { pasta: 'u3', label: 'Unidade 3' },
     { pasta: 'u4', label: 'Unidade 4' },
+    { pasta: 'ads2', label: 'ADS 2' },
+    { pasta: 'projeto-software', label: 'Projeto de Software' },
   ];
 
   for (const cat of categorias) {
