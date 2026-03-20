@@ -2235,15 +2235,31 @@ body {
     flex: 1;
   }
 
+  .code-ide-layout {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .code-file-tree {
+    width: 100%;
+    min-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #334155;
+  }
+
+  .code-file-tree-files {
+    display: flex;
+    overflow-x: auto;
+    gap: 2px;
+    padding: 4px 8px;
+  }
+
+  .code-file-tree-item {
+    padding: 6px 12px;
+    white-space: nowrap;
+  }
+
   .monaco-container {
-    height: 250px;
-  }
-
-  .code-output-split {
-    grid-template-columns: 1fr;
-  }
-
-  .code-preview-iframe {
     height: 280px;
   }
 
