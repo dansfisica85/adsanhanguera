@@ -2157,8 +2157,8 @@ body {
   border-top: none;
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   padding: 12px 16px;
-  min-height: 350px;
-  max-height: 350px;
+  min-height: 180px;
+  max-height: 250px;
   overflow-y: auto;
   font-family: 'Fira Code', 'Consolas', monospace;
   font-size: 0.82rem;
