@@ -995,7 +995,12 @@ function switchCodeLang(lang) {
   const pane = document.getElementById(`editor${lang.toUpperCase()}`);
   if (pane) pane.classList.add('active');
 
-  // Forçar layout do editor Monaco ativo
+  // Atualizar file tree
+  document.querySelectorAll('.code-file-tree-item').forEach(i => i.classList.remove('active'));
+  const treeItem = document.querySelector(`.code-file-tree-item[data-lang="${lang}"]`);
+  if (treeItem) treeItem.classList.add('active');
+
+  // For\u00e7ar layout do editor Monaco ativo
   if (monacoEditors[lang]) {
     setTimeout(() => monacoEditors[lang].layout(), 50);
   }
@@ -1306,33 +1311,113 @@ function downloadProjeto() {
   const css = getEditorValue('css');
   const js = getEditorValue('js');
 
-  const fullCode = `<!DOCTYPE html>
+  // Criar ZIP com os 3 arquivos usando JSZip-like approach (blob separados)
+  const sanitizedName = nome.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+  // Gerar index.html com links para css e js
+  const fullHtml = `<!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${nome}</title>
-  <style>
-${css}
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 ${html}
-  <script>
-${js}
-  </script>
+  <script src="script.js"><\/script>
 </body>
 </html>`;
 
-  const blob = new Blob([fullCode], { type: 'text/html' });
+  // Baixar os 3 arquivos individualmente
+  downloadBlob(fullHtml, `${sanitizedName}/index.html`, 'text/html');
+  setTimeout(() => downloadBlob(css, `${sanitizedName}/style.css`, 'text/css'), 200);
+  setTimeout(() => downloadBlob(js, `${sanitizedName}/script.js`, 'text/javascript'), 400);
+}
+
+function downloadBlob(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${nome.replace(/[^a-zA-Z0-9_-]/g, '_')}.html`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+function downloadSingleFile(type) {
+  const nome = document.getElementById('codeProjectName').value.trim() || 'projeto';
+  const sanitizedName = nome.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+  if (type === 'html') {
+    const html = getEditorValue('html');
+    const css = getEditorValue('css');
+    const js = getEditorValue('js');
+    const fullHtml = `<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${nome}</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+${html}
+  <script src="script.js"><\/script>
+</body>
+</html>`;
+    downloadBlob(fullHtml, 'index.html', 'text/html');
+  } else if (type === 'css') {
+    downloadBlob(getEditorValue('css'), 'style.css', 'text/css');
+  } else if (type === 'js') {
+    downloadBlob(getEditorValue('js'), 'script.js', 'text/javascript');
+  }
+}
+
+// ===== Live Server Preview =====
+let livePreviewWindow = null;
+
+function openLivePreview() {
+  const html = getEditorValue('html');
+  const css = getEditorValue('css');
+  const js = getEditorValue('js');
+  const nome = document.getElementById('codeProjectName').value.trim() || 'Meu Projeto';
+
+  const fullCode = `<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${nome} — Live Server</title>
+  <style>${css}</style>
+</head>
+<body>
+${html}
+  <script>${js}<\/script>
+</body>
+</html>`;
+
+  // Se a janela j\u00e1 existe e est\u00e1 aberta, atualizar conte\u00fado
+  if (livePreviewWindow && !livePreviewWindow.closed) {
+    livePreviewWindow.document.open();
+    livePreviewWindow.document.write(fullCode);
+    livePreviewWindow.document.close();
+    livePreviewWindow.focus();
+  } else {
+    // Abrir nova janela
+    livePreviewWindow = window.open('', '_blank');
+    if (livePreviewWindow) {
+      livePreviewWindow.document.open();
+      livePreviewWindow.document.write(fullCode);
+      livePreviewWindow.document.close();
+    }
+  }
+
+  // Executar tamb\u00e9m no iframe oculto para captura de console
+  runCode();
+  showCodeNotification('Live Server aberto no navegador!', 'success');
 }
 
 function showCodeNotification(msg, type) {
