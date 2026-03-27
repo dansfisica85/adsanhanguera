@@ -536,6 +536,73 @@ app.get('/api/projetos-aluno/:id', middlewareAuth, middlewareRole('admin', 'coor
   }
 });
 
+// Buscar projetos do admin (visíveis para todos os usuários autenticados, read-only)
+app.get('/api/projetos-admin', middlewareAuth, async (req, res) => {
+  try {
+    const result = await dbExecute(
+      `SELECT p.*, u.nome as autor_nome FROM projetos_codigo p
+       JOIN usuarios u ON p.aluno_id = u.id
+       WHERE u.role = 'admin'
+       ORDER BY p.atualizado_em DESC`
+    );
+    res.json({ projetos: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao buscar projetos do professor.' });
+  }
+});
+
+// Toggle visto de um projeto (apenas admin)
+app.put('/api/projetos/:id/visto', middlewareAuth, middlewareRole('admin'), async (req, res) => {
+  try {
+    const existing = await dbExecute({ sql: 'SELECT visto FROM projetos_codigo WHERE id = ?', args: [req.params.id] });
+    if (existing.rows.length === 0) return res.status(404).json({ error: 'Projeto não encontrado.' });
+    const novoVisto = existing.rows[0].visto ? 0 : 1;
+    await dbExecute({ sql: 'UPDATE projetos_codigo SET visto = ? WHERE id = ?', args: [novoVisto, req.params.id] });
+    res.json({ visto: novoVisto });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao atualizar visto.' });
+  }
+});
+
+// Ranking de alunos (linhas, palavras, projetos) — exclui admin e coordenador
+app.get('/api/ranking', middlewareAuth, async (req, res) => {
+  try {
+    const alunos = await dbExecute(
+      `SELECT u.id, u.nome FROM usuarios u WHERE u.role = 'aluno' ORDER BY u.nome`
+    );
+    const ranking = [];
+    for (const aluno of alunos.rows) {
+      const projetos = await dbExecute({
+        sql: 'SELECT html, css, js FROM projetos_codigo WHERE aluno_id = ?',
+        args: [aluno.id],
+      });
+      let totalLinhas = 0;
+      let totalPalavras = 0;
+      const totalProjetos = projetos.rows.length;
+      for (const p of projetos.rows) {
+        const code = (p.html || '') + '\n' + (p.css || '') + '\n' + (p.js || '');
+        totalLinhas += code.split('\n').filter(l => l.trim().length > 0).length;
+        totalPalavras += code.split(/\s+/).filter(w => w.length > 0).length;
+      }
+      ranking.push({
+        id: aluno.id,
+        nome: aluno.nome,
+        totalProjetos,
+        totalLinhas,
+        totalPalavras,
+      });
+    }
+    // Ordenar por projetos DESC, depois linhas DESC
+    ranking.sort((a, b) => b.totalProjetos - a.totalProjetos || b.totalLinhas - a.totalLinhas);
+    res.json({ ranking });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao calcular ranking.' });
+  }
+});
+
 // ===== DOCUMENTOS =====
 app.get('/api/documentos', (req, res) => {
   const docsDir = path.join(__dirname, 'public', 'docs');

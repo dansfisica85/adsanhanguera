@@ -158,6 +158,14 @@ async function initDB() {
     // Coluna já existe, ignorar
   }
 
+  // Migration: adicionar coluna visto se não existir
+  try {
+    await dbExecute(`ALTER TABLE projetos_codigo ADD COLUMN visto INTEGER DEFAULT 0`);
+    console.log('  ✅ Coluna visto adicionada.');
+  } catch (e) {
+    // Coluna já existe, ignorar
+  }
+
   console.log('✅ Banco de dados inicializado com sucesso!');
 }
 

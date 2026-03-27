@@ -821,6 +821,8 @@ let currentCodeLang = 'html';
 let currentProjectId = null;
 let currentCodeUserId = null; // para admin/coord navegar entre alunos
 let projetosCache = [];
+let adminProjetosCache = []; // projetos do professor visíveis a todos
+let viewingAdminProject = false; // se está visualizando projeto do professor
 
 // ===== Monaco Editor =====
 let monacoEditors = {};
@@ -1031,6 +1033,9 @@ function setEditorsReadOnly(readOnly) {
 async function loadCodeEditor() {
   const tabArea = document.getElementById('codeUserTabs');
 
+  // Carregar ranking para todos
+  loadRanking();
+
   // Inicializar Monaco e aguardar estar pronto antes de carregar projetos
   await new Promise(resolve => {
     setupMonacoEditors();
@@ -1078,7 +1083,7 @@ async function loadCodeEditor() {
       await loadUserProjects(currentUser.id);
     }
   } else {
-    // Aluno: sem sub-abas, carregar direto os próprios projetos
+    // Aluno: sem sub-abas para outros, carregar direto os próprios projetos + projetos do professor
     tabArea.innerHTML = '';
     currentCodeUserId = currentUser.id;
     await loadUserProjects(currentUser.id);
@@ -1105,21 +1110,66 @@ async function loadUserProjects(userId) {
 
     projetosCache = (data.projetos || []).filter(p => Number(p.aluno_id) === userId);
 
+    // Carregar projetos do professor para alunos
+    adminProjetosCache = [];
+    if (isAluno()) {
+      try {
+        const adminRes = await fetchWithRetry('/api/projetos-admin', { headers: authHeaders() });
+        const adminData = await adminRes.json();
+        if (adminRes.ok) {
+          adminProjetosCache = adminData.projetos || [];
+        }
+      } catch (e) {
+        console.error('Erro ao carregar projetos do professor:', e);
+      }
+    }
+
     const select = document.getElementById('codeProjectSelect');
-    select.innerHTML = '<option value="new">+ Novo Projeto</option>';
+    select.innerHTML = '';
+
+    // Grupo "Meus Projetos"
+    const myGroup = document.createElement('optgroup');
+    myGroup.label = '📁 Meus Projetos';
+    const newOpt = document.createElement('option');
+    newOpt.value = 'new';
+    newOpt.textContent = '+ Novo Projeto';
+    myGroup.appendChild(newOpt);
     projetosCache.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.id;
-      opt.textContent = p.nome;
-      select.appendChild(opt);
+      opt.textContent = p.nome + (p.visto ? ' ✅' : '');
+      myGroup.appendChild(opt);
     });
+    select.appendChild(myGroup);
+
+    // Grupo "Projetos do Professor" (para alunos)
+    if (adminProjetosCache.length > 0) {
+      const profGroup = document.createElement('optgroup');
+      profGroup.label = '👨‍🏫 Projetos do Professor';
+      adminProjetosCache.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = 'admin_' + p.id;
+        opt.textContent = p.nome;
+        profGroup.appendChild(opt);
+      });
+      select.appendChild(profGroup);
+    }
+
+    // Renderizar badges de visto na file tree
+    renderVistoFileTree();
 
     // Se há projetos, selecionar o primeiro
     if (projetosCache.length > 0) {
       select.value = projetosCache[0].id;
+      viewingAdminProject = false;
       loadProjectIntoEditor(projetosCache[0]);
+    } else if (adminProjetosCache.length > 0 && isAluno()) {
+      select.value = 'admin_' + adminProjetosCache[0].id;
+      viewingAdminProject = true;
+      loadProjectIntoEditor(adminProjetosCache[0]);
     } else {
       select.value = 'new';
+      viewingAdminProject = false;
       clearEditor();
     }
 
@@ -1135,7 +1185,12 @@ function loadProjectIntoEditor(projeto) {
   setEditorValue('html', projeto.html);
   setEditorValue('css', projeto.css);
   setEditorValue('js', projeto.js);
-  document.getElementById('btnDeleteProjeto').style.display = canMutate() ? '' : 'none';
+
+  // Renderizar botão de visto
+  renderVistoButton(projeto);
+
+  const canDel = canMutate() && !viewingAdminProject;
+  document.getElementById('btnDeleteProjeto').style.display = canDel ? '' : 'none';
 
   // Atualizar nome no file tree
   const treeProjectName = document.getElementById('fileTreeProjectName');
@@ -1143,6 +1198,7 @@ function loadProjectIntoEditor(projeto) {
     treeProjectName.querySelector('.file-tree-folder').textContent = '📂 ' + projeto.nome;
   }
 
+  updateEditorPermissions();
   runCode();
 }
 
@@ -1166,7 +1222,7 @@ function clearEditor() {
 
 function updateEditorPermissions() {
   const isOwner = currentCodeUserId === currentUser.id;
-  const canEdit = isAdmin() || (isAluno() && isOwner);
+  const canEdit = !viewingAdminProject && (isAdmin() || (isAluno() && isOwner));
   setEditorsReadOnly(!canEdit);
   document.getElementById('codeProjectName').readOnly = !canEdit;
 
@@ -1174,6 +1230,22 @@ function updateEditorPermissions() {
   const saveBtn = document.querySelector('.code-project-actions .btn-primary');
   if (saveBtn) saveBtn.style.display = canEdit ? '' : 'none';
   document.getElementById('btnDeleteProjeto').style.display = canEdit && currentProjectId ? '' : 'none';
+
+  // Mostrar label quando em modo read-only de projeto do professor
+  let readOnlyLabel = document.getElementById('readOnlyLabel');
+  if (viewingAdminProject) {
+    if (!readOnlyLabel) {
+      readOnlyLabel = document.createElement('span');
+      readOnlyLabel.id = 'readOnlyLabel';
+      readOnlyLabel.className = 'read-only-label';
+      readOnlyLabel.textContent = '👁 Modo Visualização (Projeto do Professor)';
+      const projectInfo = document.querySelector('.code-project-info');
+      if (projectInfo) projectInfo.appendChild(readOnlyLabel);
+    }
+    readOnlyLabel.style.display = '';
+  } else if (readOnlyLabel) {
+    readOnlyLabel.style.display = 'none';
+  }
 }
 
 // Evento ao trocar de projeto no select
@@ -1182,8 +1254,18 @@ document.addEventListener('DOMContentLoaded', () => {
   if (select) {
     select.addEventListener('change', function () {
       if (this.value === 'new') {
+        viewingAdminProject = false;
         clearEditor();
+        updateEditorPermissions();
+      } else if (this.value.startsWith('admin_')) {
+        const adminId = parseInt(this.value.replace('admin_', ''));
+        const projeto = adminProjetosCache.find(p => p.id === adminId);
+        if (projeto) {
+          viewingAdminProject = true;
+          loadProjectIntoEditor(projeto);
+        }
       } else {
+        viewingAdminProject = false;
         const projeto = projetosCache.find(p => String(p.id) === this.value);
         if (projeto) loadProjectIntoEditor(projeto);
       }
@@ -1459,4 +1541,159 @@ function showCodeNotification(msg, type) {
   div.textContent = msg;
   document.getElementById('codeEditorArea').prepend(div);
   setTimeout(() => div.remove(), 3000);
+}
+
+// ===== VISTO (aprovação do professor) =====
+
+function renderVistoButton(projeto) {
+  let container = document.getElementById('vistoContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'vistoContainer';
+    const projectHeader = document.querySelector('.code-project-header');
+    if (projectHeader) projectHeader.appendChild(container);
+  }
+  if (!projeto || !projeto.id) {
+    container.innerHTML = '';
+    return;
+  }
+  const isVisto = projeto.visto ? true : false;
+  const canToggle = isAdmin();
+  container.innerHTML = `
+    <button class="btn-visto ${isVisto ? 'active' : 'pending'}" 
+            ${canToggle ? `onclick="toggleVisto(${projeto.id})"` : ''} 
+            ${canToggle ? '' : 'style="cursor:default;"'}
+            title="${canToggle ? 'Clique para alternar o visto' : (isVisto ? 'Aprovado pelo professor' : 'Aguardando aprovação')}">
+      ${isVisto ? '✓ VISTO' : '⬜ Pendente'}
+    </button>
+  `;
+}
+
+function renderVistoFileTree() {
+  const treeFiles = document.querySelector('.code-file-tree-files');
+  if (!treeFiles) return;
+  // Remover badges anteriores
+  treeFiles.querySelectorAll('.visto-badge-tree').forEach(el => el.remove());
+
+  // Se há um projeto carregado e tem visto, mostrar badge no file tree
+  if (currentProjectId) {
+    const projeto = projetosCache.find(p => p.id === currentProjectId) || adminProjetosCache.find(p => p.id === currentProjectId);
+    if (projeto && projeto.visto) {
+      const badge = document.createElement('div');
+      badge.className = 'visto-badge-tree';
+      badge.textContent = '✓ Aprovado';
+      const treeHeader = document.querySelector('.code-file-tree-header');
+      if (treeHeader) treeHeader.appendChild(badge);
+    }
+  }
+}
+
+async function toggleVisto(projetoId) {
+  if (!isAdmin()) return;
+  try {
+    const res = await fetchWithRetry(`/api/projetos/${projetoId}/visto`, {
+      method: 'PUT',
+      headers: authHeaders(),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    // Atualizar no cache
+    const projeto = projetosCache.find(p => p.id === projetoId);
+    if (projeto) projeto.visto = data.visto;
+    const adminProjeto = adminProjetosCache.find(p => p.id === projetoId);
+    if (adminProjeto) adminProjeto.visto = data.visto;
+
+    // Re-renderizar o botão de visto e o select
+    const currentProjeto = projeto || adminProjeto;
+    if (currentProjeto) renderVistoButton(currentProjeto);
+
+    // Atualizar o texto no select
+    const select = document.getElementById('codeProjectSelect');
+    if (select) {
+      const opt = select.querySelector(`option[value="${projetoId}"]`);
+      if (opt) {
+        const baseName = opt.textContent.replace(' ✅', '');
+        opt.textContent = baseName + (data.visto ? ' ✅' : '');
+      }
+    }
+
+    showCodeNotification(data.visto ? 'Visto aplicado!' : 'Visto removido.', 'success');
+  } catch (err) {
+    showCodeNotification('Erro ao atualizar visto: ' + err.message, 'error');
+  }
+}
+
+// ===== RANKING =====
+
+async function loadRanking() {
+  const section = document.getElementById('rankingSection');
+  if (!section) return;
+
+  try {
+    const res = await fetchWithRetry('/api/ranking', { headers: authHeaders() });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    const ranking = data.ranking || [];
+    if (ranking.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+
+    const medals = ['🥇', '🥈', '🥉'];
+
+    let html = `
+      <div class="ranking-header">
+        <h3>🏆 Ranking dos Alunos</h3>
+        <button class="btn btn-sm btn-outline ranking-toggle" onclick="toggleRankingView()">Minimizar</button>
+      </div>
+      <div id="rankingBody" class="ranking-body">
+        <table class="ranking-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Aluno</th>
+              <th>Projetos</th>
+              <th>Linhas</th>
+              <th>Palavras</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    ranking.forEach((aluno, i) => {
+      const medal = medals[i] || (i + 1);
+      const medalClass = i < 3 ? `ranking-top-${i + 1}` : '';
+      html += `
+        <tr class="${medalClass}">
+          <td class="ranking-pos">${typeof medal === 'string' ? medal : medal + 'º'}</td>
+          <td class="ranking-name">${aluno.nome}</td>
+          <td>${aluno.totalProjetos}</td>
+          <td>${aluno.totalLinhas.toLocaleString('pt-BR')}</td>
+          <td>${aluno.totalPalavras.toLocaleString('pt-BR')}</td>
+        </tr>
+      `;
+    });
+
+    html += '</tbody></table></div>';
+    section.innerHTML = html;
+    section.style.display = '';
+  } catch (err) {
+    console.error('Erro ao carregar ranking:', err);
+    section.style.display = 'none';
+  }
+}
+
+function toggleRankingView() {
+  const body = document.getElementById('rankingBody');
+  const btn = document.querySelector('.ranking-toggle');
+  if (!body || !btn) return;
+  if (body.style.display === 'none') {
+    body.style.display = '';
+    btn.textContent = 'Minimizar';
+  } else {
+    body.style.display = 'none';
+    btn.textContent = 'Expandir';
+  }
 }
