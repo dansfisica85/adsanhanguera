@@ -1824,6 +1824,7 @@ body {
 
   .tab { padding: 10px 12px; }
   .tab-label { display: none; }
+  .tab-dropdown-arrow { display: none; }
   .tab-num { font-size: 0.9rem; }
 
   .main-content { padding: 20px 16px; }
