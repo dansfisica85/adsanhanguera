@@ -87,29 +87,26 @@
     <!-- Navigation Tabs -->
     <nav class="tabs-nav">
       <div class="tabs-container">
-        <button class="tab active" data-tab="u1" onclick="switchTab('u1')">
-          <span class="tab-num">U1</span>
-          <span class="tab-label">Estudo de Caso</span>
+        <button class="tab active" data-tab="codigo" onclick="switchTab('codigo')">
+          <span class="tab-num">💻</span>
+          <span class="tab-label">Code Editor</span>
         </button>
-        <button class="tab" data-tab="u2" onclick="switchTab('u2')">
-          <span class="tab-num">U2</span>
-          <span class="tab-label">Resolução de Problemas</span>
-        </button>
-        <button class="tab" data-tab="u3" onclick="switchTab('u3')">
-          <span class="tab-num">U3</span>
-          <span class="tab-label">Simulação Profissional</span>
-        </button>
-        <button class="tab" data-tab="u4" onclick="switchTab('u4')">
-          <span class="tab-num">U4</span>
-          <span class="tab-label">Aprendizagem entre Pares</span>
-        </button>
+        <div class="tab-dropdown">
+          <button class="tab tab-dropdown-toggle" onclick="toggleUnidadesMenu()">
+            <span class="tab-num">📖</span>
+            <span class="tab-label">Unidades</span>
+            <span class="tab-dropdown-arrow">▾</span>
+          </button>
+          <div class="tab-dropdown-menu" id="unidadesMenu">
+            <button data-tab="u1" onclick="switchTab('u1')">U1 – Estudo de Caso</button>
+            <button data-tab="u2" onclick="switchTab('u2')">U2 – Resolução de Problemas</button>
+            <button data-tab="u3" onclick="switchTab('u3')">U3 – Simulação Profissional</button>
+            <button data-tab="u4" onclick="switchTab('u4')">U4 – Aprendizagem entre Pares</button>
+          </div>
+        </div>
         <button class="tab" data-tab="docs" onclick="switchTab('docs')">
           <span class="tab-num">📄</span>
           <span class="tab-label">Documentos</span>
-        </button>
-        <button class="tab" data-tab="codigo" onclick="switchTab('codigo')">
-          <span class="tab-num">💻</span>
-          <span class="tab-label">Code Editor</span>
         </button>
         <button class="tab" data-tab="perfil" onclick="switchTab('perfil')">
           <span class="tab-num">👤</span>
@@ -122,7 +119,7 @@
     <main class="main-content">
 
       <!-- ==================== UNIDADE 1 ==================== -->
-      <section id="tab-u1" class="tab-content active">
+      <section id="tab-u1" class="tab-content">
         <div class="unit-header">
           <h2>📋 Unidade 1 – Estudo de Caso</h2>
           <p class="unit-desc">Gestão de Projetos, Matriz RACI, Ciclo de Vida Híbrido e Arquitetura de Software</p>
@@ -459,7 +456,7 @@
       </section>
 
       <!-- ==================== CODE EDITOR ==================== -->
-      <section id="tab-codigo" class="tab-content">
+      <section id="tab-codigo" class="tab-content active">>
         <div class="unit-header">
           <h2>💻 Code Editor</h2>
           <p class="unit-desc">Escreva HTML, CSS e JavaScript, visualize no navegador e salve seus projetos</p>

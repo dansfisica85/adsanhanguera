@@ -1,7 +1,7 @@
 // ===== Estado da Aplicação =====
 let authToken = null;
 let currentUser = null;
-let currentTab = 'u1';
+let currentTab = 'codigo';
 let exerciciosCache = {};
 let respostasCache = {};
 let coordView = false; // false = visao aluno, true = visao admin
@@ -202,12 +202,41 @@ function toggleCoordView() {
 }
 
 // ===== Tabs =====
+function toggleUnidadesMenu() {
+  const menu = document.getElementById('unidadesMenu');
+  const toggle = document.querySelector('.tab-dropdown-toggle');
+  menu.classList.toggle('show');
+  toggle.classList.toggle('open');
+}
+
+document.addEventListener('click', function(e) {
+  const dropdown = document.querySelector('.tab-dropdown');
+  if (dropdown && !dropdown.contains(e.target)) {
+    document.getElementById('unidadesMenu').classList.remove('show');
+    document.querySelector('.tab-dropdown-toggle').classList.remove('open');
+  }
+});
+
 function switchTab(tabId) {
   currentTab = tabId;
+
+  // Fechar dropdown de unidades
+  const menu = document.getElementById('unidadesMenu');
+  if (menu) menu.classList.remove('show');
+  const toggle = document.querySelector('.tab-dropdown-toggle');
+  if (toggle) toggle.classList.remove('open');
 
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   const tabBtn = document.querySelector(`.tab[data-tab="${tabId}"]`);
   if (tabBtn) tabBtn.classList.add('active');
+
+  // Marcar item ativo dentro do dropdown
+  document.querySelectorAll('.tab-dropdown-menu button').forEach(b => b.classList.remove('active-unit'));
+  const unitBtn = document.querySelector(`.tab-dropdown-menu button[data-tab="${tabId}"]`);
+  if (unitBtn) {
+    unitBtn.classList.add('active-unit');
+    if (toggle) toggle.classList.add('active');
+  }
 
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   const tabContent = document.getElementById(`tab-${tabId}`);
