@@ -494,8 +494,8 @@ body {
   padding: 0 24px;
   display: flex;
   gap: 2px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow-x: visible;
+  overflow-y: visible;
 }
 
 .tabs-container::-webkit-scrollbar { height: 0; }
@@ -1824,7 +1824,8 @@ body {
 
   .tab { padding: 10px 12px; }
   .tab-label { display: none; }
-  .tab-dropdown-arrow { display: none; }
+  .tab-dropdown .tab-label { display: inline; }
+  .tab-dropdown-arrow { display: inline; }
   .tab-num { font-size: 0.9rem; }
 
   .main-content { padding: 20px 16px; }
