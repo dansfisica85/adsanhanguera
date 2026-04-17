@@ -606,27 +606,31 @@ app.get('/api/ranking', middlewareAuth, async (req, res) => {
 // ===== DOCUMENTOS =====
 app.get('/api/documentos', (req, res) => {
   const docsDir = path.join(__dirname, 'public', 'docs');
-  const documentos = [];
 
-  const categorias = [];
+  const categorias = [
+    { pasta: 'ads1-projeto-software', label: 'Projeto de Software', cor: 'green' },
+    { pasta: 'ads2', label: 'ADS 2', cor: 'blue' },
+    { pasta: 'ads3', label: 'ADS 3', cor: 'purple' },
+  ];
 
-  for (const cat of categorias) {
+  const pastas = categorias.map(cat => {
     const catDir = path.join(docsDir, cat.pasta);
+    const arquivos = [];
     if (fs.existsSync(catDir)) {
       const files = fs.readdirSync(catDir).filter(f => /\.(pdf|png|jpg)$/i.test(f));
       for (const f of files) {
-        documentos.push({
+        arquivos.push({
           nome: f.replace(/\.[^.]+$/, '').replace(/_/g, ' '),
-          arquivo: `/docs/${cat.pasta}/${f}`,
-          categoria: cat.label,
+          arquivo: `/docs/${cat.pasta}/${encodeURIComponent(f)}`,
           tipo: f.split('.').pop().toLowerCase(),
           isGabarito: /gabarito/i.test(f),
         });
       }
     }
-  }
+    return { label: cat.label, cor: cat.cor, arquivos };
+  });
 
-  res.json({ documentos });
+  res.json({ pastas });
 });
 
 // ===== README =====
