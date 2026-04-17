@@ -1572,64 +1572,128 @@ body {
 
 /* ===== Documents ===== */
 .docs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
-.doc-card {
-  background: #e3f2fd;
-  border: 1px solid #90caf9;
+/* ===== Folder Cards ===== */
+.folder-card {
   border-radius: var(--radius);
-  padding: 24px;
+  padding: 20px 24px;
   cursor: pointer;
   transition: all var(--transition);
   box-shadow: var(--shadow);
   position: relative;
 }
 
-.doc-card:hover {
-  border-color: #1976d2;
-  box-shadow: 0 8px 32px rgba(25, 118, 210, 0.2);
-  transform: translateY(-4px);
+.folder-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
 }
 
-.doc-card::before {
-  content: 'ADS2';
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  background: #1976d2;
-  color: #fff;
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 8px;
-  letter-spacing: 0.5px;
+.folder-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-.doc-card .doc-icon {
+.folder-icon {
   font-size: 2rem;
-  margin-bottom: 8px;
 }
 
-.doc-card h4 {
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--text);
+.folder-info {
+  flex: 1;
 }
 
-.doc-card .doc-cat {
+.folder-info h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.folder-count {
   font-size: 0.78rem;
-  color: var(--text-muted);
+  opacity: 0.7;
 }
 
-.doc-card.gabarito-card {
-  border-left: 4px solid var(--accent-red);
-  background: #e3f2fd;
+.folder-arrow {
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
 }
 
+.folder-open .folder-arrow {
+  transform: rotate(90deg);
+}
+
+/* Folder files list (hidden by default) */
+.folder-files {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+}
+
+.folder-open .folder-files {
+  max-height: 2000px;
+  margin-top: 16px;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  padding-top: 12px;
+}
+
+.doc-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.doc-file:hover {
+  background: rgba(255,255,255,0.5);
+}
+
+.doc-file-icon {
+  font-size: 1.2rem;
+}
+
+.doc-file-name {
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+/* ===== Folder color: Green (Projeto de Software) ===== */
+.folder-green {
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  border: 1px solid #81c784;
+}
+.folder-green .folder-info h4 { color: #2e7d32; }
+.folder-green .folder-count { color: #388e3c; }
+.folder-green .folder-arrow { color: #2e7d32; }
+.folder-green:hover { border-color: #43a047; }
+
+/* ===== Folder color: Blue (ADS 2) ===== */
+.folder-blue {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  border: 1px solid #64b5f6;
+}
+.folder-blue .folder-info h4 { color: #1565c0; }
+.folder-blue .folder-count { color: #1976d2; }
+.folder-blue .folder-arrow { color: #1565c0; }
+.folder-blue:hover { border-color: #1e88e5; }
+
+/* ===== Folder color: Purple (ADS 3) ===== */
+.folder-purple {
+  background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+  border: 1px solid #ba68c8;
+}
+.folder-purple .folder-info h4 { color: #7b1fa2; }
+.folder-purple .folder-count { color: #8e24aa; }
+.folder-purple .folder-arrow { color: #7b1fa2; }
+.folder-purple:hover { border-color: #ab47bc; }
+
+/* ===== Doc locked state ===== */
 .doc-locked {
   opacity: 0.5;
   pointer-events: none;

@@ -766,29 +766,47 @@ async function loadDocumentos() {
     const data = await res.json();
     if (!res.ok) throw new Error();
 
-    if (!data.documentos || data.documentos.length === 0) {
+    if (!data.pastas || data.pastas.length === 0) {
       container.innerHTML = '<p style="color:var(--text-muted);">Nenhum documento encontrado.</p>';
       return;
     }
 
-    container.innerHTML = data.documentos.map(doc => {
-      const isGab = doc.isGabarito;
-      const canSee = !isGab || isAdmin() || isCoord();
-      const icon = doc.tipo === 'pdf' ? '📄' : '🖼️';
-      const lockClass = canSee ? '' : 'doc-locked';
-      const gabClass = isGab ? 'gabarito-card' : '';
+    container.innerHTML = data.pastas.map(pasta => {
+      const filesHtml = pasta.arquivos.map(doc => {
+        const isGab = doc.isGabarito;
+        const canSee = !isGab || isAdmin() || isCoord();
+        const icon = doc.tipo === 'pdf' ? '📄' : '🖼️';
+        const lockClass = canSee ? '' : 'doc-locked';
+        const gabLabel = isGab ? ' • Gabarito' : '';
+
+        return `
+          <div class="doc-file ${lockClass}" onclick="${canSee ? `openDoc('${doc.arquivo}', '${doc.nome.replace(/'/g, "\\'")}')` : 'alert(\\\'Gabaritos disponíveis apenas para administradores.\\\')'}">
+            <span class="doc-file-icon">${icon}</span>
+            <span class="doc-file-name">${doc.nome}${gabLabel}</span>
+          </div>`;
+      }).join('');
 
       return `
-        <div class="doc-card ${gabClass} ${lockClass}" onclick="${canSee ? `openDoc('${doc.arquivo}', '${doc.nome.replace(/'/g, "\\'")}')` : 'alert(\\\'Gabaritos disponíveis apenas para administradores.\\\')'}" >
-          <div class="doc-icon">${icon}</div>
-          <h4>${doc.nome}</h4>
-          <p class="doc-cat">${doc.categoria}${isGab ? ' • Gabarito' : ''}</p>
-        </div>
-      `;
+        <div class="folder-card folder-${pasta.cor}" onclick="toggleFolder(this, event)">
+          <div class="folder-header">
+            <span class="folder-icon">📁</span>
+            <div class="folder-info">
+              <h4>${pasta.label}</h4>
+              <p class="folder-count">${pasta.arquivos.length} arquivo${pasta.arquivos.length !== 1 ? 's' : ''}</p>
+            </div>
+            <span class="folder-arrow">▶</span>
+          </div>
+          <div class="folder-files">${filesHtml}</div>
+        </div>`;
     }).join('');
   } catch {
     container.innerHTML = '<p style="color: var(--accent-red);">Erro ao carregar documentos.</p>';
   }
+}
+
+function toggleFolder(el, e) {
+  if (e.target.closest('.doc-file')) return;
+  el.classList.toggle('folder-open');
 }
 
 function openDoc(url, titulo) {
