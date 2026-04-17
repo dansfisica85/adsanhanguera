@@ -608,15 +608,7 @@ app.get('/api/documentos', (req, res) => {
   const docsDir = path.join(__dirname, 'public', 'docs');
   const documentos = [];
 
-  const categorias = [
-    { pasta: 'geral', label: 'Material Geral' },
-    { pasta: 'u1', label: 'Unidade 1' },
-    { pasta: 'u2', label: 'Unidade 2' },
-    { pasta: 'u3', label: 'Unidade 3' },
-    { pasta: 'u4', label: 'Unidade 4' },
-    { pasta: 'ads2', label: 'ADS 2' },
-    { pasta: 'projeto-software', label: 'Projeto de Software' },
-  ];
+  const categorias = [];
 
   for (const cat of categorias) {
     const catDir = path.join(docsDir, cat.pasta);
