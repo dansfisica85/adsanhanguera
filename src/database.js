@@ -94,6 +94,7 @@ const USUARIOS_SEED = [
   { nome: 'Adrian Japa', email: 'Adrian.japa90@icloud.com', senha: 'Adrian.japa90@Ads2026', role: 'aluno' },
   { nome: 'Renan Lourenço Pedrosa', email: 'renanlourencopedrosa@gmail.com', senha: 'renanlourencopedrosa@Ads2026', role: 'aluno' },
   { nome: 'Pedro Henrique', email: 'pedrohenrique0477@gmail.com', senha: 'pedrohenrique0477@Ads2026', role: 'aluno' },
+  { nome: 'Bianca Emily', email: 'BiancaEmily', senha: 'Ads@Bianca2026#', role: 'aluno' },
 ];
 
 async function initDB() {
