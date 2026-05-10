@@ -2101,6 +2101,52 @@ body {
   flex-wrap: wrap;
 }
 
+.frontend-learning-cta {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 18px;
+}
+
+.btn-aprenda-frontend {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: min(100%, 640px);
+  min-height: 64px;
+  padding: 18px 32px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #ED145B, #FF4D8D, #111827);
+  background-size: 220% 220%;
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.35rem;
+  font-weight: 900;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(237, 20, 91, 0.32), 0 0 0 3px rgba(237, 20, 91, 0.12);
+  animation: gradient-shift 3s ease infinite, frontend-cta-pulse 1.4s ease-in-out infinite;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.btn-aprenda-frontend:hover,
+.btn-aprenda-frontend:focus-visible {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 18px 42px rgba(237, 20, 91, 0.44), 0 0 0 4px rgba(237, 20, 91, 0.18);
+}
+
+.btn-aprenda-frontend:focus-visible {
+  outline: 3px solid #111827;
+  outline-offset: 3px;
+}
+
+@keyframes frontend-cta-pulse {
+  0%, 100% {
+    box-shadow: 0 12px 30px rgba(237, 20, 91, 0.32), 0 0 0 3px rgba(237, 20, 91, 0.12);
+  }
+  50% {
+    box-shadow: 0 16px 44px rgba(237, 20, 91, 0.52), 0 0 0 6px rgba(237, 20, 91, 0.08);
+  }
+}
+
 /* Abas de linguagem */
 .code-lang-tabs {
   display: flex;
@@ -2454,6 +2500,12 @@ body {
 
   .code-project-actions .btn {
     flex: 1;
+  }
+
+  .btn-aprenda-frontend {
+    min-height: 58px;
+    padding: 16px 20px;
+    font-size: 1.05rem;
   }
 
   .code-ide-layout {
