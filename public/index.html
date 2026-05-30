@@ -539,6 +539,12 @@
                 <button class="code-lang-tab" data-lang="js" onclick="switchCodeLang('js')">
                   <span class="lang-tab-icon">📜</span> script.js
                 </button>
+                <div class="code-editor-toolbar">
+                  <button class="editor-tool-btn" onclick="zoomEditorOut()" title="Diminuir zoom (Ctrl -)">A−</button>
+                  <span id="zoomLabel" class="editor-zoom-label" onclick="zoomEditorReset()" title="Restaurar zoom">100%</span>
+                  <button class="editor-tool-btn" onclick="zoomEditorIn()" title="Aumentar zoom (Ctrl +)">A+</button>
+                  <button class="editor-tool-btn" id="btnToggleTheme" onclick="toggleEditorTheme()" title="Alternar tema claro/escuro">🌙</button>
+                </div>
               </div>
 
               <!-- Editores Monaco -->
