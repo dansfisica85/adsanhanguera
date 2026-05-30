@@ -2046,6 +2046,12 @@ body {
   position: relative;
 }
 
+/* Compilador em largura ampliada (full-bleed sem transform p/ não conflitar com fadeIn) */
+#tab-codigo.active {
+  width: min(96vw, 1700px);
+  margin-left: calc(-1 * (min(96vw, 1700px) - 100%) / 2);
+}
+
 .code-project-header {
   display: flex;
   align-items: center;
@@ -2151,7 +2157,7 @@ body {
 .code-lang-tabs {
   display: flex;
   gap: 0;
-  background: #1E293B;
+  background: #EEF2F7;
   border: 1px solid var(--border-light);
   border-bottom: none;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
@@ -2160,12 +2166,12 @@ body {
 
 .code-lang-tab {
   padding: 10px 20px;
-  background: #0F172A;
+  background: #E2E8F0;
   border: none;
-  border-right: 1px solid #334155;
+  border-right: 1px solid #CBD5E1;
   font-size: 0.85rem;
   font-weight: 500;
-  color: #94A3B8;
+  color: #475569;
   cursor: pointer;
   transition: all var(--transition);
   display: flex;
@@ -2174,14 +2180,57 @@ body {
 }
 
 .code-lang-tab:hover {
-  color: #E2E8F0;
-  background: #1E293B;
+  color: #0F172A;
+  background: #F1F5F9;
 }
 
 .code-lang-tab.active {
-  background: #1E293B;
-  color: #E2E8F0;
+  background: #FFFFFF;
+  color: #0F172A;
   border-bottom: 2px solid var(--primary);
+}
+
+/* Barra de ferramentas: zoom + tema */
+.code-editor-toolbar {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.editor-tool-btn {
+  min-width: 30px;
+  height: 28px;
+  padding: 0 8px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: var(--radius-sm);
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.editor-tool-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.editor-zoom-label {
+  min-width: 44px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  user-select: none;
+}
+
+.editor-zoom-label:hover {
+  color: var(--primary);
 }
 
 .lang-tab-icon {
@@ -2194,15 +2243,16 @@ body {
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
   overflow: hidden;
-  min-height: 450px;
+  min-height: 620px;
+  background: #FFFFFF;
 }
 
 /* File Tree Panel */
 .code-file-tree {
-  width: 220px;
-  min-width: 180px;
-  background: #1a1f2e;
-  border-right: 1px solid #334155;
+  width: 240px;
+  min-width: 200px;
+  background: #F1F5F9;
+  border-right: 1px solid #E2E8F0;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -2215,19 +2265,19 @@ body {
   text-transform: uppercase;
   letter-spacing: 1.2px;
   color: #64748B;
-  border-bottom: 1px solid #334155;
-  background: #151a27;
+  border-bottom: 1px solid #E2E8F0;
+  background: #E8EEF5;
 }
 
 .code-file-tree-project {
   padding: 8px 14px;
-  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  border-bottom: 1px solid rgba(203, 213, 225, 0.6);
 }
 
 .file-tree-folder {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #CBD5E1;
+  color: #334155;
 }
 
 .code-file-tree-files {
@@ -2240,20 +2290,20 @@ body {
   gap: 8px;
   padding: 6px 14px 6px 28px;
   font-size: 0.82rem;
-  color: #94A3B8;
+  color: #475569;
   cursor: pointer;
   transition: all 0.15s;
   position: relative;
 }
 
 .code-file-tree-item:hover {
-  background: rgba(59, 130, 246, 0.1);
-  color: #E2E8F0;
+  background: rgba(243, 112, 33, 0.1);
+  color: #0F172A;
 }
 
 .code-file-tree-item.active {
-  background: rgba(59, 130, 246, 0.15);
-  color: #E2E8F0;
+  background: rgba(243, 112, 33, 0.14);
+  color: #0F172A;
   border-left: 2px solid var(--primary);
 }
 
@@ -2294,8 +2344,8 @@ body {
 }
 
 .file-tree-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #E2E8F0;
+  background: rgba(15, 23, 42, 0.08);
+  color: #0F172A;
 }
 
 /* Editor Main Section */
@@ -2331,8 +2381,23 @@ body {
 
 .monaco-container {
   width: 100%;
-  height: 400px;
+  height: 580px;
 }
+
+/* ===== Tema escuro do editor (toggle) ===== */
+.code-ide-layout.editor-dark { background: #1E293B; }
+.code-ide-layout.editor-dark .code-file-tree { background: #1a1f2e; border-right-color: #334155; }
+.code-ide-layout.editor-dark .code-file-tree-header { background: #151a27; color: #64748B; border-bottom-color: #334155; }
+.code-ide-layout.editor-dark .file-tree-folder { color: #CBD5E1; }
+.code-ide-layout.editor-dark .code-file-tree-item { color: #94A3B8; }
+.code-ide-layout.editor-dark .code-file-tree-item:hover { background: rgba(59,130,246,0.1); color: #E2E8F0; }
+.code-ide-layout.editor-dark .code-file-tree-item.active { background: rgba(59,130,246,0.15); color: #E2E8F0; }
+.code-ide-layout.editor-dark .code-lang-tabs { background: #1E293B; }
+.code-ide-layout.editor-dark .code-lang-tab { background: #0F172A; color: #94A3B8; border-right-color: #334155; }
+.code-ide-layout.editor-dark .code-lang-tab:hover { background: #1E293B; color: #E2E8F0; }
+.code-ide-layout.editor-dark .code-lang-tab.active { background: #1E293B; color: #E2E8F0; }
+.code-ide-layout.editor-dark .editor-tool-btn { background: #1E293B; border-color: #334155; color: #CBD5E1; }
+.code-ide-layout.editor-dark .editor-zoom-label { color: #CBD5E1; }
 
 /* ===== Console (full width below editor) ===== */
 .code-console-full {
