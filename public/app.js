@@ -904,10 +904,39 @@ function initMonaco(callback) {
       }
     });
 
+    // Tema claro personalizado (fundo claro)
+    monaco.editor.defineTheme('p5Light', {
+      base: 'vs',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '008000', fontStyle: 'italic' },
+        { token: 'keyword', foreground: 'AF00DB' },
+        { token: 'string', foreground: 'A31515' },
+        { token: 'number', foreground: '098658' },
+        { token: 'tag', foreground: '0000FF' },
+        { token: 'attribute.name', foreground: 'E50000' },
+        { token: 'attribute.value', foreground: 'A31515' },
+      ],
+      colors: {
+        'editor.background': '#FFFFFF',
+        'editor.foreground': '#1E293B',
+        'editorCursor.foreground': '#F37021',
+        'editor.lineHighlightBackground': '#FFF4EC',
+        'editor.selectionBackground': '#FCD9BF',
+        'editorLineNumber.foreground': '#94A3B8',
+        'editorLineNumber.activeForeground': '#F37021',
+        'editorIndentGuide.background': '#E2E8F0',
+      }
+    });
+
     monacoReady = true;
     callback();
   });
 }
+
+// Tema atual do editor (claro por padrão) e tamanho da fonte (zoom)
+let currentEditorTheme = localStorage.getItem('editorTheme') || 'p5Light';
+let editorFontSize = parseInt(localStorage.getItem('editorFontSize') || '15', 10);
 
 function createMonacoEditor(containerId, language, value) {
   const container = document.getElementById(containerId);
@@ -1367,11 +1396,11 @@ function runCode() {
     send('error', ['Promise rejeitada: ' + (e.reason || e)]);
   });
 })();
-<\\/script>`;
+<\/script>`;
 
-  const fullCode = '<!DOCTYPE html>\\n<html>\\n<head><meta charset="UTF-8"><style>'
-    + css + '</style></head>\\n<body>'
-    + html + consoleCapture + '<script>' + js + '<\\/script></body>\\n</html>';
+  const fullCode = '<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8">\n<style>\n'
+    + css + '\n</style>\n</head>\n<body>\n'
+    + html + '\n' + consoleCapture + '\n<script>\n' + js + '\n<\/script>\n</body>\n</html>';
 
   const iframe = document.getElementById('codePreview');
   iframe.srcdoc = fullCode;
