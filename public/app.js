@@ -1032,6 +1032,12 @@ function setupMonacoEditors() {
     setTimeout(() => {
       Object.values(monacoEditors).forEach(ed => ed && ed.layout());
     }, 100);
+    // Sincronizar UI de zoom/tema
+    updateZoomLabel();
+    const tBtn = document.getElementById('btnToggleTheme');
+    if (tBtn) tBtn.textContent = currentEditorTheme === 'p5Light' ? '🌙' : '☀️';
+    const layout = document.querySelector('.code-ide-layout');
+    if (layout) layout.classList.toggle('editor-dark', currentEditorTheme === 'p5Dark');
   });
 }
 
@@ -1085,6 +1091,78 @@ function registerCustomCompletions() {
       };
     }
   });
+
+  // ===== CSS: snippets de propriedades comuns =====
+  monaco.languages.registerCompletionItemProvider('css', {
+    provideCompletionItems: function (model, position) {
+      const word = model.getWordUntilPosition(position);
+      const range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn,
+      };
+      const snip = (label, insertText, documentation) => ({
+        label, kind: monaco.languages.CompletionItemKind.Snippet,
+        insertText, insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        documentation, range,
+      });
+      return {
+        suggestions: [
+          snip('flex-center', 'display: flex;\njustify-content: center;\nalign-items: center;', 'Centralizar com flexbox'),
+          snip('grid-template', 'display: grid;\ngrid-template-columns: repeat(${1:3}, 1fr);\ngap: ${2:16px};', 'Layout em grid'),
+          snip('transition', 'transition: ${1:all} ${2:0.3s} ${3:ease};', 'Transição suave'),
+          snip('box-shadow', 'box-shadow: ${1:0} ${2:4px} ${3:12px} rgba(0,0,0,${4:0.15});', 'Sombra'),
+          snip('border-radius', 'border-radius: ${1:8px};', 'Cantos arredondados'),
+          snip('media-query', '@media (max-width: ${1:768px}) {\n\t${2}\n}', 'Media query responsiva'),
+          snip('keyframes', '@keyframes ${1:nome} {\n\tfrom { ${2:opacity: 0;} }\n\tto { ${3:opacity: 1;} }\n}', 'Animação @keyframes'),
+          snip('gradient', 'background: linear-gradient(${1:135deg}, ${2:#F37021}, ${3:#FF9A56});', 'Gradiente linear'),
+          snip('reset', '* {\n\tmargin: 0;\n\tpadding: 0;\n\tbox-sizing: border-box;\n}', 'Reset básico'),
+        ]
+      };
+    }
+  });
+}
+
+// ===== Zoom e tema do editor =====
+function applyEditorOptions(opts) {
+  Object.values(monacoEditors).forEach(ed => { if (ed) ed.updateOptions(opts); });
+}
+
+function zoomEditorIn() {
+  editorFontSize = Math.min(40, editorFontSize + 1);
+  localStorage.setItem('editorFontSize', editorFontSize);
+  applyEditorOptions({ fontSize: editorFontSize });
+  updateZoomLabel();
+}
+
+function zoomEditorOut() {
+  editorFontSize = Math.max(8, editorFontSize - 1);
+  localStorage.setItem('editorFontSize', editorFontSize);
+  applyEditorOptions({ fontSize: editorFontSize });
+  updateZoomLabel();
+}
+
+function zoomEditorReset() {
+  editorFontSize = 15;
+  localStorage.setItem('editorFontSize', editorFontSize);
+  applyEditorOptions({ fontSize: editorFontSize });
+  updateZoomLabel();
+}
+
+function updateZoomLabel() {
+  const el = document.getElementById('zoomLabel');
+  if (el) el.textContent = Math.round((editorFontSize / 15) * 100) + '%';
+}
+
+function toggleEditorTheme() {
+  currentEditorTheme = currentEditorTheme === 'p5Light' ? 'p5Dark' : 'p5Light';
+  localStorage.setItem('editorTheme', currentEditorTheme);
+  if (window.monaco) monaco.editor.setTheme(currentEditorTheme);
+  const btn = document.getElementById('btnToggleTheme');
+  if (btn) btn.textContent = currentEditorTheme === 'p5Light' ? '🌙' : '☀️';
+  const layout = document.querySelector('.code-ide-layout');
+  if (layout) layout.classList.toggle('editor-dark', currentEditorTheme === 'p5Dark');
 }
 
 function switchCodeLang(lang) {
