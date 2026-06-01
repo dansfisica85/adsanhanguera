@@ -943,7 +943,7 @@ function createMonacoEditor(containerId, language, value) {
   if (!container) return null;
   container.innerHTML = '';
 
-  const langMap = { html: 'html', css: 'css', js: 'javascript' };
+  const langMap = { html: 'html', css: 'css', js: 'javascript', py: 'python' };
   const monacoLang = langMap[language] || language;
 
   const editor = monaco.editor.create(container, {
@@ -1007,10 +1007,6 @@ function createMonacoEditor(containerId, language, value) {
       clearTimeout(autoRunTimer);
       autoRunTimer = setTimeout(() => {
         runCode();
-        // Atualizar live preview se estiver aberto
-        if (livePreviewWindow && !livePreviewWindow.closed) {
-          openLivePreview();
-        }
       }, 800);
     }
   });
@@ -1024,10 +1020,13 @@ function setupMonacoEditors() {
       monacoEditors.html = createMonacoEditor('monacoHTML', 'html', '');
       monacoEditors.css = createMonacoEditor('monacoCSS', 'css', '');
       monacoEditors.js = createMonacoEditor('monacoJS', 'js', '');
+      monacoEditors.py = createMonacoEditor('monacoPY', 'py', '');
 
       // Registrar snippets e completions customizados para JS
       registerCustomCompletions();
     }
+    // Configurar área de arrastar-e-soltar arquivos
+    setupCodeDropZone();
     // Forçar layout ao trocar aba
     setTimeout(() => {
       Object.values(monacoEditors).forEach(ed => ed && ed.layout());
@@ -1122,6 +1121,47 @@ function registerCustomCompletions() {
       };
     }
   });
+
+  // ===== Completions Python =====
+  monaco.languages.registerCompletionItemProvider('python', {
+    provideCompletionItems: function (model, position) {
+      const word = model.getWordUntilPosition(position);
+      const range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn,
+      };
+      const snip = (label, insertText, documentation) => ({
+        label, kind: monaco.languages.CompletionItemKind.Snippet,
+        insertText, insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        documentation, range,
+      });
+      return {
+        suggestions: [
+          snip('print', 'print(${1:valor})', 'Imprime no console'),
+          snip('def', 'def ${1:funcao}(${2:args}):\n\t${3:pass}', 'Define uma função'),
+          snip('for', 'for ${1:item} in ${2:iteravel}:\n\t${3:pass}', 'Loop for'),
+          snip('forrange', 'for ${1:i} in range(${2:10}):\n\t${3:pass}', 'Loop for com range'),
+          snip('while', 'while ${1:condicao}:\n\t${2:pass}', 'Loop while'),
+          snip('if', 'if ${1:condicao}:\n\t${2:pass}', 'Condição if'),
+          snip('ifelse', 'if ${1:condicao}:\n\t${2:pass}\nelse:\n\t${3:pass}', 'Condição if/else'),
+          snip('elif', 'elif ${1:condicao}:\n\t${2:pass}', 'Condição elif'),
+          snip('class', 'class ${1:Nome}:\n\tdef __init__(self${2:, args}):\n\t\t${3:pass}', 'Define uma classe'),
+          snip('try', 'try:\n\t${1:pass}\nexcept ${2:Exception} as e:\n\t${3:print(e)}', 'Tratamento de exceção'),
+          snip('import', 'import ${1:modulo}', 'Importa um módulo'),
+          snip('fromimport', 'from ${1:modulo} import ${2:nome}', 'Importa de um módulo'),
+          snip('input', "${1:valor} = input('${2:Digite}')", 'Lê entrada do usuário'),
+          snip('len', 'len(${1:objeto})', 'Tamanho de um objeto'),
+          snip('range', 'range(${1:0}, ${2:10})', 'Sequência de números'),
+          snip('lambda', 'lambda ${1:x}: ${2:x}', 'Função anônima'),
+          snip('listcomp', '[${1:x} for ${2:x} in ${3:iteravel}]', 'List comprehension'),
+          snip('main', "if __name__ == '__main__':\n\t${1:main()}", 'Bloco main'),
+          snip('enumerate', 'for ${1:i}, ${2:item} in enumerate(${3:lista}):\n\t${4:pass}', 'Itera com índice'),
+        ]
+      };
+    }
+  });
 }
 
 // ===== Zoom e tema do editor =====
@@ -1180,10 +1220,14 @@ function switchCodeLang(lang) {
   const treeItem = document.querySelector(`.code-file-tree-item[data-lang="${lang}"]`);
   if (treeItem) treeItem.classList.add('active');
 
-  // For\u00e7ar layout do editor Monaco ativo
+  // Forçar layout do editor Monaco ativo
   if (monacoEditors[lang]) {
     setTimeout(() => monacoEditors[lang].layout(), 50);
   }
+
+  // Mostrar botão "Rodar Python" apenas na aba Python
+  const btnPy = document.getElementById('btnRunPython');
+  if (btnPy) btnPy.style.display = lang === 'py' ? '' : 'none';
 }
 
 // Helpers para obter/setar valores dos editores
@@ -1357,6 +1401,7 @@ function loadProjectIntoEditor(projeto) {
   setEditorValue('html', projeto.html);
   setEditorValue('css', projeto.css);
   setEditorValue('js', projeto.js);
+  setEditorValue('py', projeto.py);
 
   // Renderizar botão de visto
   renderVistoButton(projeto);
@@ -1380,6 +1425,7 @@ function clearEditor() {
   setEditorValue('html', '');
   setEditorValue('css', '');
   setEditorValue('js', '');
+  setEditorValue('py', '');
   document.getElementById('btnDeleteProjeto').style.display = 'none';
   const iframe = document.getElementById('codePreview');
   if (iframe) iframe.srcdoc = '';
@@ -1456,15 +1502,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-function runCode() {
-  const html = getEditorValue('html');
-  const css = getEditorValue('css');
-  const js = getEditorValue('js');
-
-  clearConsole();
-
-  // Script injetado no iframe para capturar console e erros
-  const consoleCapture = `
+// Script injetado no preview para capturar console e erros
+const CONSOLE_CAPTURE_SCRIPT = `
 <script>
 (function(){
   var _origLog = console.log, _origWarn = console.warn,
@@ -1494,9 +1533,67 @@ function runCode() {
 })();
 <\/script>`;
 
-  const fullCode = '<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8">\n<style>\n'
-    + css + '\n</style>\n</head>\n<body>\n'
-    + html + '\n' + consoleCapture + '\n<script>\n' + js + '\n<\/script>\n</body>\n</html>';
+// Monta um documento HTML completo vinculando CSS e JS ao HTML.
+// Resolve referências locais a style.css/script.js e injeta o conteúdo inline,
+// funcionando tanto com HTML parcial quanto com documentos completos.
+function buildFullCode(html, css, js, opts) {
+  opts = opts || {};
+  const title = opts.title || 'Preview';
+  const includeConsole = opts.console !== false;
+  html = html || '';
+  css = css || '';
+  js = js || '';
+
+  const consoleCapture = includeConsole ? CONSOLE_CAPTURE_SCRIPT : '';
+  const styleTag = css.trim() ? '<style>\n' + css + '\n</style>' : '';
+  const scriptTag = js.trim() ? '<script>\n' + js + '\n<\/script>' : '';
+
+  const hasFullDoc = /<html[\s>]/i.test(html) || /<!DOCTYPE/i.test(html);
+
+  if (hasFullDoc) {
+    let doc = html;
+    // Remover referências a arquivos locais que serão injetados inline
+    doc = doc.replace(/<link\b[^>]*href=["'][^"']*(?:style|styles|main)\.css["'][^>]*>/gi, '');
+    doc = doc.replace(/<script\b[^>]*src=["'][^"']*(?:script|main|app|index)\.js["'][^>]*>\s*<\/script>/gi, '');
+
+    // Injetar CSS no <head>
+    if (/<\/head>/i.test(doc)) {
+      doc = doc.replace(/<\/head>/i, styleTag + '\n</head>');
+    } else if (/<head\b[^>]*>/i.test(doc)) {
+      doc = doc.replace(/<head\b[^>]*>/i, function (m) { return m + '\n' + styleTag; });
+    } else if (/<html\b[^>]*>/i.test(doc)) {
+      doc = doc.replace(/<html\b[^>]*>/i, function (m) { return m + '\n<head><meta charset="UTF-8">' + styleTag + '</head>'; });
+    } else {
+      doc = styleTag + '\n' + doc;
+    }
+
+    // Injetar console + JS antes de </body>
+    const inject = consoleCapture + '\n' + scriptTag;
+    if (/<\/body>/i.test(doc)) {
+      doc = doc.replace(/<\/body>/i, inject + '\n</body>');
+    } else {
+      doc = doc + '\n' + inject;
+    }
+    return doc;
+  }
+
+  // HTML parcial: montar documento completo
+  return '<!DOCTYPE html>\n<html lang="pt-br">\n<head>\n'
+    + '<meta charset="UTF-8">\n'
+    + '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+    + '<title>' + title + '</title>\n'
+    + styleTag + '\n</head>\n<body>\n'
+    + html + '\n' + consoleCapture + '\n' + scriptTag + '\n</body>\n</html>';
+}
+
+function runCode() {
+  const html = getEditorValue('html');
+  const css = getEditorValue('css');
+  const js = getEditorValue('js');
+
+  clearConsole();
+
+  const fullCode = buildFullCode(html, css, js, { console: true });
 
   const iframe = document.getElementById('codePreview');
   iframe.srcdoc = fullCode;
@@ -1533,6 +1630,7 @@ async function salvarProjeto() {
   const html = getEditorValue('html');
   const css = getEditorValue('css');
   const js = getEditorValue('js');
+  const py = getEditorValue('py');
 
   try {
     let res;
@@ -1540,13 +1638,13 @@ async function salvarProjeto() {
       res = await fetchWithRetry(`/api/projetos/${currentProjectId}`, {
         method: 'PUT',
         headers: authHeaders(),
-        body: JSON.stringify({ nome, html, css, js }),
+        body: JSON.stringify({ nome, html, css, js, py }),
       });
     } else {
       res = await fetchWithRetry('/api/projetos', {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ nome, html, css, js }),
+        body: JSON.stringify({ nome, html, css, js, py }),
       });
     }
     const data = await res.json();
@@ -1613,10 +1711,14 @@ ${html}
 </body>
 </html>`;
 
-  // Baixar os 3 arquivos individualmente
+  // Baixar os arquivos individualmente
   downloadBlob(fullHtml, `${sanitizedName}/index.html`, 'text/html');
   setTimeout(() => downloadBlob(css, `${sanitizedName}/style.css`, 'text/css'), 200);
   setTimeout(() => downloadBlob(js, `${sanitizedName}/script.js`, 'text/javascript'), 400);
+  const py = getEditorValue('py');
+  if (py && py.trim()) {
+    setTimeout(() => downloadBlob(py, `${sanitizedName}/main.py`, 'text/x-python'), 600);
+  }
 }
 
 function downloadBlob(content, filename, mimeType) {
@@ -1657,51 +1759,134 @@ ${html}
     downloadBlob(getEditorValue('css'), 'style.css', 'text/css');
   } else if (type === 'js') {
     downloadBlob(getEditorValue('js'), 'script.js', 'text/javascript');
+  } else if (type === 'py') {
+    downloadBlob(getEditorValue('py'), 'main.py', 'text/x-python');
   }
 }
 
 // ===== Live Server Preview =====
-let livePreviewWindow = null;
-
 function openLivePreview() {
   const html = getEditorValue('html');
   const css = getEditorValue('css');
   const js = getEditorValue('js');
   const nome = document.getElementById('codeProjectName').value.trim() || 'Meu Projeto';
 
-  const fullCode = `<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${nome} — Live Server</title>
-  <style>${css}</style>
-</head>
-<body>
-${html}
-  <script>${js}<\/script>
-</body>
-</html>`;
+  // Documento completo com CSS e JS já vinculados ao HTML
+  const fullCode = buildFullCode(html, css, js, { title: nome + ' — Live Server', console: false });
 
-  // Se a janela j\u00e1 existe e est\u00e1 aberta, atualizar conte\u00fado
-  if (livePreviewWindow && !livePreviewWindow.closed) {
-    livePreviewWindow.document.open();
-    livePreviewWindow.document.write(fullCode);
-    livePreviewWindow.document.close();
-    livePreviewWindow.focus();
+  // Abrir SEMPRE em uma nova aba usando um Blob URL
+  const blob = new Blob([fullCode], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+
+  if (!win) {
+    showCodeNotification('Permita pop-ups para abrir o Live Server em nova aba.', 'error');
   } else {
-    // Abrir nova janela
-    livePreviewWindow = window.open('', '_blank');
-    if (livePreviewWindow) {
-      livePreviewWindow.document.open();
-      livePreviewWindow.document.write(fullCode);
-      livePreviewWindow.document.close();
-    }
+    showCodeNotification('Live Server aberto em nova aba!', 'success');
   }
 
-  // Executar tamb\u00e9m no iframe oculto para captura de console
+  // Liberar o Blob após a aba carregar
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+
+  // Atualizar também o preview/console embutido
   runCode();
-  showCodeNotification('Live Server aberto no navegador!', 'success');
+}
+
+// ===== Execução de Python (Pyodide) =====
+let pyodideInstance = null;
+let pyodideLoadingPromise = null;
+
+async function ensurePyodide() {
+  if (pyodideInstance) return pyodideInstance;
+  if (pyodideLoadingPromise) return pyodideLoadingPromise;
+  pyodideLoadingPromise = (async () => {
+    if (!window.loadPyodide) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js';
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('Falha ao carregar o interpretador Python (Pyodide).'));
+        document.head.appendChild(s);
+      });
+    }
+    pyodideInstance = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/' });
+    return pyodideInstance;
+  })();
+  return pyodideLoadingPromise;
+}
+
+async function runPython() {
+  const code = getEditorValue('py');
+  clearConsole();
+  if (!code.trim()) {
+    appendConsole('info', 'Escreva algum código Python em main.py para executar.');
+    return;
+  }
+  appendConsole('info', '🐍 Carregando interpretador Python...');
+  try {
+    const py = await ensurePyodide();
+    py.setStdout({ batched: (s) => appendConsole('log', s) });
+    py.setStderr({ batched: (s) => appendConsole('error', s) });
+    clearConsole();
+    await py.runPythonAsync(code);
+    appendConsole('info', '✓ Execução concluída.');
+  } catch (err) {
+    appendConsole('error', String((err && err.message) || err));
+  }
+}
+
+// ===== Importação de arquivos (botão + arrastar e soltar) =====
+async function handleFileImport(files) {
+  if (!files || !files.length) return;
+  const imported = [];
+  for (const file of files) {
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    let text = '';
+    try { text = await file.text(); } catch (e) { continue; }
+    if (ext === 'html' || ext === 'htm') { setEditorValue('html', text); imported.push('index.html'); }
+    else if (ext === 'css') { setEditorValue('css', text); imported.push('style.css'); }
+    else if (ext === 'js') { setEditorValue('js', text); imported.push('script.js'); }
+    else if (ext === 'py') { setEditorValue('py', text); imported.push('main.py'); }
+    else { showCodeNotification('Tipo não suportado: ' + file.name, 'error'); }
+  }
+  if (imported.length) {
+    runCode();
+    showCodeNotification('Arquivos importados: ' + imported.join(', '), 'success');
+  }
+}
+
+function setupCodeDropZone() {
+  const layout = document.querySelector('.code-ide-layout');
+  if (!layout || layout.dataset.dropReady) return;
+  layout.dataset.dropReady = '1';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'code-drop-overlay';
+  overlay.innerHTML = '<div class="code-drop-inner">📥 Solte os arquivos aqui<br><small>.html · .css · .js · .py</small></div>';
+  layout.appendChild(overlay);
+
+  let counter = 0;
+  const hasFiles = (e) => e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1;
+
+  layout.addEventListener('dragenter', (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    counter++;
+    layout.classList.add('drag-active');
+  });
+  layout.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+  layout.addEventListener('dragleave', () => {
+    counter--;
+    if (counter <= 0) { counter = 0; layout.classList.remove('drag-active'); }
+  });
+  layout.addEventListener('drop', (e) => {
+    e.preventDefault();
+    counter = 0;
+    layout.classList.remove('drag-active');
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+      handleFileImport(e.dataTransfer.files);
+    }
+  });
 }
 
 function showCodeNotification(msg, type) {
@@ -1798,6 +1983,33 @@ async function toggleVisto(projetoId) {
 
 // ===== RANKING =====
 
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Mensagens de incentivo para quem assume a liderança (muda a cada nova liderança)
+const RANKING_MENSAGENS_LIDER = [
+  'assumiu a ponta! Continue codando e inspire a turma! 🚀',
+  'é o novo líder! Mostre que código bom não para! 💪',
+  'está voando alto! Mantenha o ritmo e ninguém te alcança! ✈️',
+  'chegou ao topo! Cada linha conta — siga firme! 🔥',
+  'dominou o ranking! Que tal mais um projeto incrível? 🌟',
+  'lidera com estilo! Programar é a sua arte! 🎨',
+  'está imparável! Transforme ideias em projetos! ⚡',
+  'conquistou o 1º lugar! Inspire quem vem atrás! 🏅',
+];
+
+const RANKING_INCENTIVO_PODIO = [
+  '👑 Liderança absoluta!',
+  '🔥 Quase no topo!',
+  '💎 No pódio, brilhando!',
+];
+
 async function loadRanking() {
   const section = document.getElementById('rankingSection');
   if (!section) return;
@@ -1813,43 +2025,54 @@ async function loadRanking() {
       return;
     }
 
-    const medals = ['🥇', '🥈', '🥉'];
+    const lider = ranking[0];
 
-    let html = `
+    // Detectar mudança de liderança e trocar a mensagem de incentivo
+    let msgIndex = parseInt(localStorage.getItem('rankingMsgIndex') || '-1', 10);
+    const prevLeaderId = localStorage.getItem('rankingLeaderId');
+    if (String(lider.id) !== String(prevLeaderId)) {
+      msgIndex = (msgIndex + 1) % RANKING_MENSAGENS_LIDER.length;
+      localStorage.setItem('rankingMsgIndex', String(msgIndex));
+      localStorage.setItem('rankingLeaderId', String(lider.id));
+    }
+    if (msgIndex < 0) { msgIndex = 0; localStorage.setItem('rankingMsgIndex', '0'); }
+
+    const primeiroNome = escapeHtml(String(lider.nome).split(' ')[0]);
+    const liderMsg = '🎉 <strong>' + primeiroNome + '</strong> ' + RANKING_MENSAGENS_LIDER[msgIndex];
+
+    const medals = ['🥇', '🥈', '🥉'];
+    let cards = '';
+    ranking.forEach((aluno, i) => {
+      const pos = i + 1;
+      const topClass = i < 3 ? ' ranking-card-top ranking-top-' + pos : '';
+      const medal = medals[i] || (pos + 'º');
+      const incentivo = i < 3
+        ? '<div class="ranking-card-incentivo">' + RANKING_INCENTIVO_PODIO[i] + '</div>'
+        : '<div class="ranking-card-incentivo muted">Continue subindo! 🚀</div>';
+      cards += `
+        <div class="ranking-card${topClass}">
+          <div class="ranking-card-medal">${medal}</div>
+          <div class="ranking-card-name">${escapeHtml(aluno.nome)}</div>
+          ${incentivo}
+          <div class="ranking-card-stats">
+            <span title="Projetos">📁 ${aluno.totalProjetos}</span>
+            <span title="Linhas de código">📝 ${aluno.totalLinhas.toLocaleString('pt-BR')}</span>
+            <span title="Palavras">🔤 ${aluno.totalPalavras.toLocaleString('pt-BR')}</span>
+          </div>
+        </div>
+      `;
+    });
+
+    section.innerHTML = `
       <div class="ranking-header">
         <h3>🏆 Ranking dos Alunos</h3>
         <button class="btn btn-sm btn-outline ranking-toggle" onclick="toggleRankingView()">Minimizar</button>
       </div>
       <div id="rankingBody" class="ranking-body">
-        <table class="ranking-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Aluno</th>
-              <th>Projetos</th>
-              <th>Linhas</th>
-              <th>Palavras</th>
-            </tr>
-          </thead>
-          <tbody>
+        <div class="ranking-leader-msg">${liderMsg}</div>
+        <div class="ranking-cards">${cards}</div>
+      </div>
     `;
-
-    ranking.forEach((aluno, i) => {
-      const medal = medals[i] || (i + 1);
-      const medalClass = i < 3 ? `ranking-top-${i + 1}` : '';
-      html += `
-        <tr class="${medalClass}">
-          <td class="ranking-pos">${typeof medal === 'string' ? medal : medal + 'º'}</td>
-          <td class="ranking-name">${aluno.nome}</td>
-          <td>${aluno.totalProjetos}</td>
-          <td>${aluno.totalLinhas.toLocaleString('pt-BR')}</td>
-          <td>${aluno.totalPalavras.toLocaleString('pt-BR')}</td>
-        </tr>
-      `;
-    });
-
-    html += '</tbody></table></div>';
-    section.innerHTML = html;
     section.style.display = '';
   } catch (err) {
     console.error('Erro ao carregar ranking:', err);

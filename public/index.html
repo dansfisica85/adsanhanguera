@@ -484,7 +484,10 @@
             </div>
             <div class="code-project-actions">
               <button class="btn btn-primary btn-sm" onclick="salvarProjeto()">💾 Salvar</button>
-              <button class="btn btn-success btn-sm" onclick="openLivePreview()" title="Abrir no navegador">🌐 Live Server</button>
+              <button class="btn btn-success btn-sm" onclick="openLivePreview()" title="Abrir em nova aba">🌐 Live Server</button>
+              <button class="btn btn-sm" id="btnRunPython" onclick="runPython()" title="Executar código Python" style="display:none;background:#3776AB;color:#fff;">▶ Rodar Python</button>
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('fileImportInput').click()" title="Importar arquivos do computador">📤 Importar</button>
+              <input type="file" id="fileImportInput" multiple accept=".html,.htm,.css,.js,.py" style="display:none;" onchange="handleFileImport(this.files); this.value='';" />
               <button class="btn btn-outline btn-sm" onclick="downloadProjeto()">📦 Download ZIP</button>
               <button class="btn btn-danger btn-sm" id="btnDeleteProjeto" onclick="deletarProjeto()" style="display:none;">🗑 Excluir</button>
               <button class="btn btn-sm" onclick="window.open('https://professordavi.my.canva.site/hexadecimal','_blank')" style="background:var(--accent-purple);color:#fff;">🔢 Hexadecimal e Binário</button>
@@ -523,6 +526,13 @@
                     <button class="file-tree-btn" onclick="event.stopPropagation(); downloadSingleFile('js')" title="Baixar arquivo">⬇</button>
                   </div>
                 </div>
+                <div class="code-file-tree-item" data-lang="py" onclick="switchCodeLang('py')">
+                  <span class="file-tree-icon">🐍</span>
+                  <span class="file-tree-name">main.py</span>
+                  <div class="file-tree-actions">
+                    <button class="file-tree-btn" onclick="event.stopPropagation(); downloadSingleFile('py')" title="Baixar arquivo">⬇</button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -538,6 +548,9 @@
                 </button>
                 <button class="code-lang-tab" data-lang="js" onclick="switchCodeLang('js')">
                   <span class="lang-tab-icon">📜</span> script.js
+                </button>
+                <button class="code-lang-tab" data-lang="py" onclick="switchCodeLang('py')">
+                  <span class="lang-tab-icon">🐍</span> main.py
                 </button>
                 <div class="code-editor-toolbar">
                   <button class="editor-tool-btn" onclick="zoomEditorOut()" title="Diminuir zoom (Ctrl -)">A−</button>
@@ -557,6 +570,9 @@
                 </div>
                 <div id="editorJS" class="code-editor-pane">
                   <div id="monacoJS" class="monaco-container"></div>
+                </div>
+                <div id="editorPY" class="code-editor-pane">
+                  <div id="monacoPY" class="monaco-container"></div>
                 </div>
               </div>
             </div>

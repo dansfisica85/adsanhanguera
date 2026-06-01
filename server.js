@@ -448,10 +448,10 @@ app.get('/api/projetos/:id', middlewareAuth, async (req, res) => {
 // Criar novo projeto
 app.post('/api/projetos', middlewareAuth, async (req, res) => {
   try {
-    const { nome, html, css, js } = req.body;
+    const { nome, html, css, js, py } = req.body;
     const result = await dbExecute({
-      sql: `INSERT INTO projetos_codigo (aluno_id, nome, html, css, js) VALUES (?, ?, ?, ?, ?)`,
-      args: [req.user.id, nome || 'Meu Projeto', html || '', css || '', js || ''],
+      sql: `INSERT INTO projetos_codigo (aluno_id, nome, html, css, js, py) VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [req.user.id, nome || 'Meu Projeto', html || '', css || '', js || '', py || ''],
     });
     res.json({ id: Number(result.lastInsertRowid), message: 'Projeto criado.' });
   } catch (err) {
@@ -471,10 +471,10 @@ app.put('/api/projetos/:id', middlewareAuth, async (req, res) => {
     }
     if (req.user.role === 'coordenador') return res.status(403).json({ error: 'Coordenadores não podem editar projetos.' });
 
-    const { nome, html, css, js } = req.body;
+    const { nome, html, css, js, py } = req.body;
     await dbExecute({
-      sql: `UPDATE projetos_codigo SET nome = ?, html = ?, css = ?, js = ?, atualizado_em = datetime('now') WHERE id = ?`,
-      args: [nome || projeto.nome, html ?? projeto.html, css ?? projeto.css, js ?? projeto.js, req.params.id],
+      sql: `UPDATE projetos_codigo SET nome = ?, html = ?, css = ?, js = ?, py = ?, atualizado_em = datetime('now') WHERE id = ?`,
+      args: [nome || projeto.nome, html ?? projeto.html, css ?? projeto.css, js ?? projeto.js, py ?? projeto.py, req.params.id],
     });
     res.json({ message: 'Projeto atualizado.' });
   } catch (err) {
@@ -575,14 +575,14 @@ app.get('/api/ranking', middlewareAuth, async (req, res) => {
     const ranking = [];
     for (const aluno of alunos.rows) {
       const projetos = await dbExecute({
-        sql: 'SELECT html, css, js FROM projetos_codigo WHERE aluno_id = ?',
+        sql: 'SELECT html, css, js, py FROM projetos_codigo WHERE aluno_id = ?',
         args: [aluno.id],
       });
       let totalLinhas = 0;
       let totalPalavras = 0;
       const totalProjetos = projetos.rows.length;
       for (const p of projetos.rows) {
-        const code = (p.html || '') + '\n' + (p.css || '') + '\n' + (p.js || '');
+        const code = (p.html || '') + '\n' + (p.css || '') + '\n' + (p.js || '') + '\n' + (p.py || '');
         totalLinhas += code.split('\n').filter(l => l.trim().length > 0).length;
         totalPalavras += code.split(/\s+/).filter(w => w.length > 0).length;
       }

@@ -2611,3 +2611,201 @@ body {
     font-size: 0.78rem;
   }
 }
+
+/* ===== Ranking (cards horizontais animados) ===== */
+.ranking-section {
+  margin-bottom: 22px;
+}
+
+.ranking-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ranking-header h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.ranking-leader-msg {
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border: 1px solid #FCD34D;
+  color: #92400E;
+  padding: 11px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  animation: rankingMsgIn 0.5s ease;
+}
+
+@keyframes rankingMsgIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ranking-cards {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 8px 4px 16px;
+  scroll-snap-type: x proximity;
+}
+
+.ranking-cards::-webkit-scrollbar { height: 8px; }
+.ranking-cards::-webkit-scrollbar-track { background: transparent; }
+.ranking-cards::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+
+.ranking-card {
+  flex: 0 0 auto;
+  width: 172px;
+  min-height: 158px;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 16px 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  scroll-snap-align: start;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ranking-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+.ranking-card-medal {
+  font-size: 2.1rem;
+  line-height: 1;
+}
+
+.ranking-card-name {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.ranking-card-incentivo {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.ranking-card-incentivo.muted {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.ranking-card-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.ranking-card-stats span { white-space: nowrap; }
+
+/* Pódio animado (1º, 2º, 3º lugares) */
+.ranking-card-top { color: #3a2c00; }
+
+.ranking-top-1 {
+  background: linear-gradient(135deg, #FFF7DB, #FFE082);
+  border-color: #FFC107;
+  animation: podioGold 2s ease-in-out infinite;
+}
+
+.ranking-top-2 {
+  background: linear-gradient(135deg, #F4F6F8, #CFD8DC);
+  border-color: #B0BEC5;
+  animation: podioFloat 2.4s ease-in-out infinite;
+}
+
+.ranking-top-3 {
+  background: linear-gradient(135deg, #FBE9D8, #F0B27A);
+  border-color: #E59866;
+  animation: podioFloat 2.8s ease-in-out infinite;
+}
+
+.ranking-top-1 .ranking-card-medal {
+  animation: medalSpin 3s ease-in-out infinite;
+}
+
+@keyframes podioGold {
+  0%, 100% {
+    box-shadow: 0 6px 18px rgba(255, 193, 7, 0.35), 0 0 0 0 rgba(255, 193, 7, 0.4);
+    transform: translateY(0) scale(1.04);
+  }
+  50% {
+    box-shadow: 0 14px 32px rgba(255, 193, 7, 0.5), 0 0 0 7px rgba(255, 193, 7, 0);
+    transform: translateY(-6px) scale(1.06);
+  }
+}
+
+@keyframes podioFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes medalSpin {
+  0%, 100% { transform: rotate(0) scale(1); }
+  25% { transform: rotate(-12deg) scale(1.18); }
+  75% { transform: rotate(12deg) scale(1.18); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ranking-top-1, .ranking-top-2, .ranking-top-3, .ranking-top-1 .ranking-card-medal {
+    animation: none;
+  }
+}
+
+/* ===== Arrastar e soltar arquivos no editor ===== */
+.code-ide-layout {
+  position: relative;
+}
+
+.code-drop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(243, 112, 33, 0.12);
+  border: 3px dashed var(--primary);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+}
+
+.code-ide-layout.drag-active .code-drop-overlay {
+  display: flex;
+}
+
+.code-drop-inner {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--primary);
+  text-align: center;
+  background: var(--surface);
+  padding: 22px 34px;
+  border-radius: var(--radius);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.code-drop-inner small {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}

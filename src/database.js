@@ -168,6 +168,14 @@ async function initDB() {
     // Coluna já existe, ignorar
   }
 
+  // Migration: adicionar coluna py (código Python) se não existir
+  try {
+    await dbExecute(`ALTER TABLE projetos_codigo ADD COLUMN py TEXT DEFAULT ''`);
+    console.log('  ✅ Coluna py adicionada.');
+  } catch (e) {
+    // Coluna já existe, ignorar
+  }
+
   console.log('✅ Banco de dados inicializado com sucesso!');
 }
 
