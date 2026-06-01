@@ -1545,6 +1545,16 @@ const CONSOLE_CAPTURE_SCRIPT = `
 })();
 <\/script>`;
 
+// Escapa HTML para inserção segura em innerHTML.
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // Substitui referências a imagens do projeto (src/href/url) pelas data URLs.
 // Aceita caminhos com "./", "/" ou subpastas antes do nome do arquivo.
 function resolveAssetRefs(text, kind) {
@@ -2175,33 +2185,6 @@ async function toggleVisto(projetoId) {
 
 // ===== RANKING =====
 
-function escapeHtml(str) {
-  return String(str == null ? '' : str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-// Mensagens de incentivo para quem assume a liderança (muda a cada nova liderança)
-const RANKING_MENSAGENS_LIDER = [
-  'assumiu a ponta! Continue codando e inspire a turma! 🚀',
-  'é o novo líder! Mostre que código bom não para! 💪',
-  'está voando alto! Mantenha o ritmo e ninguém te alcança! ✈️',
-  'chegou ao topo! Cada linha conta — siga firme! 🔥',
-  'dominou o ranking! Que tal mais um projeto incrível? 🌟',
-  'lidera com estilo! Programar é a sua arte! 🎨',
-  'está imparável! Transforme ideias em projetos! ⚡',
-  'conquistou o 1º lugar! Inspire quem vem atrás! 🏅',
-];
-
-const RANKING_INCENTIVO_PODIO = [
-  '👑 Liderança absoluta!',
-  '🔥 Quase no topo!',
-  '💎 No pódio, brilhando!',
-];
-
 async function loadRanking() {
   const section = document.getElementById('rankingSection');
   if (!section) return;
@@ -2217,54 +2200,43 @@ async function loadRanking() {
       return;
     }
 
-    const lider = ranking[0];
-
-    // Detectar mudança de liderança e trocar a mensagem de incentivo
-    let msgIndex = parseInt(localStorage.getItem('rankingMsgIndex') || '-1', 10);
-    const prevLeaderId = localStorage.getItem('rankingLeaderId');
-    if (String(lider.id) !== String(prevLeaderId)) {
-      msgIndex = (msgIndex + 1) % RANKING_MENSAGENS_LIDER.length;
-      localStorage.setItem('rankingMsgIndex', String(msgIndex));
-      localStorage.setItem('rankingLeaderId', String(lider.id));
-    }
-    if (msgIndex < 0) { msgIndex = 0; localStorage.setItem('rankingMsgIndex', '0'); }
-
-    const primeiroNome = escapeHtml(String(lider.nome).split(' ')[0]);
-    const liderMsg = '🎉 <strong>' + primeiroNome + '</strong> ' + RANKING_MENSAGENS_LIDER[msgIndex];
-
     const medals = ['🥇', '🥈', '🥉'];
-    let cards = '';
-    ranking.forEach((aluno, i) => {
-      const pos = i + 1;
-      const topClass = i < 3 ? ' ranking-card-top ranking-top-' + pos : '';
-      const medal = medals[i] || (pos + 'º');
-      const incentivo = i < 3
-        ? '<div class="ranking-card-incentivo">' + RANKING_INCENTIVO_PODIO[i] + '</div>'
-        : '<div class="ranking-card-incentivo muted">Continue subindo! 🚀</div>';
-      cards += `
-        <div class="ranking-card${topClass}">
-          <div class="ranking-card-medal">${medal}</div>
-          <div class="ranking-card-name">${escapeHtml(aluno.nome)}</div>
-          ${incentivo}
-          <div class="ranking-card-stats">
-            <span title="Projetos">📁 ${aluno.totalProjetos}</span>
-            <span title="Linhas de código">📝 ${aluno.totalLinhas.toLocaleString('pt-BR')}</span>
-            <span title="Palavras">🔤 ${aluno.totalPalavras.toLocaleString('pt-BR')}</span>
-          </div>
-        </div>
-      `;
-    });
 
-    section.innerHTML = `
+    let html = `
       <div class="ranking-header">
         <h3>🏆 Ranking dos Alunos</h3>
         <button class="btn btn-sm btn-outline ranking-toggle" onclick="toggleRankingView()">Minimizar</button>
       </div>
       <div id="rankingBody" class="ranking-body">
-        <div class="ranking-leader-msg">${liderMsg}</div>
-        <div class="ranking-cards">${cards}</div>
-      </div>
+        <table class="ranking-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Aluno</th>
+              <th>Projetos</th>
+              <th>Linhas</th>
+              <th>Palavras</th>
+            </tr>
+          </thead>
+          <tbody>
     `;
+
+    ranking.forEach((aluno, i) => {
+      const medal = medals[i] || (i + 1);
+      const medalClass = i < 3 ? `ranking-top-${i + 1}` : '';
+      html += `
+        <tr class="${medalClass}">
+          <td class="ranking-pos">${typeof medal === 'string' ? medal : medal + 'º'}</td>
+          <td class="ranking-name">${aluno.nome}</td>
+          <td>${aluno.totalProjetos}</td>
+          <td>${aluno.totalLinhas.toLocaleString('pt-BR')}</td>
+          <td>${aluno.totalPalavras.toLocaleString('pt-BR')}</td>
+        </tr>
+      `;
+    });
+
+    html += '</tbody></table></div>';
+    section.innerHTML = html;
     section.style.display = '';
   } catch (err) {
     console.error('Erro ao carregar ranking:', err);
