@@ -291,38 +291,31 @@ Configure as mesmas variáveis em **Settings → Environment Variables**.
 
 ## 🌐 Deploy na Vercel
 
-### Via CLI
-
-```bash
-# 1. Instalar Vercel CLI
-npm i -g vercel
-
-# 2. Login
-vercel login
-
-# 3. Deploy
-vercel --prod
-```
-
 ### Via GitHub (recomendado)
 
 1. Conecte o repositório no [Vercel Dashboard](https://vercel.com/dashboard)
 2. Configure as variáveis de ambiente (`TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`)
 3. O deploy é automático a cada push na branch `main`
 
-O arquivo `vercel.json` já está configurado com as rotas corretas.
+O arquivo `vercel.json` já está configurado com as rotas e com `includeFiles` para empacotar a pasta `ADS 4/` e o PDF do Bootstrap na função serverless.
+
+### Via CLI
+
+```bash
+npm i -g vercel
+vercel login
+vercel --prod
+```
 
 ---
 
 ## 🔐 Autenticação e Roles
 
-### Níveis de Acesso
-
 | Role | Permissões |
 |------|-----------|
-| **admin** | Acesso total: CRUD de respostas, painel admin com gráficos, gabaritos, documentos |
-| **coordenador** | Pode alternar entre "Visão Aluno" e "Visão Admin" (leitura). **Não pode** criar/editar/excluir respostas |
-| **aluno** | Responder exercícios, ver notas, refazer, excluir próprias respostas |
+| **admin** | Acesso total: CRUD de respostas e projetos, painel admin, gabaritos, marcar "visto", documentos |
+| **coordenador** | Alterna entre "Visão Aluno" e "Visão Admin" (leitura). **Não pode** criar/editar/excluir respostas ou projetos |
+| **aluno** | Responde exercícios, usa o compilador, salva projetos, vê ranking, exclui os próprios dados |
 
 ### Fluxo de Autenticação
 
@@ -346,26 +339,31 @@ Cada request autenticada envia:
 | `POST` | `/api/auth/login` | ❌ | Login com email + senha |
 | `GET` | `/api/auth/me` | ✅ | Verificar token / dados do usuário |
 
-### Exercícios
+### Exercícios e Respostas
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
 | `GET` | `/api/exercicios/:unidade` | ❌ | Listar exercícios (sem gabarito) |
-
-### Respostas (CRUD)
-
-| Método | Rota | Auth | Descrição |
-|--------|------|------|-----------|
 | `POST` | `/api/respostas` | ✅ | Enviar resposta + avaliação automática |
 | `GET` | `/api/respostas` | ✅ | Listar respostas do usuário |
 | `PUT` | `/api/respostas/:id` | ✅ | Editar resposta (reavaliar) |
 | `DELETE` | `/api/respostas/:id` | ✅ | Excluir resposta |
+| `GET` | `/api/gabarito/:u/:e/:ex` | ✅ | Ver gabarito (protegido por regra) |
 
-### Gabarito
+### Compilador / Projetos de Código
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| `GET` | `/api/gabarito/:u/:e/:ex` | ✅ | Ver gabarito (protegido por regra de negócio) |
+| `GET` | `/api/projetos` | ✅ | Listar projetos do usuário |
+| `GET` | `/api/projetos/:id` | ✅ | Obter um projeto |
+| `POST` | `/api/projetos` | ✅ | Criar projeto (html, css, js, py, assets) |
+| `PUT` | `/api/projetos/:id` | ✅ | Atualizar projeto |
+| `DELETE` | `/api/projetos/:id` | ✅ | Excluir projeto |
+| `PUT` | `/api/projetos/:id/visto` | ✅ (admin) | Marcar/desmarcar "visto" |
+| `GET` | `/api/projetos-alunos` | ✅ (admin/coord) | Alunos com contagem de projetos |
+| `GET` | `/api/projetos-aluno/:id` | ✅ (admin/coord) | Projetos de um aluno |
+| `GET` | `/api/projetos-admin` | ✅ | Projetos publicados pelo professor |
+| `GET` | `/api/ranking` | ✅ | Ranking de alunos (projetos/linhas) |
 
 ### Administração
 
@@ -374,13 +372,20 @@ Cada request autenticada envia:
 | `GET` | `/api/admin/alunos` | ✅ | admin, coordenador |
 | `GET` | `/api/admin/alunos/:id/evolucao` | ✅ | admin, coordenador |
 | `GET` | `/api/admin/estatisticas` | ✅ | admin, coordenador |
+| `POST` | `/api/admin/recalcular` | ✅ | admin |
 
-### Outros
+### Documentos, Explorer e Utilidades
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| `GET` | `/api/documentos` | ❌ | Lista documentos por categoria |
+| `GET` | `/api/documentos` | ❌ | Lista documentos por categoria (ADS 1–4) |
+| `GET` | `/api/ads4-doc/:file` | ❌ | Serve um PDF da ADS 4 |
+| `GET` | `/api/os-3-pilares-do-bootstrap.pdf` | ❌ | PDF "Os 3 Pilares do Bootstrap" |
+| `GET` | `/api/explorer/tree` | ❌ | Árvore de arquivos do projeto |
+| `GET` | `/api/explorer/file` | ❌ | Conteúdo de um arquivo |
 | `GET` | `/api/readme` | ❌ | Conteúdo do README.md |
+| `GET` | `/api/health` | ❌ | Status do servidor/banco |
+| `GET` | `/explorer` | ❌ | Página do explorador de arquivos |
 
 ---
 
@@ -393,50 +398,20 @@ Cada request autenticada envia:
 
 ### Coordenador — Visão Dupla
 
-- Pode alternar entre "Visão Aluno" e "Visão Admin" via toggle
-- Na Visão Admin: acesso de **leitura** ao painel com gráficos e estatísticas
-- **Bloqueado** de criar, editar ou excluir respostas (retorna 403)
+- Alterna entre "Visão Aluno" e "Visão Admin" (leitura)
+- **Bloqueado** de criar, editar ou excluir respostas e projetos (retorna 403)
 
 ### Avaliação Automática
 
 - Respostas avaliadas por correspondência de **palavras-chave**
-- Nota calculada proporcionalmente ao número de palavras-chave encontradas
-- Feedback inclui: nota, percentual de acerto, acertos, sugestões, gabarito resumido
-- Mínimo recomendado: 15 palavras na resposta
+- Nota proporcional ao número de palavras-chave encontradas
+- Feedback inclui nota, percentual, acertos, sugestões e gabarito resumido
 
-### Tentativas
+### Compilador e Ranking
 
-- Cada envio incrementa o contador de tentativa
-- Todas as tentativas são salvas no banco de dados
-- O frontend exibe a última tentativa por exercício
-
----
-
-## 📖 Conteúdo Acadêmico
-
-### Unidade 1 — Engenharia de Software
-
-- Modelos de ciclo de vida (Cascata, Espiral, Incremental)
-- Requisitos funcionais e não funcionais
-- Estudo de caso: Nutrientes Delivery
-
-### Unidade 2 — Resolução de Problemas
-
-- Metodologias ágeis (Scrum, Kanban)
-- Técnicas de elicitação de requisitos
-- Decomposição de problemas complexos
-
-### Unidade 3 — Simulação Profissional
-
-- Situações reais de desenvolvimento
-- Tomada de decisão técnica
-- Comunicação com stakeholders
-
-### Unidade 4 — Aprendizagem entre Pares
-
-- Trabalho colaborativo
-- Revisão de código e boas práticas
-- Feedback construtivo e peer review
+- Cada aluno mantém seus próprios projetos; o professor pode publicar projetos visíveis a todos (somente leitura para alunos)
+- Imagens são armazenadas junto ao projeto (coluna `assets`, em JSON com data URLs)
+- O ranking conta projetos e linhas de código por aluno; a mensagem de liderança muda quando há troca de líder
 
 ---
 
@@ -472,6 +447,37 @@ CREATE TABLE respostas (
   FOREIGN KEY (aluno_id) REFERENCES usuarios(id)
 );
 ```
+
+### Tabela `projetos_codigo`
+
+```sql
+CREATE TABLE projetos_codigo (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  aluno_id INTEGER NOT NULL,
+  nome TEXT NOT NULL DEFAULT 'Meu Projeto',
+  html TEXT DEFAULT '',
+  css TEXT DEFAULT '',
+  js TEXT DEFAULT '',
+  py TEXT DEFAULT '',          -- migration: código Python
+  assets TEXT DEFAULT '',      -- migration: imagens (JSON com data URLs)
+  visto INTEGER DEFAULT 0,     -- migration: marcado pelo professor
+  atualizado_em TEXT DEFAULT (datetime('now')),
+  criado_em TEXT DEFAULT (datetime('now'))
+);
+```
+
+> As colunas `py`, `assets`, `visto` (e `tentativa` em `respostas`) são adicionadas via **migrations não destrutivas** (`ALTER TABLE ADD COLUMN`), preservando os dados existentes.
+
+---
+
+## 📖 Conteúdo Acadêmico
+
+| Unidade | Tema |
+|---------|------|
+| **ADS 1** | Projeto de Software — ciclos de vida, requisitos, estudo de caso |
+| **ADS 2** | Resolução de Problemas — metodologias ágeis, elicitação de requisitos |
+| **ADS 3** | Simulação Profissional — decisão técnica, comunicação com stakeholders |
+| **ADS 4** | Interface e Usabilidade — fundamentos, planejamento, prototipação, testes e gamificação |
 
 ---
 
