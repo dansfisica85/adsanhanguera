@@ -448,10 +448,11 @@ app.get('/api/projetos/:id', middlewareAuth, async (req, res) => {
 // Criar novo projeto
 app.post('/api/projetos', middlewareAuth, async (req, res) => {
   try {
-    const { nome, html, css, js, py } = req.body;
+    const { nome, html, css, js, py, assets } = req.body;
+    const assetsStr = typeof assets === 'string' ? assets : JSON.stringify(assets || {});
     const result = await dbExecute({
-      sql: `INSERT INTO projetos_codigo (aluno_id, nome, html, css, js, py) VALUES (?, ?, ?, ?, ?, ?)`,
-      args: [req.user.id, nome || 'Meu Projeto', html || '', css || '', js || '', py || ''],
+      sql: `INSERT INTO projetos_codigo (aluno_id, nome, html, css, js, py, assets) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      args: [req.user.id, nome || 'Meu Projeto', html || '', css || '', js || '', py || '', assetsStr],
     });
     res.json({ id: Number(result.lastInsertRowid), message: 'Projeto criado.' });
   } catch (err) {
@@ -471,10 +472,11 @@ app.put('/api/projetos/:id', middlewareAuth, async (req, res) => {
     }
     if (req.user.role === 'coordenador') return res.status(403).json({ error: 'Coordenadores não podem editar projetos.' });
 
-    const { nome, html, css, js, py } = req.body;
+    const { nome, html, css, js, py, assets } = req.body;
+    const assetsStr = assets === undefined ? projeto.assets : (typeof assets === 'string' ? assets : JSON.stringify(assets || {}));
     await dbExecute({
-      sql: `UPDATE projetos_codigo SET nome = ?, html = ?, css = ?, js = ?, py = ?, atualizado_em = datetime('now') WHERE id = ?`,
-      args: [nome || projeto.nome, html ?? projeto.html, css ?? projeto.css, js ?? projeto.js, py ?? projeto.py, req.params.id],
+      sql: `UPDATE projetos_codigo SET nome = ?, html = ?, css = ?, js = ?, py = ?, assets = ?, atualizado_em = datetime('now') WHERE id = ?`,
+      args: [nome || projeto.nome, html ?? projeto.html, css ?? projeto.css, js ?? projeto.js, py ?? projeto.py, assetsStr, req.params.id],
     });
     res.json({ message: 'Projeto atualizado.' });
   } catch (err) {

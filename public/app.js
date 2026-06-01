@@ -871,6 +871,9 @@ let projetosCache = [];
 let adminProjetosCache = []; // projetos do professor visíveis a todos
 let viewingAdminProject = false; // se está visualizando projeto do professor
 
+// Imagens do projeto: { 'nome.png': 'data:image/png;base64,...' }
+let projectAssets = {};
+
 // ===== Monaco Editor =====
 let monacoEditors = {};
 let monacoReady = false;
@@ -1403,6 +1406,13 @@ function loadProjectIntoEditor(projeto) {
   setEditorValue('js', projeto.js);
   setEditorValue('py', projeto.py);
 
+  // Carregar imagens do projeto
+  projectAssets = {};
+  if (projeto.assets) {
+    try { projectAssets = JSON.parse(projeto.assets) || {}; } catch (e) { projectAssets = {}; }
+  }
+  renderAssetTree();
+
   // Renderizar botão de visto
   renderVistoButton(projeto);
 
@@ -1426,6 +1436,8 @@ function clearEditor() {
   setEditorValue('css', '');
   setEditorValue('js', '');
   setEditorValue('py', '');
+  projectAssets = {};
+  renderAssetTree();
   document.getElementById('btnDeleteProjeto').style.display = 'none';
   const iframe = document.getElementById('codePreview');
   if (iframe) iframe.srcdoc = '';
@@ -1533,6 +1545,35 @@ const CONSOLE_CAPTURE_SCRIPT = `
 })();
 <\/script>`;
 
+// Substitui referências a imagens do projeto (src/href/url) pelas data URLs.
+// Aceita caminhos com "./", "/" ou subpastas antes do nome do arquivo.
+function resolveAssetRefs(text, kind) {
+  if (!text || !projectAssets) return text || '';
+  const names = Object.keys(projectAssets);
+  if (!names.length) return text;
+  names.forEach((name) => {
+    const dataUrl = projectAssets[name];
+    if (!dataUrl) return;
+    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const prefix = '(?:\\.{0,2}/)*'; // ./  ../  /  (repetidos)
+    const put = (re) => { text = text.replace(re, (m, p1, p2) => p1 + dataUrl + (p2 || '')); };
+    if (kind === 'html') {
+      put(new RegExp('((?:src|href|poster|data-src)\\s*=\\s*")' + prefix + esc + '(")', 'gi'));
+      put(new RegExp("((?:src|href|poster|data-src)\\s*=\\s*')" + prefix + esc + "(')", 'gi'));
+      put(new RegExp('(url\\(\\s*"?\'?)' + prefix + esc + '("?\'?\\s*\\))', 'gi'));
+    } else if (kind === 'css') {
+      put(new RegExp('(url\\(\\s*")' + prefix + esc + '("\\s*\\))', 'gi'));
+      put(new RegExp("(url\\(\\s*')" + prefix + esc + "('\\s*\\))", 'gi'));
+      put(new RegExp('(url\\(\\s*)' + prefix + esc + '(\\s*\\))', 'gi'));
+    } else { // js: literais de string
+      put(new RegExp('(")' + prefix + esc + '(")', 'gi'));
+      put(new RegExp("(')" + prefix + esc + "(')", 'gi'));
+      put(new RegExp('(`)' + prefix + esc + '(`)', 'gi'));
+    }
+  });
+  return text;
+}
+
 // Monta um documento HTML completo vinculando CSS e JS ao HTML.
 // Resolve referências locais a style.css/script.js e injeta o conteúdo inline,
 // funcionando tanto com HTML parcial quanto com documentos completos.
@@ -1540,9 +1581,9 @@ function buildFullCode(html, css, js, opts) {
   opts = opts || {};
   const title = opts.title || 'Preview';
   const includeConsole = opts.console !== false;
-  html = html || '';
-  css = css || '';
-  js = js || '';
+  html = resolveAssetRefs(html || '', 'html');
+  css = resolveAssetRefs(css || '', 'css');
+  js = resolveAssetRefs(js || '', 'js');
 
   const consoleCapture = includeConsole ? CONSOLE_CAPTURE_SCRIPT : '';
   const styleTag = css.trim() ? '<style>\n' + css + '\n</style>' : '';
@@ -1631,6 +1672,7 @@ async function salvarProjeto() {
   const css = getEditorValue('css');
   const js = getEditorValue('js');
   const py = getEditorValue('py');
+  const assets = JSON.stringify(projectAssets || {});
 
   try {
     let res;
@@ -1638,13 +1680,13 @@ async function salvarProjeto() {
       res = await fetchWithRetry(`/api/projetos/${currentProjectId}`, {
         method: 'PUT',
         headers: authHeaders(),
-        body: JSON.stringify({ nome, html, css, js, py }),
+        body: JSON.stringify({ nome, html, css, js, py, assets }),
       });
     } else {
       res = await fetchWithRetry('/api/projetos', {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ nome, html, css, js, py }),
+        body: JSON.stringify({ nome, html, css, js, py, assets }),
       });
     }
     const data = await res.json();
@@ -1719,6 +1761,42 @@ ${html}
   if (py && py.trim()) {
     setTimeout(() => downloadBlob(py, `${sanitizedName}/main.py`, 'text/x-python'), 600);
   }
+  // Baixar imagens do projeto
+  let delay = 800;
+  Object.keys(projectAssets).forEach((name) => {
+    const blob = dataURLToBlob(projectAssets[name]);
+    if (blob) {
+      setTimeout(() => downloadBlobObject(blob, `${sanitizedName}/${name}`), delay);
+      delay += 200;
+    }
+  });
+}
+
+function dataURLToBlob(dataUrl) {
+  try {
+    const [head, body] = String(dataUrl).split(',');
+    const mime = (head.match(/data:([^;]+)/) || [])[1] || 'application/octet-stream';
+    if (/;base64/i.test(head)) {
+      const bin = atob(body);
+      const arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      return new Blob([arr], { type: mime });
+    }
+    return new Blob([decodeURIComponent(body)], { type: mime });
+  } catch (e) {
+    return null;
+  }
+}
+
+function downloadBlobObject(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function downloadBlob(content, filename, mimeType) {
@@ -1836,11 +1914,52 @@ async function runPython() {
 }
 
 // ===== Importação de arquivos (botão + arrastar e soltar) =====
+const IMAGE_EXTS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico', 'avif', 'apng', 'jfif', 'tiff', 'tif'];
+
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(new Error('Falha ao ler ' + file.name));
+    r.readAsDataURL(file);
+  });
+}
+
+// Garante um nome único e seguro para o asset (mantém legível para chamar no HTML).
+function sanitizeAssetName(name) {
+  let base = (name || 'imagem').split(/[\\/]/).pop().trim();
+  base = base.replace(/["'<>`\s]+/g, '_');
+  if (!base) base = 'imagem';
+  let final = base;
+  let i = 1;
+  while (projectAssets[final]) {
+    const dot = base.lastIndexOf('.');
+    if (dot > 0) final = base.slice(0, dot) + '-' + i + base.slice(dot);
+    else final = base + '-' + i;
+    i++;
+  }
+  return final;
+}
+
 async function handleFileImport(files) {
   if (!files || !files.length) return;
   const imported = [];
+  let addedImages = false;
   for (const file of files) {
     const ext = (file.name.split('.').pop() || '').toLowerCase();
+    const isImage = (file.type && file.type.startsWith('image/')) || IMAGE_EXTS.includes(ext);
+    if (isImage) {
+      try {
+        const dataUrl = await readFileAsDataURL(file);
+        const name = sanitizeAssetName(file.name);
+        projectAssets[name] = dataUrl;
+        imported.push(name);
+        addedImages = true;
+      } catch (e) {
+        showCodeNotification('Falha ao importar imagem: ' + file.name, 'error');
+      }
+      continue;
+    }
     let text = '';
     try { text = await file.text(); } catch (e) { continue; }
     if (ext === 'html' || ext === 'htm') { setEditorValue('html', text); imported.push('index.html'); }
@@ -1849,10 +1968,83 @@ async function handleFileImport(files) {
     else if (ext === 'py') { setEditorValue('py', text); imported.push('main.py'); }
     else { showCodeNotification('Tipo não suportado: ' + file.name, 'error'); }
   }
+  if (addedImages) renderAssetTree();
   if (imported.length) {
     runCode();
-    showCodeNotification('Arquivos importados: ' + imported.join(', '), 'success');
+    showCodeNotification('Importado: ' + imported.join(', '), 'success');
   }
+}
+
+// ===== Gerenciamento de imagens do projeto =====
+function renderAssetTree() {
+  const tree = document.getElementById('codeImageTree');
+  if (!tree) return;
+  const names = Object.keys(projectAssets);
+  if (!names.length) {
+    tree.innerHTML = '<div class="code-img-empty">Nenhuma imagem.<br><small>Arraste ou clique em +</small></div>';
+    return;
+  }
+  tree.innerHTML = names.map((name) => {
+    const url = projectAssets[name];
+    const safe = escapeHtml(name);
+    const attr = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    return '<div class="code-file-tree-item code-img-item" title="' + safe + '">'
+      + '<span class="file-tree-img-thumb" style="background-image:url(&quot;' + url + '&quot;)"></span>'
+      + '<span class="file-tree-name" onclick="copyAssetPath(\'' + attr + '\')">' + safe + '</span>'
+      + '<div class="file-tree-actions">'
+      + '<button class="file-tree-btn" onclick="event.stopPropagation(); insertImageTag(\'' + attr + '\')" title="Inserir &lt;img&gt; no HTML">&lt;&gt;</button>'
+      + '<button class="file-tree-btn" onclick="event.stopPropagation(); copyAssetPath(\'' + attr + '\')" title="Copiar caminho">📋</button>'
+      + '<button class="file-tree-btn" onclick="event.stopPropagation(); removeAsset(\'' + attr + '\')" title="Remover imagem">🗑</button>'
+      + '</div></div>';
+  }).join('');
+}
+
+async function copyAssetPath(name) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(name);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = name;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    showCodeNotification('Caminho copiado: ' + name, 'success');
+  } catch (e) {
+    showCodeNotification('Não foi possível copiar. Caminho: ' + name, 'error');
+  }
+}
+
+function insertImageTag(name) {
+  if (!canMutate() || viewingAdminProject) {
+    copyAssetPath(name);
+    return;
+  }
+  const snippet = '<img src="' + name + '" alt="' + name.replace(/\.[^.]+$/, '') + '">';
+  switchCodeLang('html');
+  const ed = monacoEditors.html;
+  if (ed && ed.executeEdits) {
+    const sel = ed.getSelection();
+    ed.executeEdits('insert-image', [{ range: sel, text: snippet, forceMoveMarkers: true }]);
+    ed.focus();
+  } else {
+    setEditorValue('html', getEditorValue('html') + '\n' + snippet);
+  }
+  runCode();
+  showCodeNotification('Imagem inserida no HTML.', 'success');
+}
+
+function removeAsset(name) {
+  if (!projectAssets[name]) return;
+  if (!confirm('Remover a imagem "' + name + '" do projeto?')) return;
+  delete projectAssets[name];
+  renderAssetTree();
+  runCode();
+  showCodeNotification('Imagem removida: ' + name, 'success');
 }
 
 function setupCodeDropZone() {
@@ -1862,7 +2054,7 @@ function setupCodeDropZone() {
 
   const overlay = document.createElement('div');
   overlay.className = 'code-drop-overlay';
-  overlay.innerHTML = '<div class="code-drop-inner">📥 Solte os arquivos aqui<br><small>.html · .css · .js · .py</small></div>';
+  overlay.innerHTML = '<div class="code-drop-inner">📥 Solte os arquivos aqui<br><small>.html · .css · .js · .py · imagens</small></div>';
   layout.appendChild(overlay);
 
   let counter = 0;

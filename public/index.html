@@ -487,7 +487,7 @@
               <button class="btn btn-success btn-sm" onclick="openLivePreview()" title="Abrir em nova aba">🌐 Live Server</button>
               <button class="btn btn-sm" id="btnRunPython" onclick="runPython()" title="Executar código Python" style="display:none;background:#3776AB;color:#fff;">▶ Rodar Python</button>
               <button class="btn btn-outline btn-sm" onclick="document.getElementById('fileImportInput').click()" title="Importar arquivos do computador">📤 Importar</button>
-              <input type="file" id="fileImportInput" multiple accept=".html,.htm,.css,.js,.py" style="display:none;" onchange="handleFileImport(this.files); this.value='';" />
+              <input type="file" id="fileImportInput" multiple accept=".html,.htm,.css,.js,.py,image/*" style="display:none;" onchange="handleFileImport(this.files); this.value='';" />
               <button class="btn btn-outline btn-sm" onclick="downloadProjeto()">📦 Download ZIP</button>
               <button class="btn btn-danger btn-sm" id="btnDeleteProjeto" onclick="deletarProjeto()" style="display:none;">🗑 Excluir</button>
               <button class="btn btn-sm" onclick="window.open('https://professordavi.my.canva.site/hexadecimal','_blank')" style="background:var(--accent-purple);color:#fff;">🔢 Hexadecimal e Binário</button>
@@ -534,6 +534,16 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Imagens do projeto -->
+              <div class="code-file-tree-header code-img-header">
+                <span>🖼 IMAGENS</span>
+                <button class="file-tree-add-btn" onclick="document.getElementById('imageImportInput').click()" title="Adicionar imagens">＋</button>
+              </div>
+              <div class="code-file-tree-images" id="codeImageTree">
+                <div class="code-img-empty">Nenhuma imagem.<br><small>Arraste ou clique em +</small></div>
+              </div>
+              <input type="file" id="imageImportInput" accept="image/*" multiple style="display:none;" onchange="handleFileImport(this.files); this.value='';" />
             </div>
 
             <!-- Editor principal -->

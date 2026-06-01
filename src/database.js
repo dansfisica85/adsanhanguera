@@ -176,6 +176,14 @@ async function initDB() {
     // Coluna já existe, ignorar
   }
 
+  // Migration: adicionar coluna assets (imagens do projeto em JSON) se não existir
+  try {
+    await dbExecute(`ALTER TABLE projetos_codigo ADD COLUMN assets TEXT DEFAULT ''`);
+    console.log('  ✅ Coluna assets adicionada.');
+  } catch (e) {
+    // Coluna já existe, ignorar
+  }
+
   console.log('✅ Banco de dados inicializado com sucesso!');
 }
 
