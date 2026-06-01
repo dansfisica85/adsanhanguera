@@ -1693,6 +1693,16 @@ body {
 .folder-purple .folder-arrow { color: #7b1fa2; }
 .folder-purple:hover { border-color: #ab47bc; }
 
+/* ===== Folder color: Orange (ADS 4) ===== */
+.folder-orange {
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+  border: 1px solid #ffb74d;
+}
+.folder-orange .folder-info h4 { color: #e65100; }
+.folder-orange .folder-count { color: #ef6c00; }
+.folder-orange .folder-arrow { color: #e65100; }
+.folder-orange:hover { border-color: #fb8c00; }
+
 /* ===== Doc locked state ===== */
 .doc-locked {
   opacity: 0.5;

@@ -613,6 +613,7 @@ app.get('/api/documentos', (req, res) => {
     { pasta: 'ads1-projeto-software', label: 'Projeto de Software', cor: 'green' },
     { pasta: 'ads2', label: 'ADS 2', cor: 'blue' },
     { pasta: 'ads3', label: 'ADS 3', cor: 'purple' },
+    { pasta: 'ads4', label: 'ADS 4', cor: 'orange' },
   ];
 
   const pastas = categorias.map(cat => {
