@@ -37,7 +37,7 @@ app.use(express.json({ limit: '25mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Servir o PDF "Os 3 Pilares do Bootstrap" (arquivo na raiz do projeto)
-app.get('/os-3-pilares-do-bootstrap.pdf', (req, res) => {
+app.get('/api/os-3-pilares-do-bootstrap.pdf', (req, res) => {
   const pdfPath = path.join(__dirname, 'Os 3 Pilares do Bootstrap.pdf');
   if (!fs.existsSync(pdfPath)) return res.status(404).send('Arquivo não encontrado.');
   res.setHeader('Content-Type', 'application/pdf');
