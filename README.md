@@ -4,18 +4,21 @@
   <img src="https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white" alt="Node.js" />
   <img src="https://img.shields.io/badge/Express-5.x-000000?logo=express&logoColor=white" alt="Express" />
   <img src="https://img.shields.io/badge/Turso-libSQL-4FF8D2?logo=turso&logoColor=white" alt="Turso" />
+  <img src="https://img.shields.io/badge/Monaco_Editor-0.45-0078D4?logo=visualstudiocode&logoColor=white" alt="Monaco" />
+  <img src="https://img.shields.io/badge/Pyodide-0.26-3776AB?logo=python&logoColor=white" alt="Pyodide" />
   <img src="https://img.shields.io/badge/Chart.js-4.x-FF6384?logo=chartdotjs&logoColor=white" alt="Chart.js" />
   <img src="https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white" alt="Vercel" />
-  <img src="https://img.shields.io/badge/Versão-2.0.0-F37021" alt="Versão" />
+  <img src="https://img.shields.io/badge/Versão-3.0.0-F37021" alt="Versão" />
 </p>
 
-Plataforma educacional completa desenvolvida para o curso de **Análise e Desenvolvimento de Sistemas** da **Universidade Anhanguera**. O sistema oferece exercícios interativos com avaliação automática por palavras-chave, autenticação JWT com 3 níveis de acesso, painel administrativo com gráficos de evolução e biblioteca de documentos.
+Plataforma educacional completa para o curso de **Análise e Desenvolvimento de Sistemas** da **Universidade Anhanguera**. Reúne exercícios interativos com avaliação automática, um **compilador/IDE web** (HTML, CSS, JavaScript e Python) com IntelliSense, suporte a imagens e Live Server, **ranking gamificado** de alunos, painel administrativo com gráficos, biblioteca de documentos por unidade e um explorador de arquivos do projeto.
 
 ---
 
 ## 📋 Índice
 
 - [Funcionalidades](#-funcionalidades)
+- [Fluxo do Projeto e do Site](#-fluxo-do-projeto-e-do-site)
 - [Arquitetura](#-arquitetura)
 - [Tecnologias](#-tecnologias)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
@@ -25,6 +28,7 @@ Plataforma educacional completa desenvolvida para o curso de **Análise e Desenv
 - [Autenticação e Roles](#-autenticação-e-roles)
 - [API Endpoints](#-api-endpoints)
 - [Regras de Negócio](#-regras-de-negócio)
+- [Banco de Dados](#-banco-de-dados)
 - [Conteúdo Acadêmico](#-conteúdo-acadêmico)
 - [Desenvolvedor](#-desenvolvedor)
 
@@ -34,57 +38,153 @@ Plataforma educacional completa desenvolvida para o curso de **Análise e Desenv
 
 ### 🔐 Autenticação
 
-- Login com e-mail e senha
+- Login com e-mail e senha (hash bcrypt)
 - Tokens JWT com validade de 7 dias
 - 3 níveis de acesso: **Admin**, **Coordenador** e **Aluno**
 - Sessão persistente via `localStorage`
 
 ### 📚 Exercícios Interativos
 
-- 4 unidades completas com exercícios de múltiplas etapas
+- 4 unidades com exercícios de múltiplas etapas
 - Avaliação automática por palavras-chave com nota de 0 a 10
 - Feedback detalhado com acertos, sugestões e percentual
 - Suporte a múltiplas tentativas por exercício
-- Operações CRUD completas (criar, ler, editar, excluir respostas)
+- CRUD completo de respostas (criar, ler, editar, excluir)
+
+### 💻 Compilador / IDE Web
+
+Editor de código embutido, baseado no **Monaco Editor** (o mesmo motor do VS Code):
+
+- **4 linguagens**: HTML, CSS, JavaScript e **Python**, cada uma com aba própria (`index.html`, `style.css`, `script.js`, `main.py`)
+- **IntelliSense e snippets** customizados para as 4 linguagens
+- **Preview ao vivo** com vínculo automático de CSS e JS ao HTML (resolve referências locais a `style.css`/`script.js`)
+- **Console embutido** que captura `console.log/warn/error/info` e erros do preview
+- **Execução de Python no navegador** via **Pyodide** (sem backend), com saída no console
+- **Live Server**: abre o projeto renderizado em uma nova aba
+- **Temas** claro/escuro do editor, zoom de fonte e auto-run com debounce
+- **Importação de arquivos** por botão ou **arrastar e soltar** (`.html`, `.css`, `.js`, `.py` e imagens)
+- **Suporte a imagens** de qualquer tipo (PNG, JPG, GIF, WebP, SVG, etc.): ficam vinculadas ao projeto, com árvore de imagens, **copiar caminho**, inserir `<img>` e remoção — chamáveis no HTML/CSS/JS
+- **Download** do projeto (HTML + CSS + JS + `main.py` + imagens)
+- **Persistência por aluno**: cada projeto é salvo no banco; professores podem publicar projetos visíveis a todos
+- **Botões de apoio**: "Hexadecimal e Binário" e "Os 3 Pilares do Bootstrap" (PDF)
+
+### 🏆 Ranking Gamificado
+
+- Ranking **horizontal em cards**, um por aluno, ordenado por projetos e linhas de código
+- **Animações** especiais para 1º, 2º e 3º lugares (medalhas 🥇🥈🥉)
+- **Mensagem de incentivo dinâmica** que muda toda vez que alguém assume a liderança
 
 ### 📊 Painel Administrativo
 
-- Dashboard com estatísticas gerais (total de alunos, respostas, média)
+- Dashboard com estatísticas gerais (alunos, respostas, média)
 - Gráfico de barras — média de notas por unidade (Chart.js)
 - Gráfico de linha — evolução individual do aluno (Chart.js)
 - Lista de alunos com médias e totais
+- Navegação pelos projetos de código de cada aluno
 
 ### 📄 Biblioteca de Documentos
 
-- Documentos organizados por unidade e categoria
+- Documentos organizados por unidade em **cards coloridos** (ADS 1 a ADS 4)
+- **ADS 4 — Interface e Usabilidade** servida diretamente da pasta do projeto
 - Suporte a PDF e imagens (PNG/JPG)
 - Visualizador embutido via iframe
 - Gabaritos protegidos (visíveis apenas para Admin/Coordenador)
+
+### 🗂 Explorador de Arquivos
+
+- Página `/explorer` que navega pela árvore de arquivos do projeto
+- Leitura de arquivos de texto, imagens e PDFs (com proteção contra acesso indevido)
 
 ### 🎨 Interface
 
 - Tema laranja Anhanguera (#F37021) em fundo claro
 - Design responsivo (desktop, tablet e mobile)
 - SPA (Single Page Application) com navegação por abas
-- Cards de conceitos expansíveis por unidade
+
+---
+
+## 🔄 Fluxo do Projeto e do Site
+
+### Fluxo de inicialização (backend)
+
+```
+node server.js
+  └─▶ startDBInit()
+        ├─ conecta no Turso/libSQL
+        ├─ cria tabelas (usuarios, respostas, projetos_codigo)
+        ├─ executa migrations (tentativa, visto, py, assets)
+        └─ seed de usuários
+  └─▶ Express sobe rotas /api/* + estáticos de public/ + /explorer
+```
+
+### Fluxo de navegação do usuário (frontend SPA)
+
+```mermaid
+flowchart TD
+    A[Acessa o site] --> B{Tem token valido?}
+    B -- Nao --> C[Tela de Login]
+    C --> D[POST /api/auth/login]
+    D --> E[Recebe JWT + dados do usuario]
+    B -- Sim --> F[Carrega SPA]
+    E --> F[Carrega SPA]
+    F --> G{Escolhe aba}
+    G --> H[Exercicios]
+    G --> I[Compilador]
+    G --> J[Documentos]
+    G --> K[Perfil]
+    G --> L[Admin / Coordenador]
+
+    H --> H1[Responde exercicio] --> H2[POST /api/respostas] --> H3[Avaliacao automatica + nota + feedback]
+
+    I --> I1[Edita HTML/CSS/JS/Python] --> I2[Preview ao vivo + console]
+    I1 --> I3[Importa/arrasta arquivos e imagens]
+    I2 --> I4[Salva projeto -> /api/projetos]
+    I4 --> I5[Ranking atualizado /api/ranking]
+
+    J --> J1[GET /api/documentos] --> J2[Abre PDF/imagem no visualizador]
+
+    L --> L1[GET /api/admin/*] --> L2[Graficos Chart.js + lista de alunos]
+```
+
+### Fluxo de uma resposta de exercício
+
+```
+Aluno escreve resposta
+  → POST /api/respostas
+  → avaliador.js compara palavras-chave do gabarito
+  → calcula nota (0–10) + feedback + percentual
+  → grava em respostas (incrementa tentativa)
+  → retorna resultado ao aluno
+```
+
+### Fluxo do compilador
+
+```
+Editor Monaco (html/css/js/py)
+  → buildFullCode() vincula CSS/JS ao HTML e resolve imagens (data URLs)
+  → preview em <iframe srcdoc> + console capturado
+  → Python: Pyodide executa no navegador
+  → Salvar: POST/PUT /api/projetos (inclui assets de imagem em JSON)
+  → Ranking: GET /api/ranking conta projetos/linhas por aluno
+```
 
 ---
 
 ## 🏗 Arquitetura
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌───────────────┐
-│   Frontend   │────▶│   Express 5  │────▶│  Turso/libSQL │
-│  Vanilla JS  │◀────│   REST API   │◀────│   Cloud DB    │
-│  Chart.js    │     │   JWT Auth   │     │   SQLite Edge  │
-└─────────────┘     └──────────────┘     └───────────────┘
+┌──────────────────────┐     ┌──────────────┐     ┌───────────────┐
+│       Frontend        │────▶│   Express 5  │────▶│  Turso/libSQL │
+│  Vanilla JS (SPA)     │◀────│   REST API   │◀────│   Cloud DB    │
+│  Monaco · Pyodide     │     │   JWT Auth   │     │   SQLite Edge  │
+│  Chart.js             │     │   Static     │     │               │
+└──────────────────────┘     └──────────────┘     └───────────────┘
 ```
 
-- **Frontend**: HTML5 + CSS3 + JavaScript vanilla (SPA)
-- **Backend**: Node.js + Express 5 (API REST)
+- **Frontend**: HTML5 + CSS3 + JavaScript vanilla (SPA), Monaco Editor, Pyodide e Chart.js via CDN
+- **Backend**: Node.js + Express 5 (API REST + arquivos estáticos)
 - **Banco de Dados**: Turso (libSQL) — SQLite distribuído na edge
 - **Autenticação**: bcryptjs (hash) + jsonwebtoken (JWT)
-- **Gráficos**: Chart.js via CDN
 - **Deploy**: Vercel (serverless)
 
 ---
@@ -99,6 +199,8 @@ Plataforma educacional completa desenvolvida para o curso de **Análise e Desenv
 | bcryptjs | 2.4+ | Hash de senhas |
 | jsonwebtoken | 9.0+ | Tokens JWT |
 | dotenv | 17+ | Variáveis de ambiente |
+| Monaco Editor | 0.45 (CDN) | Editor de código do compilador |
+| Pyodide | 0.26 (CDN) | Execução de Python no navegador |
 | Chart.js | 4.x (CDN) | Gráficos no painel admin |
 
 ---
@@ -107,32 +209,35 @@ Plataforma educacional completa desenvolvida para o curso de **Análise e Desenv
 
 ```
 adsanhanguera/
-├── server.js              # Servidor Express 5 (API + static files)
-├── vercel.json            # Configuração de deploy Vercel
+├── server.js              # Servidor Express 5 (API + estáticos + explorer)
+├── vercel.json            # Configuração de deploy Vercel (com includeFiles)
 ├── package.json           # Dependências e scripts
 ├── .env                   # Variáveis de ambiente (não versionado)
-├── .gitignore
 ├── README.md
 │
 ├── src/
-│   ├── auth.js            # Módulo de autenticação (bcrypt + JWT)
-│   ├── database.js        # Conexão Turso + schema + seed de usuários
-│   ├── gabaritos.js       # Banco de exercícios (perguntas, respostas, palavras-chave)
+│   ├── auth.js            # Autenticação (bcrypt + JWT)
+│   ├── database.js        # Conexão Turso + schema + migrations + seed
+│   ├── gabaritos.js       # Banco de exercícios (perguntas, palavras-chave)
 │   └── avaliador.js       # Motor de avaliação por palavras-chave
 │
-├── public/
-│   ├── index.html         # SPA completa (login, tabs, modals, footer)
-│   ├── style.css          # Tema laranja Anhanguera (~800 linhas)
-│   ├── app.js             # Lógica frontend (auth, CRUD, Charts, documentos)
-│   └── docs/              # Biblioteca de documentos
-│       ├── geral/         # Material geral (aulas, Scrum, Nutrientes)
-│       ├── u1/            # Documentos Unidade 1
-│       ├── u2/            # Documentos Unidade 2
-│       ├── u3/            # Documentos Unidade 3
-│       └── u4/            # Documentos Unidade 4
+├── scripts/
+│   └── recalcular-notas.js # Reavaliação em lote das respostas
 │
-├── AULA (1-4).png         # Slides das aulas (originais)
-└── *.pdf                  # PDFs acadêmicos (originais)
+├── public/
+│   ├── index.html         # SPA (login, abas, compilador, modais)
+│   ├── style.css          # Tema laranja Anhanguera
+│   ├── app.js             # Lógica do frontend (auth, exercícios, compilador, ranking, docs)
+│   ├── explorer.html      # Explorador de arquivos
+│   ├── explorer.css       # Estilos do explorador
+│   └── docs/              # Biblioteca de documentos (ADS 1, 2, 3)
+│       ├── ads1-projeto-software/
+│       ├── ads2/
+│       └── ads3/
+│
+├── ADS 4/                 # Documentos da ADS 4 (servidos via /api/ads4-doc/)
+│   └── INTERFACE E USABILIDADE/
+└── Os 3 Pilares do Bootstrap.pdf  # Servido via /api/os-3-pilares-do-bootstrap.pdf
 ```
 
 ---
