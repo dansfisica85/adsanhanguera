@@ -44,6 +44,20 @@ app.get('/api/os-3-pilares-do-bootstrap.pdf', (req, res) => {
   res.sendFile(pdfPath);
 });
 
+// Servir os documentos da ADS 4 (pasta "ADS 4/INTERFACE E USABILIDADE" na raiz)
+app.get('/api/ads4-doc/:file', (req, res) => {
+  const baseDir = path.join(__dirname, 'ADS 4', 'INTERFACE E USABILIDADE');
+  const fileName = path.basename(decodeURIComponent(req.params.file));
+  const filePath = path.join(baseDir, fileName);
+  if (!filePath.startsWith(baseDir) || !fs.existsSync(filePath)) {
+    return res.status(404).send('Arquivo não encontrado.');
+  }
+  const ext = path.extname(filePath).toLowerCase();
+  const mime = ext === '.png' ? 'image/png' : (ext === '.jpg' || ext === '.jpeg') ? 'image/jpeg' : 'application/pdf';
+  res.setHeader('Content-Type', mime);
+  res.sendFile(filePath);
+});
+
 // Health check — registrado ANTES do middleware de DB para funcionar mesmo sem banco
 app.get('/api/health', (req, res) => {
   res.json({
@@ -621,18 +635,20 @@ app.get('/api/documentos', (req, res) => {
     { pasta: 'ads1-projeto-software', label: 'Projeto de Software', cor: 'green' },
     { pasta: 'ads2', label: 'ADS 2', cor: 'blue' },
     { pasta: 'ads3', label: 'ADS 3', cor: 'purple' },
-    { pasta: 'ads4', label: 'ADS 4', cor: 'orange' },
+    // ADS 4: arquivos ficam na pasta real do projeto e são servidos via /api/ads4-doc/
+    { label: 'ADS 4', cor: 'orange', dir: path.join(__dirname, 'ADS 4', 'INTERFACE E USABILIDADE'), urlBase: '/api/ads4-doc/' },
   ];
 
   const pastas = categorias.map(cat => {
-    const catDir = path.join(docsDir, cat.pasta);
+    const catDir = cat.dir || path.join(docsDir, cat.pasta);
+    const urlBase = cat.urlBase || `/docs/${cat.pasta}/`;
     const arquivos = [];
     if (fs.existsSync(catDir)) {
       const files = fs.readdirSync(catDir).filter(f => /\.(pdf|png|jpg)$/i.test(f));
       for (const f of files) {
         arquivos.push({
           nome: f.replace(/\.[^.]+$/, '').replace(/_/g, ' '),
-          arquivo: `/docs/${cat.pasta}/${encodeURIComponent(f)}`,
+          arquivo: urlBase + encodeURIComponent(f),
           tipo: f.split('.').pop().toLowerCase(),
           isGabarito: /gabarito/i.test(f),
         });
