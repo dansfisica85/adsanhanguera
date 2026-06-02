@@ -2201,6 +2201,31 @@ async function loadRanking() {
     }
 
     const medals = ['🥇', '🥈', '🥉'];
+    
+    // Obter líder atual e gerenciar mensagem dinâmica
+    const lider = ranking[0];
+    let msgLiderHtml = '';
+    if (lider) {
+      const leaderMsgList = [
+        `🏆 <strong>${lider.nome}</strong> está dominando o topo do ranking! Quem conseguirá superá-lo?`,
+        `🔥 O primeiro lugar é de <strong>${lider.nome}</strong>! Continue programando para subir de posição!`,
+        `🚀 Dedicação extrema: <strong>${lider.nome}</strong> é o atual líder da nossa jornada!`,
+        `⭐ Incrível! <strong>${lider.nome}</strong> conquistou a liderança disparada do ranking!`,
+        `🎯 Foco absoluto! <strong>${lider.nome}</strong> segue brilhando como nº 1 no pódio!`
+      ];
+
+      const prevLeader = localStorage.getItem('ranking_leader');
+      let msg = '';
+      if (prevLeader && prevLeader !== lider.nome) {
+        msg = `⚡ ATENÇÃO! Temos uma mudança emocionante na liderança! <strong>${lider.nome}</strong> acaba de assumir o topo, superando ${prevLeader}! Parabenize o novo líder! 🎉`;
+      } else {
+        const msgIdx = lider.nome.length % leaderMsgList.length;
+        msg = leaderMsgList[msgIdx];
+      }
+      localStorage.setItem('ranking_leader', lider.nome);
+
+      msgLiderHtml = `<div class="ranking-leader-msg">${msg}</div>`;
+    }
 
     let html = `
       <div class="ranking-header">
@@ -2208,34 +2233,41 @@ async function loadRanking() {
         <button class="btn btn-sm btn-outline ranking-toggle" onclick="toggleRankingView()">Minimizar</button>
       </div>
       <div id="rankingBody" class="ranking-body">
-        <table class="ranking-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Aluno</th>
-              <th>Projetos</th>
-              <th>Linhas</th>
-              <th>Palavras</th>
-            </tr>
-          </thead>
-          <tbody>
+        ${msgLiderHtml}
+        <div class="ranking-cards">
     `;
 
     ranking.forEach((aluno, i) => {
-      const medal = medals[i] || (i + 1);
-      const medalClass = i < 3 ? `ranking-top-${i + 1}` : '';
+      const isTop3 = i < 3;
+      const medal = medals[i] || `${i + 1}º`;
+      const medalClass = isTop3 ? `ranking-top-${i + 1}` : '';
+      
+      let incentivoIndividual = 'Dev Ativo';
+      if (i === 0) incentivoIndividual = 'Líder Supremo!';
+      else if (i === 1) incentivoIndividual = 'Vice-Líder!';
+      else if (i === 2) incentivoIndividual = 'No Pódio!';
+      else if (aluno.totalProjetos >= 5) incentivoIndividual = 'Multi-Projetos';
+      else if (aluno.totalLinhas >= 1000) incentivoIndividual = 'Fera do Código';
+      else if (aluno.totalLinhas >= 500) incentivoIndividual = 'Codificador';
+
       html += `
-        <tr class="${medalClass}">
-          <td class="ranking-pos">${typeof medal === 'string' ? medal : medal + 'º'}</td>
-          <td class="ranking-name">${aluno.nome}</td>
-          <td>${aluno.totalProjetos}</td>
-          <td>${aluno.totalLinhas.toLocaleString('pt-BR')}</td>
-          <td>${aluno.totalPalavras.toLocaleString('pt-BR')}</td>
-        </tr>
+        <div class="ranking-card ${medalClass}">
+          <div class="ranking-card-medal">${medal}</div>
+          <div class="ranking-card-name" title="${aluno.nome}">${aluno.nome}</div>
+          <div class="ranking-card-incentivo ${isTop3 ? '' : 'muted'}">${incentivoIndividual}</div>
+          <div class="ranking-card-stats">
+            <span>📁 ${aluno.totalProjetos} ${aluno.totalProjetos === 1 ? 'projeto' : 'projetos'}</span>
+            <span>✍️ ${aluno.totalLinhas.toLocaleString('pt-BR')} linhas</span>
+            <span>📝 ${aluno.totalPalavras.toLocaleString('pt-BR')} palavras</span>
+          </div>
+        </div>
       `;
     });
 
-    html += '</tbody></table></div>';
+    html += `
+        </div>
+      </div>
+    `;
     section.innerHTML = html;
     section.style.display = '';
   } catch (err) {
