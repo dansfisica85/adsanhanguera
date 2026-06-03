@@ -732,6 +732,77 @@ app.get('/api/explorer/file', (req, res) => {
   }
 });
 
+// ===== AI CHAT (Groq) =====
+app.post('/api/ai/chat', middlewareAuth, async (req, res) => {
+  try {
+    const { messages, includeCode, codigoContexto } = req.body;
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ error: 'messages é obrigatório.' });
+    }
+
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      return res.status(503).json({ error: 'Serviço de IA não configurado. Defina GROQ_API_KEY nas variáveis de ambiente.' });
+    }
+
+    const systemPrompt = `Você é o ADS-AI, um assistente educacional especializado em programação para alunos e professores do curso de Análise e Desenvolvimento de Sistemas (ADS) da Anhanguera.
+
+Suas responsabilidades:
+- Explicar código HTML, CSS, JavaScript e Python de forma didática e clara
+- Gerar e criar código completo e funcional quando solicitado
+- Resolver problemas de programação passo a passo
+- Identificar e corrigir erros no código
+- Sugerir melhorias e boas práticas de desenvolvimento
+- Responder dúvidas sobre desenvolvimento web, lógica de programação e algoritmos
+- Adaptar a linguagem ao nível do usuário (do iniciante ao avançado)
+
+Regras:
+- Sempre responda em português brasileiro
+- Ao gerar código, use blocos de código com a linguagem correta: \`\`\`html, \`\`\`css, \`\`\`javascript ou \`\`\`python
+- Seja didático, objetivo e amigável
+- Para explicações complexas, use listas numeradas e exemplos práticos`;
+
+    const systemMessages = [{ role: 'system', content: systemPrompt }];
+
+    if (includeCode && codigoContexto) {
+      systemMessages.push({
+        role: 'system',
+        content: `Código atual do aluno no editor (use como contexto ao responder):\n\`\`\`\n${String(codigoContexto).substring(0, 8000)}\n\`\`\``,
+      });
+    }
+
+    const payload = {
+      model: 'llama-3.3-70b-versatile',
+      messages: [...systemMessages, ...messages.slice(-20)],
+      temperature: 0.7,
+      max_tokens: 2048,
+      stream: false,
+    };
+
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!groqRes.ok) {
+      const errBody = await groqRes.json().catch(() => ({}));
+      console.error('Erro Groq API:', groqRes.status, errBody);
+      return res.status(502).json({ error: 'Erro ao contatar IA. Tente novamente em instantes.' });
+    }
+
+    const data = await groqRes.json();
+    const reply = data.choices?.[0]?.message?.content || '';
+    res.json({ reply });
+  } catch (err) {
+    console.error('Erro no chat IA:', err);
+    res.status(500).json({ error: 'Erro interno no serviço de IA.' });
+  }
+});
+
 // Explorer page
 app.get('/explorer', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'explorer.html'));

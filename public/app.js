@@ -2288,3 +2288,188 @@ function toggleRankingView() {
     btn.textContent = 'Expandir';
   }
 }
+
+// ===== AI CHAT =====
+let aiChatHistory = [];
+let aiChatIsOpen = false;
+
+function toggleAIChat() {
+  const panel = document.getElementById('aiChatPanel');
+  aiChatIsOpen = !aiChatIsOpen;
+  panel.classList.toggle('ai-open', aiChatIsOpen);
+  if (aiChatIsOpen) {
+    setTimeout(() => {
+      const input = document.getElementById('aiChatInput');
+      if (input) input.focus();
+      scrollAIChat();
+    }, 50);
+  }
+}
+
+function clearAIChat() {
+  aiChatHistory = [];
+  const msgs = document.getElementById('aiChatMessages');
+  if (!msgs) return;
+  msgs.innerHTML = `
+    <div class="ai-msg ai-msg-assistant">
+      <div class="ai-msg-avatar">🤖</div>
+      <div class="ai-msg-bubble"><p>Conversa reiniciada! Como posso te ajudar?</p></div>
+    </div>`;
+}
+
+function aiHandleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendAIMessage();
+  }
+}
+
+function aiExplainCode() {
+  const lang = document.querySelector('.code-lang-tab.active')?.dataset?.lang || 'html';
+  const code = getEditorValue(lang) || '';
+  if (!code.trim()) {
+    appendAIMsg('assistant', '⚠️ Não encontrei código no editor. Escreva algum código primeiro e tente novamente!');
+    return;
+  }
+  sendAIMessage('Explique detalhadamente o que este código faz, de forma didática para um aluno de ADS:', true);
+}
+
+function aiQuickAsk(question) {
+  sendAIMessage(question, true);
+}
+
+async function sendAIMessage(overrideText, includeCode) {
+  includeCode = includeCode || false;
+  const input = document.getElementById('aiChatInput');
+  const userText = overrideText !== undefined ? overrideText : (input ? input.value.trim() : '');
+  if (!userText) return;
+
+  if (!overrideText && input) input.value = '';
+
+  // Abrir o painel se estiver fechado
+  if (!aiChatIsOpen) toggleAIChat();
+
+  appendAIMsg('user', userText);
+  aiChatHistory.push({ role: 'user', content: userText });
+
+  const sendBtn = document.getElementById('aiSendBtn');
+  if (sendBtn) sendBtn.disabled = true;
+
+  const typingId = appendAITyping();
+
+  try {
+    const lang = document.querySelector('.code-lang-tab.active')?.dataset?.lang || 'html';
+    const body = {
+      messages: aiChatHistory.slice(-20),
+      includeCode: includeCode,
+    };
+    if (includeCode) {
+      body.codigoContexto = getEditorValue(lang) || '';
+    }
+
+    const res = await fetchWithRetry('/api/ai/chat', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(body),
+    });
+
+    removeAITyping(typingId);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ao contatar IA.');
+
+    aiChatHistory.push({ role: 'assistant', content: data.reply });
+    appendAIMsg('assistant', data.reply);
+  } catch (err) {
+    removeAITyping(typingId);
+    appendAIMsg('assistant', '❌ ' + (err.message || 'Erro ao contatar IA. Tente novamente.'));
+  } finally {
+    if (sendBtn) sendBtn.disabled = false;
+    const inp = document.getElementById('aiChatInput');
+    if (inp) inp.focus();
+  }
+}
+
+function appendAIMsg(role, text) {
+  const msgs = document.getElementById('aiChatMessages');
+  if (!msgs) return;
+  const div = document.createElement('div');
+  div.className = 'ai-msg ai-msg-' + role;
+  const avatar = role === 'user'
+    ? (currentUser && currentUser.nome ? currentUser.nome.charAt(0).toUpperCase() : '👤')
+    : '🤖';
+  div.innerHTML =
+    '<div class="ai-msg-avatar">' + avatar + '</div>' +
+    '<div class="ai-msg-bubble">' + formatAIText(text) + '</div>';
+  msgs.appendChild(div);
+  scrollAIChat();
+}
+
+function appendAITyping() {
+  const msgs = document.getElementById('aiChatMessages');
+  if (!msgs) return '';
+  const id = 'ai-typing-' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'ai-msg ai-msg-assistant';
+  div.id = id;
+  div.innerHTML =
+    '<div class="ai-msg-avatar">🤖</div>' +
+    '<div class="ai-typing"><span></span><span></span><span></span></div>';
+  msgs.appendChild(div);
+  scrollAIChat();
+  return id;
+}
+
+function removeAITyping(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function scrollAIChat() {
+  const msgs = document.getElementById('aiChatMessages');
+  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+
+function formatAIText(raw) {
+  // Extrai blocos de código antes de escapar
+  const blocks = [];
+  let text = raw.replace(/```(\w*)\n?([\s\S]*?)```/g, function(_, lang, code) {
+    const i = blocks.length;
+    blocks.push({ lang: lang || 'code', code: code.trim() });
+    return '\x00BLOCK' + i + '\x00';
+  });
+
+  // Escapa HTML
+  text = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Código inline
+  text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+  // Negrito e itálico
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Listas com - ou •
+  text = text.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
+  text = text.replace(/(<li>[\s\S]*?<\/li>)/g, function(m) {
+    return '<ul>' + m + '</ul>';
+  });
+
+  // Parágrafos
+  text = '<p>' + text.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+
+  // Restaura blocos de código
+  blocks.forEach(function(b, i) {
+    var escaped = b.code
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    text = text.replace('\x00BLOCK' + i + '\x00',
+      '<pre><code class="lang-' + b.lang + '">' + escaped + '</code></pre>');
+  });
+
+  return text;
+}
+
