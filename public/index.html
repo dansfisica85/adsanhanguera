@@ -564,6 +564,7 @@
                   <span class="lang-tab-icon">🐍</span> main.py
                 </button>
                 <div class="code-editor-toolbar">
+                  <button class="editor-tool-btn" id="btnToggleConsole" onclick="toggleConsole()" title="Ocultar Console">🖥️</button>
                   <button class="editor-tool-btn" onclick="zoomEditorOut()" title="Diminuir zoom (Ctrl -)">A−</button>
                   <span id="zoomLabel" class="editor-zoom-label" onclick="zoomEditorReset()" title="Restaurar zoom">100%</span>
                   <button class="editor-tool-btn" onclick="zoomEditorIn()" title="Aumentar zoom (Ctrl +)">A+</button>
@@ -597,6 +598,7 @@
                 <div class="code-console-actions">
                   <label class="auto-run-label"><input type="checkbox" id="autoRunToggle" checked /> Auto-refresh</label>
                   <button class="btn btn-sm btn-outline" onclick="clearConsole()">Limpar</button>
+                  <button class="btn btn-sm btn-outline" onclick="toggleConsole()" title="Ocultar console">Ocultar</button>
                 </div>
               </div>
               <div id="codeConsole" class="code-console"></div>

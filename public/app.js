@@ -174,6 +174,9 @@ function showApp() {
   if (canSeeAdmin()) {
     loadAdminData();
   }
+
+  // Garante o carregamento automático da tela inicial de códigos após o login
+  switchTab('codigo');
 }
 
 function logout() {
@@ -1674,6 +1677,32 @@ function appendConsole(type, text) {
 function clearConsole() {
   const consoleEl = document.getElementById('codeConsole');
   if (consoleEl) consoleEl.innerHTML = '';
+}
+
+function toggleConsole() {
+  const consoleEl = document.querySelector('.code-console-full');
+  if (!consoleEl) return;
+  
+  const isHidden = consoleEl.classList.toggle('hidden');
+  
+  // Atualizar visual do botão no toolbar
+  const btnToggle = document.getElementById('btnToggleConsole');
+  if (btnToggle) {
+    if (isHidden) {
+      btnToggle.classList.add('console-hidden');
+      btnToggle.title = 'Mostrar Console';
+      btnToggle.style.opacity = '0.6';
+    } else {
+      btnToggle.classList.remove('console-hidden');
+      btnToggle.title = 'Ocultar Console';
+      btnToggle.style.opacity = '1';
+    }
+  }
+
+  // Recalcular layout do Monaco
+  setTimeout(() => {
+    Object.values(monacoEditors).forEach(ed => ed && ed.layout());
+  }, 50);
 }
 
 async function salvarProjeto() {
