@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADS Anhanguera – Projeto de Software</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+  <!-- ===== TELA DE LOGIN ===== -->
+  <div id="loginScreen" class="login-screen">
+    <!-- Partículas decorativas -->
+    <div class="login-particles">
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-icon-ring">
+          <div class="login-icon">🎓</div>
+        </div>
+        <h1>ADS Anhanguera</h1>
+        <p>Oficina de Soluções Profissionais</p>
+      </div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="text" id="loginEmail" placeholder="seu.email@exemplo.com" required />
+        </div>
+        <div class="form-group">
+          <label for="loginSenha">Senha</label>
+          <input type="password" id="loginSenha" placeholder="Sua senha" required />
+        </div>
+        <div id="loginError" class="login-error hidden"></div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <span>Entrar</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </form>
+      <div class="login-dev-info">
+        <div class="login-dev-divider"><span>Desenvolvedor</span></div>
+        <p class="login-dev-name">Davi Antonino Nunes da Silva</p>
+        <div class="login-dev-links">
+          <a href="mailto:professordavi85@gmail.com" title="Email">📧 professordavi85@gmail.com</a>
+          <a href="https://wa.me/5516992604315" target="_blank" title="WhatsApp">📱 (16) 99260-4315</a>
+          <a href="https://github.com/dansfisica85" target="_blank" title="GitHub">🐙 dansfisica85</a>
+          <a href="https://open.spotify.com/intl-pt/artist/0IBe0S81z4uWoscwHEOQ1f" target="_blank" title="Spotify">🎵 Artigli Notturni 🐾</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== APP PRINCIPAL ===== -->
+  <div id="app" class="hidden">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div class="logo">
+          <span class="logo-icon">📐</span>
+          <div>
+            <h1>Projeto de Software</h1>
+            <span class="subtitle">ADS – Anhanguera | Nutrientes Delivery</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <span id="userNameDisplay" class="user-name"></span>
+          <span id="roleBadge" class="role-badge"></span>
+          <button class="btn-admin-header" id="tabAdmin" style="display:none;" onclick="switchTab('admin')">
+            ⚙️ Painel Admin
+          </button>
+          <!-- Toggle coordenador -->
+          <div id="coordToggle" class="coord-toggle hidden">
+            <label class="switch">
+              <input type="checkbox" id="coordSwitch" onchange="toggleCoordView()" />
+              <span class="slider"></span>
+            </label>
+            <span id="coordLabel" class="coord-label">Visão Aluno</span>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="logout()">Sair</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs-nav">
+      <div class="tabs-container">
+        <button class="tab active" data-tab="codigo" onclick="switchTab('codigo')">
+          <span class="tab-num">💻</span>
+          <span class="tab-label">Code Editor</span>
+        </button>
+        <div class="tab-dropdown">
+          <button class="tab tab-dropdown-toggle" onclick="toggleUnidadesMenu()">
+            <span class="tab-num">📖</span>
+            <span class="tab-label">Unidades</span>
+            <span class="tab-dropdown-arrow">▾</span>
+          </button>
+          <div class="tab-dropdown-menu" id="unidadesMenu">
+            <button data-tab="u1" onclick="switchTab('u1')">U1 – Estudo de Caso</button>
+            <button data-tab="u2" onclick="switchTab('u2')">U2 – Resolução de Problemas</button>
+            <button data-tab="u3" onclick="switchTab('u3')">U3 – Simulação Profissional</button>
+            <button data-tab="u4" onclick="switchTab('u4')">U4 – Aprendizagem entre Pares</button>
+          </div>
+        </div>
+        <button class="tab" data-tab="docs" onclick="switchTab('docs')">
+          <span class="tab-num">📄</span>
+          <span class="tab-label">Documentos</span>
+        </button>
+        <button class="tab" data-tab="perfil" onclick="switchTab('perfil')">
+          <span class="tab-num">👤</span>
+          <span class="tab-label">Perfil</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- ==================== UNIDADE 1 ==================== -->
+      <section id="tab-u1" class="tab-content">
+        <div class="unit-header">
+          <h2>📋 Unidade 1 – Estudo de Caso</h2>
+          <p class="unit-desc">Gestão de Projetos, Matriz RACI, Ciclo de Vida Híbrido e Arquitetura de Software</p>
+        </div>
+
+        <div class="concepts-section">
+          <h3 class="section-title">📖 Conceitos Fundamentais <span class="section-hint">Clique nos cards para expandir</span></h3>
+
+          <div class="flashcards-grid">
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="orange">
+              <div class="flashcard-icon">🏢</div>
+              <h4 class="flashcard-title">Caso Nutrientes Delivery</h4>
+              <p class="flashcard-preview">Startup de alimentação saudável com 4 módulos integrados</p>
+              <div class="flashcard-badge">Estudo de Caso</div>
+              <div class="flashcard-full-content" style="display:none">
+                <p>A <strong>Nutrientes Delivery</strong> é uma startup de alimentação saudável que precisa de um sistema integrado com quatro módulos:</p>
+                <ul>
+                  <li><strong>Módulo do Cliente:</strong> Aplicativo para pedidos, personalização de refeições e acompanhamento nutricional</li>
+                  <li><strong>Módulo de Nutrição:</strong> Motor de cálculo nutricional das receitas e integração com banco de dados de alimentos</li>
+                  <li><strong>Módulo de Produção:</strong> Gestão de receitas diárias, controle de estoque e desperdício</li>
+                  <li><strong>Módulo de Logística:</strong> Roteirização de entregas e acompanhamento em tempo real</li>
+                </ul>
+                <div class="info-box">
+                  <strong>Equipe:</strong> 3 programadores juniores, 1 analista sênior, 1 product owner<br>
+                  <strong>Prazo:</strong> 6 meses para o MVP<br>
+                  <strong>Conflito:</strong> Analista Sênior prefere Preditivo vs. PO/CEO exige Adaptativo
+                </div>
+              </div>
+            </div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="blue">
+              <div class="flashcard-icon">📊</div>
+              <h4 class="flashcard-title">Matriz RACI</h4>
+              <p class="flashcard-preview">Ferramenta de gestão de responsabilidades</p>
+              <div class="flashcard-badge">Gestão</div>
+              <div class="flashcard-full-content" style="display:none">
+                <p>A <strong>Matriz RACI</strong> é uma ferramenta de gestão que define responsabilidades em um projeto:</p>
+                <div class="grid-2">
+                  <div class="mini-card accent-blue"><strong>R – Responsável</strong><p>Quem executa a tarefa.</p></div>
+                  <div class="mini-card accent-green"><strong>A – Aprovador</strong><p>Quem aprova o resultado.</p></div>
+                  <div class="mini-card accent-yellow"><strong>C – Consultado</strong><p>Quem deve ser consultado antes de decisões.</p></div>
+                  <div class="mini-card accent-purple"><strong>I – Informado</strong><p>Quem precisa ser informado sobre progresso.</p></div>
+                </div>
+                <div class="raci-action-area" style="margin-top: 20px; text-align: center;">
+                  <a href="https://professordavi.my.canva.site/ads26-anhaguera" target="_blank" class="btn btn-primary btn-raci-matrix" onclick="event.stopPropagation();">FAÇA A SUA MATRIZ AQUI</a>
+                  <p class="raci-senha" style="margin-top: 10px; font-size: 0.9rem; color: var(--text-secondary);">Use a senha: <strong>Ads26@Anhaguera</strong></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="green">
+              <div class="flashcard-icon">🔄</div>
+              <h4 class="flashcard-title">Ciclo de Vida Híbrido</h4>
+              <p class="flashcard-preview">Combinação de abordagens Preditiva e Ágil</p>
+              <div class="flashcard-badge">Metodologia</div>
+              <div class="flashcard-full-content" style="display:none">
+                <p>O <strong>Ciclo de Vida Híbrido</strong> combina abordagens Preditiva (Cascata) e Adaptativa (Ágil):</p>
+                <div class="grid-2">
+                  <div class="mini-card accent-blue"><strong>Abordagem Preditiva (Cascata)</strong><p>Ideal para requisitos estáveis. Aplicação: Módulo de Produção.</p></div>
+                  <div class="mini-card accent-green"><strong>Abordagem Adaptativa (Ágil)</strong><p>Ideal para requisitos que mudam. Aplicação: Módulo do Cliente.</p></div>
+                </div>
+                <p>As <strong>3 atividades essenciais</strong>: Detalhamento da Baseline, Definição de Timebox/Sprints, Plano de Comunicação.</p>
+              </div>
+            </div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="purple">
+              <div class="flashcard-icon">🏗️</div>
+              <h4 class="flashcard-title">Arquitetura de Software</h4>
+              <p class="flashcard-preview">Microservices e padrão MVC</p>
+              <div class="flashcard-badge">Arquitetura</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="mini-card accent-blue"><strong>Microservices (Recomendado)</strong><p>Cada módulo é independente. Ideal para escalabilidade.</p></div>
+                <div class="mini-card accent-green" style="margin-top:10px;"><strong>Padrão MVC</strong><p>Recomendado para o Módulo do Cliente: Model (pedidos), View (interface), Controller (lógica).</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercises-section">
+          <h3 class="section-title">✏️ Exercícios Interativos</h3>
+          <div id="exercises-1"></div>
+        </div>
+      </section>
+
+      <!-- ==================== UNIDADE 2 ==================== -->
+      <section id="tab-u2" class="tab-content">
+        <div class="unit-header">
+          <h2>🧩 Unidade 2 – Resolução de Problemas</h2>
+          <p class="unit-desc">Métodos Ágeis, Scrum, MVP, Design Thinking e Gerenciamento de Stakeholders</p>
+        </div>
+
+        <div class="concepts-section">
+          <h3 class="section-title">📖 Conceitos Fundamentais <span class="section-hint">Clique nos cards para expandir</span></h3>
+
+          <div class="flashcards-grid">
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="red">
+              <div class="flashcard-icon">⚡</div>
+              <h4 class="flashcard-title">A Crise do MVP</h4>
+              <p class="flashcard-preview">Conflitos durante o Sprint com novas exigências</p>
+              <div class="flashcard-badge">Cenário</div>
+              <div class="flashcard-full-content" style="display:none">
+                <p>No meio do Sprint, o CEO exige inclusão de Calculadora Nutricional em Tempo Real e Pagamento Recorrente via PIX.</p>
+                <div class="warning-box">⚠️ <strong>Problema:</strong> O PO está sob pressão para aceitar mudanças no meio do Sprint, comprometendo a entrega do MVP.</div>
+              </div>
+            </div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="blue">
+              <div class="flashcard-icon">📜</div>
+              <h4 class="flashcard-title">Manifesto Ágil</h4>
+              <p class="flashcard-preview">Os 4 valores fundamentais do desenvolvimento ágil</p>
+              <div class="flashcard-badge">Valores</div>
+              <div class="flashcard-full-content" style="display:none">
+                <ol>
+                  <li><strong>Indivíduos e interações</strong> mais que processos e ferramentas</li>
+                  <li><strong>Software funcionando</strong> mais que documentação abrangente</li>
+                  <li><strong>Colaboração com o cliente</strong> mais que negociação de contratos</li>
+                  <li><strong>Responder a mudanças</strong> mais que seguir um plano</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="green">
+              <div class="flashcard-icon">🔧</div>
+              <h4 class="flashcard-title">Artefatos e Eventos Scrum</h4>
+              <p class="flashcard-preview">Product Backlog, Sprint Backlog e Incremento</p>
+              <div class="flashcard-badge">Scrum</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="grid-2">
+                  <div class="mini-card accent-blue"><strong>Product Backlog</strong><p>Lista ordenada de necessidades do produto. Gerenciado pelo PO.</p></div>
+                  <div class="mini-card accent-green"><strong>Sprint Backlog</strong><p>Itens selecionados para o Sprint. Protegido pelo time.</p></div>
+                  <div class="mini-card accent-purple"><strong>Incremento</strong><p>Soma dos itens completados durante o Sprint.</p></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="orange">
+              <div class="flashcard-icon">💡</div>
+              <h4 class="flashcard-title">MVP e Design Thinking</h4>
+              <p class="flashcard-preview">Prototipação rápida e validação de hipóteses</p>
+              <div class="flashcard-badge">Inovação</div>
+              <div class="flashcard-full-content" style="display:none">
+                <p>O <strong>MVP</strong> é a versão mais simples do produto que permite máximo aprendizado.</p>
+                <div class="process-flow">
+                  <div class="process-step">Empatia</div>
+                  <div class="process-arrow">→</div>
+                  <div class="process-step">Definição</div>
+                  <div class="process-arrow">→</div>
+                  <div class="process-step">Ideação</div>
+                  <div class="process-arrow">→</div>
+                  <div class="process-step">Prototipação</div>
+                  <div class="process-arrow">→</div>
+                  <div class="process-step">Teste</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercises-section">
+          <h3 class="section-title">✏️ Exercícios Interativos</h3>
+          <div id="exercises-2"></div>
+        </div>
+      </section>
+
+      <!-- ==================== UNIDADE 3 ==================== -->
+      <section id="tab-u3" class="tab-content">
+        <div class="unit-header">
+          <h2>🎯 Unidade 3 – Simulação de Situações Profissionais</h2>
+          <p class="unit-desc">Gestão de Riscos, Qualidade, Métricas de Software e Documentação Técnica</p>
+        </div>
+
+        <div class="concepts-section">
+          <h3 class="section-title">📖 Conceitos Fundamentais <span class="section-hint">Clique nos cards para expandir</span></h3>
+
+          <div class="flashcards-grid">
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="red">
+              <div class="flashcard-icon">🚨</div>
+              <h4 class="flashcard-title">Problemas Críticos</h4>
+              <p class="flashcard-preview">Riscos materializados e falhas de documentação</p>
+              <div class="flashcard-badge">Riscos</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="grid-2">
+                  <div class="mini-card accent-red"><strong>Risco Materializado (Estoque)</strong><p>Falha no Adaptador de Protocolo. Perda de R$ 15.000 em insumos.</p></div>
+                  <div class="mini-card accent-yellow"><strong>Problema de Documentação</strong><p>Desenvolvedor júnior gastou 2 dias sem documentação, causando atraso.</p></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="orange">
+              <div class="flashcard-icon">⚖️</div>
+              <h4 class="flashcard-title">Gestão de Riscos</h4>
+              <p class="flashcard-preview">Matriz de risco e ações de contingência</p>
+              <div class="flashcard-badge">Gestão</div>
+              <div class="flashcard-full-content" style="display:none">
+                <p><strong>Natureza dos Riscos:</strong> Técnico, Organizacional, Financeiro.</p>
+                <div class="info-box">
+                  <strong>Ações de Contingência:</strong> Mecanismo de Failover, Redundância de Sensores, Backup manual.
+                </div>
+              </div>
+            </div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="purple">
+              <div class="flashcard-icon">📏</div>
+              <h4 class="flashcard-title">Métricas de Qualidade</h4>
+              <p class="flashcard-preview">MEP — Métrica de Esforço Perdido</p>
+              <div class="flashcard-badge">Qualidade</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="formula-box">
+                  <strong>Métrica de Esforço Perdido (MEP)</strong>
+                  <div class="formula">MEP = (Tempo Perdido / Duração Total do Sprint) × 100</div>
+                  <p>Exemplo: (2 dias / 10 dias) × 100 = <strong>20%</strong> do Sprint perdido.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="blue">
+              <div class="flashcard-icon">📝</div>
+              <h4 class="flashcard-title">Documentação como Risco</h4>
+              <p class="flashcard-preview">Bus Factor, custo de manutenção e segurança</p>
+              <div class="flashcard-badge">Documentação</div>
+              <div class="flashcard-full-content" style="display:none">
+                <ol>
+                  <li><strong>Bus Factor:</strong> Dependência de um único desenvolvedor</li>
+                  <li><strong>Custo de Manutenção:</strong> Time-to-Market lento</li>
+                  <li><strong>Risco de Segurança:</strong> Erros por falta de especificação</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercises-section">
+          <h3 class="section-title">✏️ Exercícios Interativos</h3>
+          <div id="exercises-3"></div>
+        </div>
+      </section>
+
+      <!-- ==================== UNIDADE 4 ==================== -->
+      <section id="tab-u4" class="tab-content">
+        <div class="unit-header">
+          <h2>🤝 Unidade 4 – Aprendizagem entre Pares</h2>
+          <p class="unit-desc">CI/CD, UX, Governança de TI (COBIT/ITIL), ESG e Mapa Mental Estratégico</p>
+        </div>
+
+        <div class="concepts-section">
+          <h3 class="section-title">📖 Conceitos Fundamentais <span class="section-hint">Clique nos cards para expandir</span></h3>
+
+          <div class="flashcards-grid">
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="blue">
+              <div class="flashcard-icon">🚀</div>
+              <h4 class="flashcard-title">CI/CD</h4>
+              <p class="flashcard-preview">Integração e Entrega Contínua automatizadas</p>
+              <div class="flashcard-badge">DevOps</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="grid-2">
+                  <div class="mini-card accent-blue"><strong>CI – Integração Contínua</strong><p>Toda alteração é automaticamente testada e integrada.</p></div>
+                  <div class="mini-card accent-green"><strong>CD – Entrega Contínua</strong><p>Código testado é automaticamente disponibilizado para produção.</p></div>
+                </div>
+                <div class="process-flow">
+                  <div class="process-step">Commit</div><div class="process-arrow">→</div>
+                  <div class="process-step">Build</div><div class="process-arrow">→</div>
+                  <div class="process-step">Testes</div><div class="process-arrow">→</div>
+                  <div class="process-step">Deploy</div><div class="process-arrow">→</div>
+                  <div class="process-step">Produção</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="orange">
+              <div class="flashcard-icon">🎨</div>
+              <h4 class="flashcard-title">UX – Experiência do Usuário</h4>
+              <p class="flashcard-preview">Usabilidade, acessibilidade e retenção</p>
+              <div class="flashcard-badge">Design</div>
+              <div class="flashcard-full-content" style="display:none">
+                <ul>
+                  <li><strong>Usabilidade:</strong> Sistema fácil e intuitivo</li>
+                  <li><strong>Acessibilidade:</strong> Acessível para todos</li>
+                  <li><strong>Retenção:</strong> Boa experiência mantém usuários</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="purple">
+              <div class="flashcard-icon">🏛️</div>
+              <h4 class="flashcard-title">Governança de TI</h4>
+              <p class="flashcard-preview">COBIT e ITIL para gestão de serviços</p>
+              <div class="flashcard-badge">Governança</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="grid-2">
+                  <div class="mini-card accent-blue"><strong>COBIT</strong><p>Governança: alinhamento da TI com objetivos de negócio.</p></div>
+                  <div class="mini-card accent-green"><strong>ITIL</strong><p>Gerenciamento de serviços de TI. Padroniza operações.</p></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flashcard" onclick="openFlashCard(this)" data-color="green">
+              <div class="flashcard-icon">🌱</div>
+              <h4 class="flashcard-title">Paradigma ESG</h4>
+              <p class="flashcard-preview">Environmental, Social e Governance</p>
+              <div class="flashcard-badge">Sustentabilidade</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="grid-3">
+                  <div class="mini-card accent-green"><strong>🌍 Environmental</strong><p>Otimização de rotas, eficiência energética.</p></div>
+                  <div class="mini-card accent-blue"><strong>👥 Social</strong><p>Proteção de dados (LGPD), interface inclusiva.</p></div>
+                  <div class="mini-card accent-purple"><strong>🏛️ Governance</strong><p>Transparência, auditoria, ética corporativa.</p></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flashcard flashcard-wide" onclick="openFlashCard(this)" data-color="orange">
+              <div class="flashcard-icon">🗺️</div>
+              <h4 class="flashcard-title">Mapa Mental Estratégico</h4>
+              <p class="flashcard-preview">Visão integrada dos 4 nós do projeto</p>
+              <div class="flashcard-badge">Estratégia</div>
+              <div class="flashcard-full-content" style="display:none">
+                <div class="mind-map">
+                  <div class="mind-node central">Projeto de Software<br>Nutrientes Delivery</div>
+                  <div class="mind-branches">
+                    <div class="mind-node node-1"><strong>Nó 1: Gestão Inicial</strong><br>Ciclo Híbrido + UX</div>
+                    <div class="mind-node node-2"><strong>Nó 2: Execução Ágil</strong><br>Scrum/MVP + CI/CD</div>
+                    <div class="mind-node node-3"><strong>Nó 3: Qualidade</strong><br>Documentação + Controle de Versão</div>
+                    <div class="mind-node node-4"><strong>Nó 4: Governança</strong><br>Stakeholders + COBIT/ITIL/ESG</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercises-section">
+          <h3 class="section-title">✏️ Exercícios Interativos</h3>
+          <div id="exercises-4"></div>
+        </div>
+      </section>
+
+      <!-- ==================== CODE EDITOR ==================== -->
+      <section id="tab-codigo" class="tab-content active">
+        <div class="unit-header">
+          <h2>💻 Code Editor</h2>
+          <p class="unit-desc">Escreva HTML, CSS e JavaScript, visualize no navegador e salve seus projetos</p>
+        </div>
+
+        <div class="frontend-learning-cta">
+          <a href="https://frontend-ads26.vercel.app/" target="_blank" rel="noopener noreferrer" class="btn-aprenda-frontend">APRENDA FRONT-END</a>
+        </div>
+
+        <!-- Ranking de alunos -->
+        <div id="rankingSection" class="ranking-section" style="display:none;"></div>
+
+        <!-- Sub-abas de usuários (admin/coord) ou lista de projetos (aluno) -->
+        <div id="codeUserTabs" class="code-user-tabs"></div>
+
+        <!-- Área do editor -->
+        <div id="codeEditorArea" class="code-editor-area">
+          <!-- Header do projeto -->
+          <div class="code-project-header">
+            <div class="code-project-info">
+              <input type="text" id="codeProjectName" class="code-project-name-input" value="Meu Projeto" placeholder="Nome do projeto" />
+              <select id="codeProjectSelect" class="code-project-select">
+                <option value="new">+ Novo Projeto</option>
+              </select>
+            </div>
+            <div class="code-project-actions">
+              <button class="btn btn-primary btn-sm" onclick="salvarProjeto()">💾 Salvar</button>
+              <button class="btn btn-success btn-sm" onclick="openLivePreview()" title="Abrir em nova aba">🌐 Live Server</button>
+              <button class="btn btn-sm" onclick="window.open('/api/os-3-pilares-do-bootstrap.pdf','_blank')" title="Abrir PDF: Os 3 Pilares do Bootstrap" style="background:#7952B3;color:#fff;">📘 3 Pilares do Bootstrap</button>
+              <button class="btn btn-sm" id="btnRunPython" onclick="runPython()" title="Executar código Python" style="display:none;background:#3776AB;color:#fff;">▶ Rodar Python</button>
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('fileImportInput').click()" title="Importar arquivos do computador">📤 Importar</button>
+              <input type="file" id="fileImportInput" multiple accept=".html,.htm,.css,.js,.py,image/*" style="display:none;" onchange="handleFileImport(this.files); this.value='';" />
+              <button class="btn btn-outline btn-sm" onclick="downloadProjeto()">📦 Download ZIP</button>
+              <button class="btn btn-danger btn-sm" id="btnDeleteProjeto" onclick="deletarProjeto()" style="display:none;">🗑 Excluir</button>
+              <button class="btn btn-sm" onclick="window.open('https://professordavi.my.canva.site/hexadecimal','_blank')" style="background:var(--accent-purple);color:#fff;">🔢 Hexadecimal e Binário</button>
+            </div>
+          </div>
+
+          <!-- Layout IDE: File Tree + Editor -->
+          <div class="code-ide-layout">
+            <!-- Painel de Projetos (File Tree) -->
+            <div class="code-file-tree">
+              <div class="code-file-tree-header">
+                <span>📁 PROJETOS</span>
+              </div>
+              <div class="code-file-tree-project" id="fileTreeProjectName">
+                <span class="file-tree-folder">📂 Meu Projeto</span>
+              </div>
+              <div class="code-file-tree-files">
+                <div class="code-file-tree-item active" data-lang="html" onclick="switchCodeLang('html')">
+                  <span class="file-tree-icon">🌐</span>
+                  <span class="file-tree-name">index.html</span>
+                  <div class="file-tree-actions">
+                    <button class="file-tree-btn" onclick="event.stopPropagation(); downloadSingleFile('html')" title="Baixar arquivo">⬇</button>
+                  </div>
+                </div>
+                <div class="code-file-tree-item" data-lang="css" onclick="switchCodeLang('css')">
+                  <span class="file-tree-icon">🎨</span>
+                  <span class="file-tree-name">style.css</span>
+                  <div class="file-tree-actions">
+                    <button class="file-tree-btn" onclick="event.stopPropagation(); downloadSingleFile('css')" title="Baixar arquivo">⬇</button>
+                  </div>
+                </div>
+                <div class="code-file-tree-item" data-lang="js" onclick="switchCodeLang('js')">
+                  <span class="file-tree-icon">📜</span>
+                  <span class="file-tree-name">script.js</span>
+                  <div class="file-tree-actions">
+                    <button class="file-tree-btn" onclick="event.stopPropagation(); downloadSingleFile('js')" title="Baixar arquivo">⬇</button>
+                  </div>
+                </div>
+                <div class="code-file-tree-item" data-lang="py" onclick="switchCodeLang('py')">
+                  <span class="file-tree-icon">🐍</span>
+                  <span class="file-tree-name">main.py</span>
+                  <div class="file-tree-actions">
+                    <button class="file-tree-btn" onclick="event.stopPropagation(); downloadSingleFile('py')" title="Baixar arquivo">⬇</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Imagens do projeto -->
+              <div class="code-file-tree-header code-img-header">
+                <span>🖼 IMAGENS</span>
+                <button class="file-tree-add-btn" onclick="document.getElementById('imageImportInput').click()" title="Adicionar imagens">＋</button>
+              </div>
+              <div class="code-file-tree-images" id="codeImageTree">
+                <div class="code-img-empty">Nenhuma imagem.<br><small>Arraste ou clique em +</small></div>
+              </div>
+              <input type="file" id="imageImportInput" accept="image/*" multiple style="display:none;" onchange="handleFileImport(this.files); this.value='';" />
+            </div>
+
+            <!-- Editor principal -->
+            <div class="code-editor-main">
+              <!-- Abas HTML/CSS/JS -->
+              <div class="code-lang-tabs">
+                <button class="code-lang-tab active" data-lang="html" onclick="switchCodeLang('html')">
+                  <span class="lang-tab-icon">🌐</span> index.html
+                </button>
+                <button class="code-lang-tab" data-lang="css" onclick="switchCodeLang('css')">
+                  <span class="lang-tab-icon">🎨</span> style.css
+                </button>
+                <button class="code-lang-tab" data-lang="js" onclick="switchCodeLang('js')">
+                  <span class="lang-tab-icon">📜</span> script.js
+                </button>
+                <button class="code-lang-tab" data-lang="py" onclick="switchCodeLang('py')">
+                  <span class="lang-tab-icon">🐍</span> main.py
+                </button>
+                <div class="code-editor-toolbar">
+                  <button class="editor-tool-btn" id="btnToggleConsole" onclick="toggleConsole()" title="Ocultar Console">🖥️</button>
+                  <button class="editor-tool-btn" id="btnTogglePreviewToolbar" onclick="togglePreview()" title="Ocultar/Mostrar Preview">👁</button>
+                  <button class="editor-tool-btn" onclick="zoomEditorOut()" title="Diminuir zoom (Ctrl -)">A−</button>
+                  <span id="zoomLabel" class="editor-zoom-label" onclick="zoomEditorReset()" title="Restaurar zoom">100%</span>
+                  <button class="editor-tool-btn" onclick="zoomEditorIn()" title="Aumentar zoom (Ctrl +)">A+</button>
+                  <button class="editor-tool-btn" id="btnToggleTheme" onclick="toggleEditorTheme()" title="Alternar tema claro/escuro">🌙</button>
+                </div>
+              </div>
+
+              <!-- Editores Monaco -->
+              <div class="code-editors-wrapper">
+                <div id="editorHTML" class="code-editor-pane active">
+                  <div id="monacoHTML" class="monaco-container"></div>
+                </div>
+                <div id="editorCSS" class="code-editor-pane">
+                  <div id="monacoCSS" class="monaco-container"></div>
+                </div>
+                <div id="editorJS" class="code-editor-pane">
+                  <div id="monacoJS" class="monaco-container"></div>
+                </div>
+                <div id="editorPY" class="code-editor-pane">
+                  <div id="monacoPY" class="monaco-container"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Console -->
+          <div class="code-console-full">
+            <div class="code-console-section">
+              <div class="code-console-header">
+                <h4>🖥 Console</h4>
+                <div class="code-console-actions">
+                  <label class="auto-run-label"><input type="checkbox" id="autoRunToggle" checked /> Auto-refresh</label>
+                  <button class="btn btn-sm btn-outline" onclick="clearConsole()">Limpar</button>
+                  <button class="btn btn-sm btn-outline" onclick="toggleConsole()" title="Ocultar console">Ocultar</button>
+                </div>
+              </div>
+              <div id="codeConsole" class="code-console"></div>
+            </div>
+          </div>
+
+          <!-- Live Preview Panel -->
+          <div class="code-preview-panel" id="codePreviewPanel">
+            <div class="code-preview-header">
+              <div class="code-preview-title">
+                <span class="code-preview-dot dot-red"></span>
+                <span class="code-preview-dot dot-yellow"></span>
+                <span class="code-preview-dot dot-green"></span>
+                <h4>👁 Live Preview</h4>
+                <span class="code-preview-badge" id="previewStatus">Auto</span>
+              </div>
+              <div class="code-preview-actions">
+                <div class="code-preview-resize-controls">
+                  <button class="code-preview-resize-btn" onclick="resizePreview(-80)" title="Diminuir preview">−</button>
+                  <span class="code-preview-size-label" id="previewSizeLabel">480px</span>
+                  <button class="code-preview-resize-btn" onclick="resizePreview(80)" title="Aumentar preview">+</button>
+                </div>
+                <button class="btn btn-sm btn-outline code-preview-btn" onclick="runCode()" title="Atualizar preview">🔄 Refresh</button>
+                <button class="btn btn-sm btn-outline code-preview-btn" id="btnTogglePreview" onclick="togglePreview()" title="Ocultar/Mostrar preview">🔽 Ocultar</button>
+                <button class="btn btn-success btn-sm code-preview-btn" onclick="openLivePreview()" title="Abrir em tela cheia">🌐 Live Server</button>
+              </div>
+            </div>
+            <div class="code-preview-body" id="codePreviewBody">
+              <iframe id="codePreview" sandbox="allow-scripts allow-modals"></iframe>
+            </div>
+            <div class="code-preview-resize-handle" id="previewResizeHandle" title="Arraste para redimensionar">
+              <span class="resize-handle-grip"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== DOCUMENTOS ==================== -->
+      <section id="tab-docs" class="tab-content">
+        <div class="unit-header">
+          <h2>📄 Biblioteca de Documentos</h2>
+          <p class="unit-desc">Materiais de apoio, atividades e gabaritos</p>
+        </div>
+        <div class="estude-aqui-wrapper">
+          <a href="https://drive.google.com/drive/folders/12v-QTzfJYCA1Crwc8UKwyW26oVLnFmDz?usp=sharing" target="_blank" rel="noopener noreferrer" class="btn-estude-aqui">
+            📚 ESTUDE AQUI
+          </a>
+        </div>
+        <div id="docsContainer" class="docs-grid">
+          <div class="loading">Carregando documentos</div>
+        </div>
+      </section>
+
+      <!-- ==================== PERFIL ==================== -->
+      <section id="tab-perfil" class="tab-content">
+        <div class="unit-header">
+          <h2>👤 Meu Perfil</h2>
+          <p class="unit-desc">Suas informações e progresso</p>
+        </div>
+        <div class="profile-section">
+          <div class="profile-card">
+            <div class="profile-avatar" id="profileAvatar">👤</div>
+            <h3 id="profileNome"></h3>
+            <p id="profileEmail" class="profile-email"></p>
+            <span id="profileRole" class="role-badge"></span>
+          </div>
+          <div class="profile-stats" id="profileStats">
+            <div class="stat-card">
+              <span class="stat-value" id="statRespostas">0</span>
+              <span class="stat-label">Respostas Enviadas</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="statMedia">0.0</span>
+              <span class="stat-label">Média Geral</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="statUnidades">0/4</span>
+              <span class="stat-label">Unidades com Resposta</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== ADMIN ==================== -->
+      <section id="tab-admin" class="tab-content">
+        <div class="unit-header">
+          <h2>⚙️ Painel Administrativo</h2>
+          <p class="unit-desc">Visão geral dos alunos e evolução</p>
+        </div>
+
+        <div class="admin-stats" id="adminStats">
+          <div class="stat-card"><span class="stat-value" id="adminTotalAlunos">0</span><span class="stat-label">Alunos</span></div>
+          <div class="stat-card"><span class="stat-value" id="adminTotalRespostas">0</span><span class="stat-label">Respostas</span></div>
+          <div class="stat-card"><span class="stat-value" id="adminMediaGeral">0.0</span><span class="stat-label">Média Geral</span></div>
+        </div>
+
+        <div class="admin-section">
+          <h3 class="section-title">📊 Média por Unidade</h3>
+          <div class="chart-container">
+            <canvas id="chartUnidades" width="400" height="200"></canvas>
+          </div>
+        </div>
+
+        <div class="admin-section">
+          <h3 class="section-title">👥 Alunos</h3>
+          <div id="adminAlunosList" class="alunos-grid"></div>
+        </div>
+
+        <div id="adminEvolucao" class="admin-section hidden">
+          <h3 class="section-title">📈 Evolução do Aluno: <span id="evolucaoNome"></span></h3>
+          <div class="chart-container">
+            <canvas id="chartEvolucao" width="400" height="200"></canvas>
+          </div>
+          <div id="evolucaoDetalhes"></div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <p class="footer-main">ADS Anhanguera – Projeto de Software | Oficina de Soluções Profissionais</p>
+        <div class="footer-dev">
+          <span>Desenvolvido por <strong>Davi Antonino Nunes da Silva</strong></span>
+          <div class="footer-links">
+            <a href="mailto:professordavi85@gmail.com" title="Email">📧 professordavi85@gmail.com</a>
+            <a href="https://wa.me/5516992604315" target="_blank" title="WhatsApp">📱 (16) 992604315</a>
+            <a href="https://open.spotify.com/intl-pt/artist/0IBe0S81z4uWoscwHEOQ1f" target="_blank" title="Spotify">🐾 Artigli Notturni</a>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-outline footer-readme-btn" onclick="openReadmeModal()">📖 README</button>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ===== MODAL README ===== -->
+  <div id="readmeModal" class="modal-overlay hidden" onclick="closeReadmeModal(event)">
+    <div class="modal-box modal-box-large">
+      <div class="modal-box-header">
+        <h3>📖 README do Projeto</h3>
+        <button class="modal-close" onclick="closeReadmeModal()">&times;</button>
+      </div>
+      <div class="modal-box-body readme-content" id="readmeContent">
+        <div class="loading">Carregando README</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL FLASH CARD ===== -->
+  <div id="flashCardModal" class="flashcard-modal-overlay" onclick="closeFlashCard(event)">
+    <div class="flashcard-modal">
+      <div class="flashcard-modal-header">
+        <div class="flashcard-modal-icon" id="flashModalIcon"></div>
+        <div>
+          <h3 id="flashModalTitle"></h3>
+          <span class="flashcard-modal-badge" id="flashModalBadge"></span>
+        </div>
+        <button class="modal-close flashcard-modal-close" onclick="closeFlashCard()">&times;</button>
+      </div>
+      <div class="flashcard-modal-body" id="flashModalBody"></div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL DOC VIEWER ===== -->
+  <div id="docViewerModal" class="modal-overlay hidden" onclick="closeDocViewer(event)">
+    <div class="modal-box modal-box-large">
+      <div class="modal-box-header">
+        <h3 id="docViewerTitle">Documento</h3>
+        <button class="modal-close" onclick="closeDocViewer()">&times;</button>
+      </div>
+      <div class="modal-box-body">
+        <iframe id="docViewerFrame" class="doc-iframe"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== AI CHAT PANEL ===== -->
+  <div id="aiChatPanel" class="ai-chat-panel">
+    <div class="ai-chat-header">
+      <div class="ai-chat-title">
+        <div class="ai-chat-avatar-head">🤖</div>
+        <div>
+          <strong>ADS-AI Assistente</strong>
+          <span class="ai-chat-subtitle">Llama 3.3 · Groq</span>
+        </div>
+      </div>
+      <div class="ai-chat-header-actions">
+        <button class="ai-btn-icon" onclick="clearAIChat()" title="Limpar conversa">🗑</button>
+        <button class="ai-btn-icon" onclick="toggleAIChat()" title="Fechar">✕</button>
+      </div>
+    </div>
+    <div class="ai-chat-messages" id="aiChatMessages">
+      <div class="ai-msg ai-msg-assistant">
+        <div class="ai-msg-avatar">🤖</div>
+        <div class="ai-msg-bubble">
+          <p>Olá! Sou o <strong>ADS-AI</strong>, seu assistente de programação. Posso te ajudar a:</p>
+          <ul>
+            <li>📖 Explicar e entender código</li>
+            <li>🛠 Gerar código HTML, CSS, JS e Python</li>
+            <li>🐛 Encontrar e corrigir erros</li>
+            <li>💡 Sugerir melhorias e boas práticas</li>
+          </ul>
+          <p>Como posso te ajudar hoje?</p>
+        </div>
+      </div>
+    </div>
+    <div class="ai-chat-quick-actions">
+      <button class="ai-quick-btn" onclick="aiExplainCode()">📖 Explicar meu código</button>
+      <button class="ai-quick-btn" onclick="aiQuickAsk('Como posso melhorar este código?')">✨ Melhorias</button>
+      <button class="ai-quick-btn" onclick="aiQuickAsk('Corrija os erros do meu código')">🐛 Corrigir erros</button>
+      <button class="ai-quick-btn" onclick="aiQuickAsk('Gere um exemplo de código HTML com CSS e JavaScript')">🛠 Gerar exemplo</button>
+    </div>
+    <div class="ai-chat-input-area">
+      <textarea id="aiChatInput" class="ai-chat-input" placeholder="Pergunte sobre programação... (Enter envia, Shift+Enter quebra linha)" rows="2" onkeydown="aiHandleKey(event)"></textarea>
+      <button class="ai-chat-send-btn" id="aiSendBtn" onclick="sendAIMessage()" title="Enviar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Botão flutuante para abrir o chat IA -->
+  <button id="aiChatToggleBtn" class="ai-chat-toggle-btn hidden" onclick="toggleAIChat()" title="Assistente de IA">
+    <span class="ai-toggle-icon">🤖</span>
+    <span class="ai-toggle-label">IA</span>
+  </button>
+
+  <script src="app.js"></script>
+</body>
+</html>
