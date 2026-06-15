@@ -75,6 +75,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.getElementById('loginForm').addEventListener('submit', handleLogin);
+  document.getElementById('registerForm').addEventListener('submit', handleRegister);
+
+  document.getElementById('btnShowRegister').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('loginForm').classList.add('hidden');
+    document.getElementById('registerForm').classList.remove('hidden');
+    document.getElementById('btnShowRegister').classList.add('hidden');
+    document.getElementById('btnShowLogin').classList.remove('hidden');
+    document.getElementById('loginError').classList.add('hidden');
+  });
+
+  document.getElementById('btnShowLogin').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('registerForm').classList.add('hidden');
+    document.getElementById('loginForm').classList.remove('hidden');
+    document.getElementById('btnShowLogin').classList.add('hidden');
+    document.getElementById('btnShowRegister').classList.remove('hidden');
+    document.getElementById('registerError').classList.add('hidden');
+  });
 });
 
 async function verifyAndShow() {
@@ -142,6 +161,79 @@ async function handleLogin(e) {
   }
 }
 
+// ===== Registro (Criar Perfil) =====
+async function handleRegister(e) {
+  e.preventDefault();
+  const nome = document.getElementById('registerNome').value.trim();
+  const email = document.getElementById('registerEmail').value.trim();
+  const senha = document.getElementById('registerSenha').value;
+  const errorEl = document.getElementById('registerError');
+
+  if (!nome || !email || !senha) {
+    errorEl.textContent = 'Nome completo, e-mail e senha são obrigatórios.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  // Validar se inseriu o nome completo (pelo menos duas palavras)
+  const nomeParts = nome.split(/\s+/);
+  if (nomeParts.length < 2) {
+    errorEl.textContent = 'Por favor, digite seu nome completo (nome e sobrenome).';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  // Validar formato de e-mail básico
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    errorEl.textContent = 'Por favor, insira um e-mail válido.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.querySelector('span').textContent = 'Criando perfil...';
+  errorEl.classList.add('hidden');
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, email, senha }),
+    });
+
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await res.text();
+      console.error('Resposta não-JSON do servidor:', text.substring(0, 200));
+      throw new Error('Erro de servidor. Tente novamente em instantes.');
+    }
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ao criar perfil.');
+
+    authToken = data.token;
+    currentUser = data.user;
+    localStorage.setItem('adsToken', authToken);
+    localStorage.setItem('adsUser', JSON.stringify(currentUser));
+    showApp();
+    
+    // Limpar o formulário de registro para caso façam logout posteriormente
+    document.getElementById('registerForm').reset();
+    document.getElementById('registerForm').classList.add('hidden');
+    document.getElementById('loginForm').classList.remove('hidden');
+    document.getElementById('btnShowLogin').classList.add('hidden');
+    document.getElementById('btnShowRegister').classList.remove('hidden');
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.querySelector('span').textContent = 'Criar Perfil';
+  }
+}
+
 function showApp() {
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
@@ -192,6 +284,14 @@ function logout() {
   document.getElementById('loginScreen').classList.remove('hidden');
   document.getElementById('loginForm').reset();
   document.getElementById('loginError').classList.add('hidden');
+
+  // Reset do formulário de cadastro
+  document.getElementById('registerForm').reset();
+  document.getElementById('registerError').classList.add('hidden');
+  document.getElementById('registerForm').classList.add('hidden');
+  document.getElementById('loginForm').classList.remove('hidden');
+  document.getElementById('btnShowLogin').classList.add('hidden');
+  document.getElementById('btnShowRegister').classList.remove('hidden');
 
   // Esconder botão da IA na página de login
   const aiBtn = document.getElementById('aiChatToggleBtn');

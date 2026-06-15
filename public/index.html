@@ -40,6 +40,34 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </button>
       </form>
+
+      <!-- Formulário de Cadastro (Criar Perfil) -->
+      <form id="registerForm" class="hidden">
+        <div class="form-group">
+          <label for="registerNome">Nome Completo</label>
+          <input type="text" id="registerNome" placeholder="Digite seu nome completo" required />
+        </div>
+        <div class="form-group">
+          <label for="registerEmail">Email</label>
+          <input type="email" id="registerEmail" placeholder="seu.email@exemplo.com" required />
+        </div>
+        <div class="form-group">
+          <label for="registerSenha">Senha</label>
+          <input type="password" id="registerSenha" placeholder="Escolha uma senha" required />
+        </div>
+        <div id="registerError" class="login-error hidden"></div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <span>Criar Perfil</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </form>
+
+      <!-- Alternador entre Login e Cadastro -->
+      <div class="login-toggle">
+        <a href="#" id="btnShowRegister">Não tem um perfil? Cadastre-se</a>
+        <a href="#" id="btnShowLogin" class="hidden">Já tem um perfil? Entrar</a>
+      </div>
+
       <div class="login-dev-info">
         <div class="login-dev-divider"><span>Desenvolvedor</span></div>
         <p class="login-dev-name">Davi Antonino Nunes da Silva</p>
