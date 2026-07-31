@@ -1,30 +1,61 @@
-# Planta 3D — Faculdade Anhanguera
+# Campus 3D — Anhanguera Sertãozinho
 
-Modelo público, navegável e interativo da planta da Faculdade Anhanguera, construído em Three.js a partir do croqui, da maquete ilustrativa e da planta de segurança fornecidos.
+Aplicação web 3D responsiva para explorar os ambientes da Faculdade Anhanguera de Sertãozinho e, mediante autorização do visitante, iniciar uma rota visual a partir da Entrada Principal.
 
-## Publicação definitiva
+## O que foi implementado
 
-https://planta-anhanguera-3d.vercel.app
+- 42 ambientes no térreo e 5 no mezanino, com nome, número/código, categoria e descrição;
+- mobiliário procedural por tipo de ambiente: carteiras, computadores, bancadas, estantes, mesas, cadeiras, balcões, armários, louças e plantas;
+- estacionamento, jardins, vegetação, calçada e portal da entrada;
+- visualização em maquete, vista superior e caminhada em primeira pessoa;
+- controles por teclado, mouse, toque e controle direcional para celular;
+- colisão básica com as paredes no modo caminhar;
+- busca e foco automático em qualquer ambiente;
+- minimapa com posição, destino e rota;
+- rota 3D animada entre a Entrada Principal e o destino;
+- geofence de 180 m para habilitar a rota real somente dentro do campus;
+- simulação pela entrada para testar a rota fora do campus;
+- camadas de paredes, nomes, mobília, mezanino, rota e planta-base;
+- importação/exportação do layout JSON e exportação do modelo GLB.
 
-O acesso é público: qualquer pessoa com o link pode abrir e explorar sem login ou senha.
+## Executar localmente
 
-## Recursos
-
-- vista em maquete 3D;
-- vista superior;
-- navegação em primeira pessoa com WASD/setas;
-- busca por salas e ambientes;
-- ocultação de paredes e mezanino;
-- compatibilidade com computador e celular.
-
-## Execução local
+Requer Node.js 20.19+ ou 22.12+.
 
 ```bash
-python -m http.server 8080
+npm install
+npm run dev
 ```
 
-Depois abra `http://localhost:8080/planta-anhanguera-3d/`.
+Abra o endereço mostrado pelo Vite. Para validar antes da publicação:
 
-## Observação de precisão
+```bash
+npm run check
+npm test
+npm run build
+npm run preview
+```
 
-A geometria é uma reconstrução visual aproximada e não substitui levantamento arquitetônico cotado, projeto executivo ou documentação oficial de segurança.
+## Geolocalização e privacidade
+
+O navegador só solicita a posição quando o visitante toca em **Usar minha localização**. Se a permissão já estiver concedida, a verificação pode ocorrer automaticamente. A latitude e a longitude são processadas em memória no próprio dispositivo; não há API, banco de dados, analytics ou envio da posição para terceiros.
+
+A geolocalização comum de celulares e notebooks não oferece localização interna precisa, especialmente dentro de prédios. Por isso, ela confirma apenas se o visitante está no perímetro aproximado do campus. A rota começa na **Entrada Principal**. Para localizar a pessoa dentro do prédio com precisão seria necessário instalar infraestrutura adicional, como beacons Bluetooth, Wi-Fi RTT ou QR codes de recalibração.
+
+A API de geolocalização exige HTTPS em produção (localhost é aceito durante o desenvolvimento).
+
+## Fontes e precisão
+
+A geometria foi reconstruída visualmente a partir do croqui atualizado, da maquete 3D e da planta técnica presentes no pacote. Nomes, setores e mobiliário seguem as imagens de referência, mas dimensões, espessuras, portas, orientação geográfica e percursos continuam aproximados.
+
+Este projeto serve para orientação e visualização. Não é planta executiva, laudo, sistema de localização de emergência nem rota oficial de fuga. Antes do uso institucional, valide o modelo com levantamento arquitetônico cotado, responsáveis da unidade, acessibilidade e segurança do trabalho.
+
+## Estrutura principal
+
+- `index.html`: interface e acessibilidade;
+- `style.css`: layout responsivo para computador e celular;
+- `main.js`: cena, câmera, mobília, navegação, minimapa e rotas;
+- `src/layout.js`: ambientes, categorias, descrições e geofence;
+- `src/geolocation.js`: cálculo de distância e verificação do perímetro;
+- `tests/geolocation.test.mjs`: verificações do geofence;
+- `assets/`: referências e modelos preservados.
