@@ -1,0 +1,482 @@
+{
+  "metadata": {
+    "title": "Planta 3D — Anhanguera",
+    "source": "Reconstrução visual aproximada a partir do croqui, maquete ilustrativa e planta de segurança.",
+    "units": "metros aproximados",
+    "version": "1.0.0"
+  },
+  "rooms": [
+    {
+      "name": "Sanitários — ala norte",
+      "category": "sanitarios",
+      "x": -34.0,
+      "z": -30.0,
+      "w": 8.0,
+      "d": 7.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 9",
+      "category": "sala",
+      "x": -23.5,
+      "z": -30.0,
+      "w": 10.0,
+      "d": 7.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 8",
+      "category": "sala",
+      "x": -12.5,
+      "z": -30.0,
+      "w": 10.0,
+      "d": 7.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 7",
+      "category": "sala",
+      "x": -1.8,
+      "z": -30.0,
+      "w": 9.0,
+      "d": 7.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 6",
+      "category": "sala",
+      "x": 8.2,
+      "z": -30.0,
+      "w": 9.0,
+      "d": 7.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Laboratório de Agronomia",
+      "category": "laboratorio",
+      "x": 19.5,
+      "z": -29.5,
+      "w": 10.0,
+      "d": 8.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Cantina",
+      "category": "convivencia",
+      "x": 31.5,
+      "z": -28.0,
+      "w": 10.0,
+      "d": 10.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 19",
+      "category": "sala",
+      "x": -47.0,
+      "z": -22.0,
+      "w": 7.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 17",
+      "category": "sala",
+      "x": -39.0,
+      "z": -22.0,
+      "w": 7.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 16",
+      "category": "sala",
+      "x": -31.0,
+      "z": -22.0,
+      "w": 7.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 15",
+      "category": "sala",
+      "x": -23.0,
+      "z": -22.0,
+      "w": 7.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 23",
+      "category": "sala",
+      "x": -47.0,
+      "z": -14.5,
+      "w": 7.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 22",
+      "category": "sala",
+      "x": -39.0,
+      "z": -14.5,
+      "w": 7.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 21",
+      "category": "sala",
+      "x": -31.0,
+      "z": -14.5,
+      "w": 7.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 20",
+      "category": "sala",
+      "x": -23.0,
+      "z": -14.5,
+      "w": 7.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 10",
+      "category": "sala",
+      "x": -10.0,
+      "z": -18.0,
+      "w": 10.0,
+      "d": 8.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 5",
+      "category": "sala",
+      "x": 1.5,
+      "z": -18.0,
+      "w": 10.0,
+      "d": 8.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 11",
+      "category": "sala",
+      "x": -10.0,
+      "z": -8.7,
+      "w": 10.0,
+      "d": 8.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 4",
+      "category": "sala",
+      "x": 1.5,
+      "z": -8.7,
+      "w": 10.0,
+      "d": 8.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 12",
+      "category": "sala",
+      "x": -10.0,
+      "z": 0.6,
+      "w": 10.0,
+      "d": 8.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 3",
+      "category": "sala",
+      "x": 1.5,
+      "z": 0.6,
+      "w": 10.0,
+      "d": 8.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 13",
+      "category": "sala",
+      "x": -24.0,
+      "z": -4.0,
+      "w": 8.0,
+      "d": 8.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 14",
+      "category": "sala",
+      "x": -24.0,
+      "z": 5.4,
+      "w": 8.0,
+      "d": 8.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Arquivo",
+      "category": "apoio",
+      "x": -11.5,
+      "z": 10.5,
+      "w": 7.0,
+      "d": 5.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Almoxarifado",
+      "category": "apoio",
+      "x": -3.2,
+      "z": 10.5,
+      "w": 7.0,
+      "d": 5.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Laboratório de Morfologia",
+      "category": "laboratorio",
+      "x": -25.0,
+      "z": 21.5,
+      "w": 16.0,
+      "d": 14.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 2",
+      "category": "sala",
+      "x": -7.0,
+      "z": 18.3,
+      "w": 10.0,
+      "d": 8.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala 1",
+      "category": "sala",
+      "x": -7.0,
+      "z": 28.2,
+      "w": 10.0,
+      "d": 8.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "NPI",
+      "category": "administrativo",
+      "x": 14.2,
+      "z": -1.0,
+      "w": 6.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Sala CIEE",
+      "category": "administrativo",
+      "x": 14.2,
+      "z": 6.2,
+      "w": 6.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Clínica de Psicologia",
+      "category": "laboratorio",
+      "x": 24.0,
+      "z": 2.5,
+      "w": 12.0,
+      "d": 13.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Biblioteca",
+      "category": "convivencia",
+      "x": 37.5,
+      "z": 2.5,
+      "w": 12.0,
+      "d": 13.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Laboratório de Informática I",
+      "category": "laboratorio",
+      "x": 49.0,
+      "z": 1.0,
+      "w": 10.0,
+      "d": 14.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Recepção e orientação",
+      "category": "administrativo",
+      "x": 29.5,
+      "z": 11.4,
+      "w": 18.0,
+      "d": 5.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Cozinha",
+      "category": "apoio",
+      "x": 10.5,
+      "z": 15.5,
+      "w": 6.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Laboratório de Física",
+      "category": "laboratorio",
+      "x": 19.0,
+      "z": 22.5,
+      "w": 12.0,
+      "d": 13.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Laboratório de Química",
+      "category": "laboratorio",
+      "x": 32.0,
+      "z": 22.5,
+      "w": 12.0,
+      "d": 13.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Laboratório de Informática II",
+      "category": "laboratorio",
+      "x": 49.0,
+      "z": 17.0,
+      "w": 10.0,
+      "d": 14.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Laboratório de Informática III",
+      "category": "laboratorio",
+      "x": 49.0,
+      "z": 30.0,
+      "w": 10.0,
+      "d": 10.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Comercial",
+      "category": "administrativo",
+      "x": 39.5,
+      "z": 36.0,
+      "w": 8.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Secretaria",
+      "category": "administrativo",
+      "x": 48.0,
+      "z": 36.0,
+      "w": 8.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    },
+    {
+      "name": "Depósito de limpeza",
+      "category": "apoio",
+      "x": 2.0,
+      "z": 35.0,
+      "w": 8.0,
+      "d": 6.0,
+      "h": 3.2,
+      "y": 0.0
+    }
+  ],
+  "mezzanineRooms": [
+    {
+      "name": "Mezanino — Diretoria",
+      "category": "administrativo",
+      "x": 17.0,
+      "z": 21.5,
+      "w": 6.0,
+      "d": 5.0,
+      "h": 2.8,
+      "y": 4.2
+    },
+    {
+      "name": "Mezanino — D.P.",
+      "category": "administrativo",
+      "x": 24.0,
+      "z": 21.5,
+      "w": 6.0,
+      "d": 5.0,
+      "h": 2.8,
+      "y": 4.2
+    },
+    {
+      "name": "Mezanino — Sala de reunião",
+      "category": "administrativo",
+      "x": 31.0,
+      "z": 21.5,
+      "w": 6.0,
+      "d": 5.0,
+      "h": 2.8,
+      "y": 4.2
+    },
+    {
+      "name": "Mezanino — Sala dos professores",
+      "category": "administrativo",
+      "x": 24.0,
+      "z": 27.7,
+      "w": 13.0,
+      "d": 6.0,
+      "h": 2.8,
+      "y": 4.2
+    },
+    {
+      "name": "Mezanino — Sanitários",
+      "category": "sanitarios",
+      "x": 34.0,
+      "z": 27.7,
+      "w": 5.0,
+      "d": 6.0,
+      "h": 2.8,
+      "y": 4.2
+    }
+  ]
+}
