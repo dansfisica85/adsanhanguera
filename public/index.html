@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ADS Anhanguera – Projeto de Software</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="app-modern.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -136,6 +137,10 @@
         <button class="tab" data-tab="docs" onclick="switchTab('docs')">
           <span class="tab-num">📄</span>
           <span class="tab-label">Documentos</span>
+        </button>
+        <button class="tab" data-tab="avisos" onclick="switchTab('avisos')" aria-label="Avisos importantes" aria-controls="tab-avisos">
+          <span class="tab-num">📢</span>
+          <span class="tab-label">Avisos</span>
         </button>
         <button class="tab" data-tab="perfil" onclick="switchTab('perfil')">
           <span class="tab-num">👤</span>
@@ -679,6 +684,53 @@
         </div>
         <div id="docsContainer" class="docs-grid">
           <div class="loading">Carregando documentos</div>
+        </div>
+      </section>
+
+      <!-- ==================== AVISOS ==================== -->
+      <section id="tab-avisos" class="tab-content" aria-labelledby="avisosTitle">
+        <div class="unit-header avisos-header">
+          <span class="avisos-kicker">Informações acadêmicas</span>
+          <h2 id="avisosTitle">📢 Avisos importantes</h2>
+          <p class="unit-desc">Aplicação de provas, calendários presenciais e atendimento da coordenação</p>
+        </div>
+
+        <div class="avisos-gallery">
+          <figure class="avisos-card avisos-card--wide">
+            <figcaption>Resumo da aplicação 2026.2</figcaption>
+            <img
+              src="images/avisos/resumo-aplicacao-2026-2.png"
+              alt="Resumo da aplicação de provas 2026.2 para cursos técnicos e de graduação, com primeira chamada, segunda chamada e recuperação"
+              width="1600"
+              height="900"
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+
+          <figure class="avisos-card avisos-card--wide">
+            <figcaption>Calendários de provas presenciais</figcaption>
+            <img
+              src="images/avisos/calendario-provas-presenciais-2026-2.png"
+              alt="Calendários de provas presenciais 2026.2 com datas de primeira chamada, segunda chamada e recuperação"
+              width="1600"
+              height="900"
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+
+          <figure class="avisos-card avisos-card--portrait">
+            <figcaption>Horário de atendimento da coordenação</figcaption>
+            <img
+              src="images/avisos/horario-atendimento-coordenacao.png"
+              alt="Horário de atendimento da coordenação EAD e semipresencial de segunda a sexta-feira"
+              width="1024"
+              height="1536"
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
         </div>
       </section>
 
