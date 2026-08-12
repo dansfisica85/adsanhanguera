@@ -96,6 +96,23 @@
   letter-spacing: 0.055em;
 }
 
+#app .role-badge.especial {
+  border: 1px solid rgba(243, 112, 33, 0.38);
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  color: #9a3412;
+  box-shadow: 0 3px 12px rgba(243, 112, 33, 0.14);
+}
+
+#app .exercise-read-only {
+  margin-top: 14px;
+  padding: 11px 13px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 10px;
+  background: rgba(248, 250, 252, 0.82);
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+
 #app .btn,
 #app .btn-admin-header {
   border-radius: 11px;
