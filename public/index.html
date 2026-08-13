@@ -6,6 +6,7 @@
   <title>ADS Anhanguera – Projeto de Software</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="app-modern.css" />
+  <link rel="stylesheet" href="engenharia-lab.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -137,6 +138,10 @@
         <button class="tab" data-tab="docs" onclick="switchTab('docs')">
           <span class="tab-num">📄</span>
           <span class="tab-label">Documentos</span>
+        </button>
+        <button class="tab" data-tab="engenharia" onclick="switchTab('engenharia')" aria-controls="tab-engenharia">
+          <span class="tab-num">🧭</span>
+          <span class="tab-label">Engenharia 3D</span>
         </button>
         <button class="tab" data-tab="avisos" onclick="switchTab('avisos')" aria-label="Avisos importantes" aria-controls="tab-avisos">
           <span class="tab-num">📢</span>
@@ -687,6 +692,107 @@
         </div>
       </section>
 
+      <!-- ==================== LABORATÓRIO DE ENGENHARIA ==================== -->
+      <section id="tab-engenharia" class="tab-content" aria-labelledby="engenhariaLabTitle">
+        <div id="engenhariaLabRoot" class="eng-lab">
+          <header class="unit-header eng-lab-hero">
+            <span class="eng-kicker">Laboratório interativo</span>
+            <h2 id="engenhariaLabTitle">🧩 Engenharia de Software 360°</h2>
+            <p class="unit-desc">Teste seus conhecimentos, explore quatro cenários em 3D e acompanhe como um software real sai do problema até a produção.</p>
+            <div class="eng-hero-stats" role="group" aria-label="Resumo do laboratório">
+              <span><strong>4</strong> unidades</span>
+              <span><strong>20</strong> desafios</span>
+              <span><strong>4</strong> simulações 3D</span>
+              <span><strong id="engGlossaryTotal">40+</strong> tecnologias</span>
+            </div>
+          </header>
+
+          <nav class="eng-local-nav" aria-label="Seções do laboratório de engenharia">
+            <a href="#engAtividades">Atividades</a>
+            <a href="#engSimulacoes">Simulações 3D</a>
+            <a href="#engFluxo">Fluxo real</a>
+            <a href="#engGlossario">Glossário</a>
+          </nav>
+
+          <section id="engAtividades" class="eng-module" aria-labelledby="engAtividadesTitle">
+            <div class="eng-section-heading">
+              <span class="eng-section-index">01</span>
+              <div>
+                <span class="eng-kicker">Prática autocorretiva</span>
+                <h3 id="engAtividadesTitle">Atividades por unidade</h3>
+                <p>Responda, confira a justificativa e refaça quando quiser. O resultado fica apenas neste dispositivo e não altera suas notas.</p>
+              </div>
+            </div>
+            <div id="engQuizSummary" class="eng-progress-panel" aria-live="polite"></div>
+            <div id="engQuizContainer" class="eng-quiz-list">
+              <p class="eng-loading">Preparando as atividades…</p>
+            </div>
+          </section>
+
+          <section id="engSimulacoes" class="eng-module" aria-labelledby="engSimulacoesTitle">
+            <div class="eng-section-heading">
+              <span class="eng-section-index">02</span>
+              <div>
+                <span class="eng-kicker">Aprendizagem espacial</span>
+                <h3 id="engSimulacoesTitle">Simulações 3D das quatro unidades</h3>
+                <p>Gire cada ambiente e selecione as etapas para observar decisões, artefatos e consequências no projeto.</p>
+              </div>
+            </div>
+            <div id="engSimulationsContainer" class="eng-simulations-grid">
+              <p class="eng-loading">Montando os ambientes 3D…</p>
+            </div>
+          </section>
+
+          <section id="engFluxo" class="eng-module" aria-labelledby="engFluxoTitle">
+            <div class="eng-section-heading">
+              <span class="eng-section-index">03</span>
+              <div>
+                <span class="eng-kicker">Caso prático guiado</span>
+                <h3 id="engFluxoTitle">Fluxo real de criação de software</h3>
+                <p>Acompanhe o exemplo de um Portal de Atendimento Acadêmico, da descoberta ao monitoramento.</p>
+              </div>
+            </div>
+            <div id="engFlowContainer" class="eng-flow-shell">
+              <p class="eng-loading">Organizando o fluxo de desenvolvimento…</p>
+            </div>
+            <div id="engCodeExamples" class="eng-code-grid"></div>
+          </section>
+
+          <section id="engGlossario" class="eng-module" aria-labelledby="engGlossarioTitle">
+            <div class="eng-section-heading">
+              <span class="eng-section-index">04</span>
+              <div>
+                <span class="eng-kicker">Mapa de tecnologias</span>
+                <h3 id="engGlossarioTitle">Glossário técnico e histórico</h3>
+                <p>Descubra para que cada tecnologia serve, como surgiu, quem participou de sua criação e onde ela aparece na prática.</p>
+              </div>
+            </div>
+            <div class="eng-glossary-toolbar">
+              <label class="eng-search-field" for="engGlossarySearch">
+                <span>Buscar tecnologia</span>
+                <input id="engGlossarySearch" type="search" placeholder="Ex.: Python, Ethernet, banco de dados…" autocomplete="off" />
+              </label>
+              <label class="eng-filter-field" for="engGlossaryCategory">
+                <span>Agrupar por tema</span>
+                <select id="engGlossaryCategory">
+                  <option value="todos">Todos os temas</option>
+                  <option value="frontend">Front-end</option>
+                  <option value="backend">Back-end</option>
+                  <option value="dados">Bancos de dados</option>
+                  <option value="redes">Redes e LAN</option>
+                  <option value="sistemas">Sistemas e DevOps</option>
+                </select>
+              </label>
+              <p id="engGlossaryCount" class="eng-results-count" aria-live="polite"></p>
+            </div>
+            <div id="engGlossaryGroups" class="eng-glossary-groups">
+              <p class="eng-loading">Carregando o glossário…</p>
+            </div>
+            <p class="eng-history-note">As datas indicam o primeiro protótipo, proposta ou lançamento público documentado. Tecnologias padronizadas coletivamente são atribuídas à equipe ou organização responsável, evitando inventores únicos indevidos.</p>
+          </section>
+        </div>
+      </section>
+
       <!-- ==================== AVISOS ==================== -->
       <section id="tab-avisos" class="tab-content" aria-labelledby="avisosTitle">
         <div class="unit-header avisos-header">
@@ -909,6 +1015,8 @@
     <span class="ai-toggle-label">IA</span>
   </button>
 
+  <script src="engenharia-data.js"></script>
+  <script src="engenharia-lab.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

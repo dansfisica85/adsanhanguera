@@ -6,7 +6,7 @@
 
 <br/>
 
-<img src="https://img.shields.io/badge/Versão-4.2.0-F37021?style=for-the-badge" alt="Versão" />
+<img src="https://img.shields.io/badge/Versão-5.0.0-F37021?style=for-the-badge" alt="Versão" />
 
 <br/><br/>
 
@@ -24,6 +24,8 @@
 Plataforma educacional completa para o curso de **Análise e Desenvolvimento de Sistemas** da **Universidade Anhanguera**. Reúne autenticação por perfis, exercícios interativos com avaliação automática, um **compilador/IDE web** com **preview ao vivo redimensionável**, **assistente de IA integrado (ADS-AI)**, ranking gamificado, painel administrativo com gráficos, biblioteca de documentos, avisos acadêmicos em destaque, visualizador do README e explorador de arquivos.
 
 > **Atualização 2026.2:** a área autenticada recebeu uma modernização visual responsiva, preservando integralmente as funções existentes e mantendo inalteradas a identidade e as cores da tela de login. A plataforma também ganhou a aba **Avisos** e o papel restrito **Aluna Especial**.
+
+> **Novidade v5.0:** a aba **Engenharia 3D** oferece 20 atividades autocorretivas, quatro simulações tridimensionais, um fluxo real de criação de software e um glossário histórico pesquisável com mais de 40 tecnologias. O progresso dos desafios é local e não altera notas ou dados acadêmicos.
 
 <br/>
 
@@ -226,6 +228,17 @@ Editor de código embutido baseado no **Monaco Editor** (o mesmo motor do VS Cod
 - Gabaritos identificados e ocultos na navegação para alunos, conforme a regra atual da interface
 - Link externo **ESTUDE AQUI** para material complementar
 
+### 🧩 Laboratório Engenharia 3D
+
+- Quatro trilhas baseadas nas novas unidades: métodos ágeis, qualidade, testes e evolução de software
+- 20 questões autocorretivas com justificativa pedagógica e progresso somente no navegador
+- Quatro ambientes 3D manipuláveis por mouse, toque, teclado e controles visíveis
+- Fluxo real: descoberta, requisitos, arquitetura, implementação, testes, entrega e operação
+- Exemplos integrados de front-end, API Node.js e persistência SQL
+- Glossário por tema: front-end, back-end, bancos de dados, redes/LAN e sistemas/DevOps
+- Cards históricos com finalidade, uso prático, criadores/equipe, datas, origem e fonte consultável
+- Layout totalmente responsivo, acessível e com redução de movimentos quando solicitada pelo sistema
+
 ---
 
 ### 🗂 Explorador de Arquivos
@@ -391,7 +404,7 @@ flowchart LR
 adsanhanguera/
 ├── server.js              # Servidor Express 5 (API + estáticos + explorer)
 ├── vercel.json            # Configuração de deploy Vercel (com includeFiles)
-├── package.json           # Dependências e scripts (versão do pacote: 4.2.0)
+├── package.json           # Dependências e scripts (versão do pacote: 5.0.0)
 ├── .env                   # Variáveis de ambiente (não versionado)
 ├── README.md
 │
@@ -410,6 +423,9 @@ adsanhanguera/
 │   ├── style.css          # Tema laranja Anhanguera + estilos do preview
 │   ├── app-modern.css     # Camada visual moderna restrita à área autenticada
 │   ├── app.js             # Lógica do frontend (auth, exercícios, compilador, preview, AI, ranking, docs)
+│   ├── engenharia-data.js # Conteúdo pedagógico e glossário histórico
+│   ├── engenharia-lab.js  # Atividades, 3D, fluxo e filtros do laboratório
+│   ├── engenharia-lab.css # Visual responsivo isolado da nova aba
 │   ├── images/avisos/     # Imagens acadêmicas publicadas na aba Avisos
 │   ├── explorer.html      # Explorador de arquivos
 │   ├── explorer.css       # Estilos do explorador
