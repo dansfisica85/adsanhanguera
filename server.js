@@ -877,6 +877,7 @@ app.get('/api/documentos', (req, res) => {
     { pasta: 'ads3', label: 'ADS 3', cor: 'purple' },
     // ADS 4: arquivos ficam na pasta real do projeto e são servidos via /api/ads4-doc/
     { label: 'ADS 4', cor: 'orange', dir: path.join(__dirname, 'ADS 4', 'INTERFACE E USABILIDADE'), urlBase: '/api/ads4-doc/' },
+    { pasta: 'engenharia-de-software', label: 'ENGENHARIA DE SOFTWARE', cor: 'teal' },
   ];
 
   const pastas = categorias.map(cat => {

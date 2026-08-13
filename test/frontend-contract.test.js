@@ -12,6 +12,10 @@ test('interface exibe o selo literal ALUNA ESPECIAL', () => {
   assert.match(modernCss, /#app\s+\.role-badge\.especial/);
 });
 
+test('aluna especial pode visualizar gabaritos na biblioteca de documentos', () => {
+  assert.match(appSource, /const canSee = !isGab \|\| isAdmin\(\) \|\| isCoord\(\) \|\| isEspecial\(\);/);
+});
+
 test('interface separa leitura global de mutacao das respostas e projetos', () => {
   assert.match(appSource, /function canMutateResponses\(\)/);
   assert.match(appSource, /function canEditCurrentProject\(\)/);

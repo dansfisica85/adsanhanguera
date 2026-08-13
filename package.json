@@ -1,6 +1,6 @@
 {
   "name": "adsanhanguera",
-  "version": "4.1.1",
+  "version": "4.2.0",
   "description": "Plataforma educacional ADS Anhanguera",
   "main": "server.js",
   "scripts": {

@@ -6,7 +6,7 @@
 
 <br/>
 
-<img src="https://img.shields.io/badge/Versão-4.1.0-F37021?style=for-the-badge" alt="Versão" />
+<img src="https://img.shields.io/badge/Versão-4.2.0-F37021?style=for-the-badge" alt="Versão" />
 
 <br/><br/>
 
@@ -218,11 +218,12 @@ Editor de código embutido baseado no **Monaco Editor** (o mesmo motor do VS Cod
 
 ### 📄 Biblioteca de Documentos
 
-- Documentos organizados por unidade em **cards coloridos** (ADS 1 a ADS 4)
+- Documentos organizados por unidade em **cards coloridos** (ADS 1 a ADS 4 e Engenharia de Software)
 - **ADS 4 — Interface e Usabilidade** servida diretamente da pasta do projeto
+- **Engenharia de Software** com quatro atividades e quatro gabaritos, das unidades 1 a 4
 - Suporte a PDF e imagens (PNG/JPG)
 - Visualizador embutido via iframe
-- Gabaritos protegidos (visíveis apenas para Admin/Coordenador)
+- Gabaritos identificados e ocultos na navegação para alunos, conforme a regra atual da interface
 - Link externo **ESTUDE AQUI** para material complementar
 
 ---
@@ -390,7 +391,7 @@ flowchart LR
 adsanhanguera/
 ├── server.js              # Servidor Express 5 (API + estáticos + explorer)
 ├── vercel.json            # Configuração de deploy Vercel (com includeFiles)
-├── package.json           # Dependências e scripts (versão do pacote: 4.1.0)
+├── package.json           # Dependências e scripts (versão do pacote: 4.2.0)
 ├── .env                   # Variáveis de ambiente (não versionado)
 ├── README.md
 │
@@ -412,10 +413,11 @@ adsanhanguera/
 │   ├── images/avisos/     # Imagens acadêmicas publicadas na aba Avisos
 │   ├── explorer.html      # Explorador de arquivos
 │   ├── explorer.css       # Estilos do explorador
-│   └── docs/              # Biblioteca de documentos (ADS 1, 2, 3)
+│   └── docs/              # Biblioteca de documentos (ADS 1, 2, 3 e Engenharia de Software)
 │       ├── ads1-projeto-software/
 │       ├── ads2/
-│       └── ads3/
+│       ├── ads3/
+│       └── engenharia-de-software/
 │
 ├── ADS 4/                 # Documentos da ADS 4 (servidos via /api/ads4-doc/)
 │   └── INTERFACE E USABILIDADE/
@@ -501,7 +503,7 @@ vercel --prod
 |------|-----------|
 | **admin** | Nível máximo: CRUD de respostas e projetos, painel admin, gabaritos, marcação de "visto", gestão de alunos e documentos. O perfil do criador permanece protegido com esse nível máximo |
 | **coordenador** | Alterna entre "Visão Aluno" e "Visão Admin" (leitura). **Não pode** criar/editar/excluir respostas ou projetos |
-| **especial — Aluna Especial** | Exibe o selo **ALUNA ESPECIAL**. Visualiza os projetos dos demais em modo somente leitura e cria, edita ou exclui somente os próprios projetos. Não acessa respostas ou notas alheias, não corrige atividades, não marca "visto", não altera ou exclui usuários e não modifica projetos de terceiros |
+| **especial — Aluna Especial** | Exibe o selo **ALUNA ESPECIAL**. Visualiza projetos e gabaritos, abre os projetos dos demais em modo somente leitura e cria, edita ou exclui somente os próprios projetos. Não acessa respostas ou notas alheias, não corrige atividades, não marca "visto", não altera ou exclui usuários e não modifica projetos de terceiros |
 | **aluno** | Cria perfil, responde exercícios, usa o compilador, salva projetos, vê ranking, exclui as próprias respostas e projetos |
 
 ### Fluxo de Autenticação
@@ -583,7 +585,7 @@ incrementam `token_version` e encerram imediatamente os tokens anteriores da con
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| `GET` | `/api/documentos` | ❌ | Lista documentos por categoria (ADS 1–4) |
+| `GET` | `/api/documentos` | ❌ | Lista documentos por categoria (ADS 1–4 e Engenharia de Software) |
 | `GET` | `/api/ads4-doc/:file` | ❌ | Serve um PDF da ADS 4 |
 | `GET` | `/api/os-3-pilares-do-bootstrap.pdf` | ❌ | PDF "Os 3 Pilares do Bootstrap" |
 | `GET` | `/api/explorer/tree` | ❌ | Árvore de arquivos do projeto |
@@ -696,6 +698,7 @@ CREATE TABLE projetos_codigo (
 | **ADS 2** | Resolução de Problemas — metodologias ágeis, elicitação de requisitos |
 | **ADS 3** | Simulação Profissional — decisão técnica, comunicação com stakeholders |
 | **ADS 4** | Interface e Usabilidade — fundamentos, planejamento, prototipação, testes e gamificação |
+| **Engenharia de Software** | Introdução à engenharia, qualidade, testes e tópicos avançados — atividades e gabaritos das unidades 1 a 4 |
 
 ---
 

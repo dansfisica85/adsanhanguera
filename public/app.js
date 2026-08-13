@@ -968,13 +968,13 @@ async function loadDocumentos() {
     container.innerHTML = data.pastas.map(pasta => {
       const filesHtml = pasta.arquivos.map(doc => {
         const isGab = doc.isGabarito;
-        const canSee = !isGab || isAdmin() || isCoord();
+        const canSee = !isGab || isAdmin() || isCoord() || isEspecial();
         const icon = doc.tipo === 'pdf' ? '📄' : '🖼️';
         const lockClass = canSee ? '' : 'doc-locked';
         const gabLabel = isGab ? ' • Gabarito' : '';
 
         return `
-          <div class="doc-file ${lockClass}" onclick="${canSee ? `openDoc('${doc.arquivo}', '${doc.nome.replace(/'/g, "\\'")}')` : 'alert(\\\'Gabaritos disponíveis apenas para administradores.\\\')'}">
+          <div class="doc-file ${lockClass}" onclick="${canSee ? `openDoc('${doc.arquivo}', '${doc.nome.replace(/'/g, "\\'")}')` : 'alert(\\\'Gabaritos disponíveis apenas para perfis autorizados.\\\')'}">
             <span class="doc-file-icon">${icon}</span>
             <span class="doc-file-name">${doc.nome}${gabLabel}</span>
           </div>`;

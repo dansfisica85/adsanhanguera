@@ -181,6 +181,24 @@ test('rotas aplicam as permissões da Aluna Especial sem confiar na interface', 
   const especial = users.find(user => user.role === 'especial');
   const specialHeaders = authHeaders(especial);
 
+  const documentos = await fetch(`${baseUrl}/api/documentos`);
+  assert.equal(documentos.status, 200);
+  const engenharia = (await documentos.json()).pastas.find(pasta => pasta.label === 'ENGENHARIA DE SOFTWARE');
+  assert.ok(engenharia);
+  assert.equal(engenharia.cor, 'teal');
+  assert.equal(engenharia.arquivos.length, 8);
+  assert.equal(engenharia.arquivos.filter(arquivo => arquivo.isGabarito).length, 4);
+  assert.equal(new Set(engenharia.arquivos.map(arquivo => arquivo.arquivo)).size, 8);
+  assert.ok(engenharia.arquivos.every(arquivo => arquivo.arquivo.startsWith('/docs/engenharia-de-software/')));
+
+  for (const documento of engenharia.arquivos) {
+    const pdf = await fetch(`${baseUrl}${documento.arquivo}`);
+    assert.equal(pdf.status, 200, documento.arquivo);
+    assert.match(pdf.headers.get('content-type') || '', /^application\/pdf/);
+    const bytes = new Uint8Array(await pdf.arrayBuffer());
+    assert.equal(new TextDecoder().decode(bytes.slice(0, 5)), '%PDF-');
+  }
+
   const allProjects = await fetch(`${baseUrl}/api/projetos`, { headers: specialHeaders });
   assert.equal(allProjects.status, 200);
   assert.equal((await allProjects.json()).projetos.length, 2);
