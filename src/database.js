@@ -110,6 +110,7 @@ async function initDB() {
       email TEXT UNIQUE NOT NULL,
       senha_hash TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'aluno',
+      token_version INTEGER NOT NULL DEFAULT 0,
       criado_em TEXT DEFAULT (datetime('now'))
     )`,
     `CREATE TABLE IF NOT EXISTS respostas (
@@ -138,6 +139,14 @@ async function initDB() {
     )`,
     `CREATE INDEX IF NOT EXISTS idx_projetos_aluno ON projetos_codigo(aluno_id)`,
   ]);
+
+  // Migration: permite revogar imediatamente sessões após troca de senha.
+  try {
+    await dbExecute(`ALTER TABLE usuarios ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0`);
+    console.log('  ✅ Coluna token_version adicionada.');
+  } catch (e) {
+    if (!/duplicate column|already exists/i.test(e.message || '')) throw e;
+  }
 
   // Seed users
   for (const u of USUARIOS_SEED) {

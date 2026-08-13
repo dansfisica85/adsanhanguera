@@ -11,10 +11,10 @@ const responses = [
   { id: 30, aluno_id: 3, unidade: 1, etapa: 1, exercicio: 1, resposta: 'Resposta original' },
 ];
 const users = [
-  { id: 1, nome: 'Davi', email: 'professordavi85@gmail.com', role: 'admin' },
-  { id: 3, nome: 'Outro Aluno', email: 'aluno@example.com', role: 'aluno' },
-  { id: 4, nome: 'Isabelly Benetelli Geron', email: 'IsabellyBenetelliGeron', role: 'especial' },
-  { id: 5, nome: 'Outro Administrador', email: 'outro-admin@example.com', role: 'admin' },
+  { id: 1, nome: 'Davi', email: 'professordavi85@gmail.com', role: 'admin', token_version: 0 },
+  { id: 3, nome: 'Outro Aluno', email: 'aluno@example.com', role: 'aluno', token_version: 0 },
+  { id: 4, nome: 'Isabelly Benetelli Geron', email: 'IsabellyBenetelliGeron', role: 'especial', token_version: 0 },
+  { id: 5, nome: 'Outro Administrador', email: 'outro-admin@example.com', role: 'admin', token_version: 0 },
 ];
 let nextProjectId = 100;
 let nextUserId = 200;
@@ -91,13 +91,25 @@ async function fakeDbExecute(sqlOrObject, positionalArgs) {
     return rows(response ? [{ ...response }] : []);
   }
 
+  if (/^SELECT \* FROM usuarios WHERE email = \?/i.test(sql)) {
+    const user = users.find(item => item.email === String(args[0]));
+    return rows(user ? [{ ...user }] : []);
+  }
+
+  if (/^SELECT id, nome, email, role, token_version FROM usuarios WHERE id = \?/i.test(sql)) {
+    const user = users.find(item => item.id === Number(args[0]));
+    return rows(user ? [{ ...user }] : []);
+  }
+
   if (/^SELECT id FROM usuarios WHERE lower\(email\) = lower\(\?\)/i.test(sql)) {
-    const user = users.find(item => item.email.toLowerCase() === String(args[0]).toLowerCase());
+    const excludedId = args.length > 1 ? Number(args[1]) : null;
+    const user = users.find(item => item.email.toLowerCase() === String(args[0]).toLowerCase()
+      && (excludedId === null || Number(item.id) !== excludedId));
     return rows(user ? [{ id: user.id }] : []);
   }
 
   if (/^INSERT INTO usuarios \(nome, email, senha_hash, role\) VALUES/i.test(sql)) {
-    const user = { id: nextUserId++, nome: args[0], email: args[1], senha_hash: args[2], role: args[3] };
+    const user = { id: nextUserId++, nome: args[0], email: args[1], senha_hash: args[2], role: args[3], token_version: 0 };
     users.push(user);
     return { rows: [], lastInsertRowid: user.id };
   }
@@ -105,6 +117,22 @@ async function fakeDbExecute(sqlOrObject, positionalArgs) {
   if (/^SELECT id, email, role FROM usuarios WHERE id = \?/i.test(sql)) {
     const user = users.find(item => item.id === Number(args[0]));
     return rows(user ? [{ id: user.id, email: user.email, role: user.role }] : []);
+  }
+
+  if (/^SELECT id, nome, email, role FROM usuarios WHERE id = \?/i.test(sql)) {
+    const user = users.find(item => item.id === Number(args[0]));
+    return rows(user ? [{ id: user.id, nome: user.nome, email: user.email, role: user.role }] : []);
+  }
+
+  if (/^UPDATE usuarios SET nome = \?, email = \?, senha_hash = \?, token_version = COALESCE/i.test(sql)) {
+    const user = users.find(item => item.id === Number(args[3]) && item.role === 'especial');
+    Object.assign(user, {
+      nome: args[0],
+      email: args[1],
+      senha_hash: args[2],
+      token_version: Number(user.token_version || 0) + 1,
+    });
+    return rows([]);
   }
 
   if (/^SELECT u\.id, u\.nome, u\.role, COUNT\(p\.id\) as total_projetos/i.test(sql)) {
@@ -134,7 +162,7 @@ require.cache[databasePath] = {
 };
 
 const app = require('../server');
-const { gerarToken } = require('../src/auth');
+const { gerarToken, verificarSenha } = require('../src/auth');
 
 function authHeaders(user) {
   return {
@@ -243,7 +271,7 @@ test('rotas aplicam as permissões da Aluna Especial sem confiar na interface', 
     headers: authHeaders(unknown),
     body: JSON.stringify({ nome: 'Não deve criar' }),
   });
-  assert.equal(unknownCreate.status, 403);
+  assert.equal(unknownCreate.status, 401);
 
   const createdByOwner = await fetch(`${baseUrl}/api/admin/usuarios`, {
     method: 'POST',
@@ -279,4 +307,93 @@ test('rotas aplicam as permissões da Aluna Especial sem confiar na interface', 
   });
   assert.equal(protectedOwnerDelete.status, 403);
   assert.ok(users.some(user => user.id === admin.id));
+
+  const updateByOtherAdmin = await fetch(`${baseUrl}/api/admin/usuarios/${especial.id}`, {
+    method: 'PATCH',
+    headers: authHeaders(otherAdmin),
+    body: JSON.stringify({ nome: 'Nome Indevido', email: 'login indevido', senha: 'senha indevida' }),
+  });
+  assert.equal(updateByOtherAdmin.status, 403);
+  assert.equal(especial.nome, 'Isabelly Benetelli Geron');
+
+  const forgedOwnerClaims = gerarToken({
+    id: otherAdmin.id,
+    nome: 'Davi falsificado',
+    email: 'professordavi85@gmail.com',
+    role: 'admin',
+    token_version: otherAdmin.token_version,
+  });
+  const updateWithForgedClaims = await fetch(`${baseUrl}/api/admin/usuarios/${especial.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${forgedOwnerClaims}` },
+    body: JSON.stringify({ nome: 'Nome Indevido', email: 'login indevido', senha: 'senha indevida' }),
+  });
+  assert.equal(updateWithForgedClaims.status, 403);
+  assert.equal(especial.nome, 'Isabelly Benetelli Geron');
+
+  const updateBySpecialItself = await fetch(`${baseUrl}/api/admin/usuarios/${especial.id}`, {
+    method: 'PATCH',
+    headers: specialHeaders,
+    body: JSON.stringify({ nome: 'Nome Indevido', email: 'login indevido', senha: 'senha indevida' }),
+  });
+  assert.equal(updateBySpecialItself.status, 403);
+
+  const duplicateSpecialLogin = await fetch(`${baseUrl}/api/admin/usuarios/${especial.id}`, {
+    method: 'PATCH',
+    headers: authHeaders(admin),
+    body: JSON.stringify({ nome: 'Isabella Benetelli', email: 'aluno@example.com', senha: 'senha-teste-segura' }),
+  });
+  assert.equal(duplicateSpecialLogin.status, 409);
+
+  const originalSpecialId = especial.id;
+  const originalSpecialProjectOwner = projects.find(project => project.id === 11).aluno_id;
+  const oldSpecialToken = gerarToken(especial);
+  const updatedSpecial = await fetch(`${baseUrl}/api/admin/usuarios/${especial.id}`, {
+    method: 'PATCH',
+    headers: authHeaders(admin),
+    body: JSON.stringify({ nome: 'Isabella Benetelli', email: 'Isabella Benetelli', senha: 'senha-teste-segura' }),
+  });
+  assert.equal(updatedSpecial.status, 200);
+  const updatedSpecialBody = await updatedSpecial.json();
+  assert.deepEqual(updatedSpecialBody.user, {
+    id: originalSpecialId,
+    nome: 'Isabella Benetelli',
+    email: 'Isabella Benetelli',
+    role: 'especial',
+  });
+  assert.equal('senha_hash' in updatedSpecialBody.user, false);
+  assert.equal(await verificarSenha('senha-teste-segura', especial.senha_hash), true);
+  assert.equal(especial.id, originalSpecialId);
+  assert.equal(projects.find(project => project.id === 11).aluno_id, originalSpecialProjectOwner);
+
+  const revokedSession = await fetch(`${baseUrl}/api/auth/me`, {
+    headers: { Authorization: `Bearer ${oldSpecialToken}` },
+  });
+  assert.equal(revokedSession.status, 401);
+
+  const oldLogin = await fetch(`${baseUrl}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'IsabellyBenetelliGeron', senha: 'senha-teste-segura' }),
+  });
+  assert.equal(oldLogin.status, 401);
+
+  const newLogin = await fetch(`${baseUrl}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'Isabella Benetelli', senha: 'senha-teste-segura' }),
+  });
+  assert.equal(newLogin.status, 200);
+  const newLoginBody = await newLogin.json();
+  assert.deepEqual(newLoginBody.user, {
+    id: originalSpecialId,
+    nome: 'Isabella Benetelli',
+    email: 'Isabella Benetelli',
+    role: 'especial',
+  });
+
+  const newSession = await fetch(`${baseUrl}/api/auth/me`, {
+    headers: { Authorization: `Bearer ${newLoginBody.token}` },
+  });
+  assert.equal(newSession.status, 200);
 });
