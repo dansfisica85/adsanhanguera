@@ -1722,6 +1722,16 @@ body {
 .folder-orange .folder-arrow { color: #e65100; }
 .folder-orange:hover { border-color: #fb8c00; }
 
+/* ===== Folder color: Teal (Engenharia de Software) ===== */
+.folder-teal {
+  background: linear-gradient(135deg, #e0f7f5, #b2dfdb);
+  border: 1px solid #4db6ac;
+}
+.folder-teal .folder-info h4 { color: #00695c; }
+.folder-teal .folder-count { color: #00796b; }
+.folder-teal .folder-arrow { color: #00695c; }
+.folder-teal:hover { border-color: #00897b; }
+
 /* ===== Doc locked state ===== */
 .doc-locked {
   opacity: 0.5;
