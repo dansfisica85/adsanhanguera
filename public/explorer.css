@@ -265,10 +265,14 @@ html, body {
 .welcome-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.6; }
 
 .welcome-screen h1 {
+  max-width: 720px;
   font-size: 22px;
   font-weight: 400;
   color: var(--text-primary);
+  line-height: 1.3;
   margin-bottom: 10px;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .welcome-screen > p {
@@ -429,4 +433,7 @@ html, body {
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
+
+  .welcome-screen { padding: 24px 18px; }
+  .welcome-screen h1 { font-size: 18px; }
 }

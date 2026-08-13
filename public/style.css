@@ -141,7 +141,10 @@ body {
   font-size: 1.6rem;
   font-weight: 800;
   color: var(--primary);
+  line-height: 1.2;
   letter-spacing: -0.5px;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .login-logo p {

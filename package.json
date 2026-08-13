@@ -1,7 +1,7 @@
 {
   "name": "adsanhanguera",
-  "version": "5.0.0",
-  "description": "Plataforma educacional ADS Anhanguera",
+  "version": "5.0.1",
+  "description": "Plataforma educacional do Curso Superior de Tecnologia em Análise e Desenvolvimento de Sistemas",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
