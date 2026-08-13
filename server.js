@@ -908,7 +908,7 @@ app.get('/api/readme', (req, res) => {
     const content = fs.readFileSync(readmePath, 'utf-8');
     res.json({ content });
   } else {
-    res.json({ content: '# ADS Anhanguera\nREADME não encontrado.' });
+    res.json({ content: '# Curso Superior de Tecnologia em Análise e Desenvolvimento de Sistemas\nREADME não encontrado.' });
   }
 });
 

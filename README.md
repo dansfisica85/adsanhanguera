@@ -1,12 +1,12 @@
 <div align="center">
 
-# 🎓 ADS Anhanguera
+# Curso Superior de Tecnologia em Análise e Desenvolvimento de Sistemas
 
 ### Plataforma Educacional Interativa
 
 <br/>
 
-<img src="https://img.shields.io/badge/Versão-5.0.0-F37021?style=for-the-badge" alt="Versão" />
+<img src="https://img.shields.io/badge/Versão-5.0.1-F37021?style=for-the-badge" alt="Versão" />
 
 <br/><br/>
 
@@ -26,6 +26,8 @@ Plataforma educacional completa para o curso de **Análise e Desenvolvimento de 
 > **Atualização 2026.2:** a área autenticada recebeu uma modernização visual responsiva, preservando integralmente as funções existentes e mantendo inalteradas a identidade e as cores da tela de login. A plataforma também ganhou a aba **Avisos** e o papel restrito **Aluna Especial**.
 
 > **Novidade v5.0:** a aba **Engenharia 3D** oferece 20 atividades autocorretivas, quatro simulações tridimensionais, um fluxo real de criação de software e um glossário histórico pesquisável com mais de 40 tecnologias. O progresso dos desafios é local e não altera notas ou dados acadêmicos.
+
+> **Identidade v5.0.1:** o cabeçalho global passa a exibir o nome institucional **Curso Superior de Tecnologia em Análise e Desenvolvimento de Sistemas** em todas as páginas.
 
 <br/>
 
@@ -404,7 +406,7 @@ flowchart LR
 adsanhanguera/
 ├── server.js              # Servidor Express 5 (API + estáticos + explorer)
 ├── vercel.json            # Configuração de deploy Vercel (com includeFiles)
-├── package.json           # Dependências e scripts (versão do pacote: 5.0.0)
+├── package.json           # Dependências e scripts (versão do pacote: 5.0.1)
 ├── .env                   # Variáveis de ambiente (não versionado)
 ├── README.md
 │

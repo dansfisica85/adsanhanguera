@@ -49,6 +49,7 @@
 
 #app .logo {
   gap: 14px;
+  min-width: 0;
 }
 
 #app .logo-icon {
@@ -65,9 +66,12 @@
 }
 
 #app .logo h1 {
+  max-width: 760px;
   color: var(--text);
   font-size: 1.22rem;
+  line-height: 1.22;
   letter-spacing: -0.025em;
+  text-wrap: balance;
 }
 
 #app .subtitle {
@@ -524,6 +528,11 @@
     justify-content: center;
   }
 
+  #app .logo h1 {
+    max-width: 560px;
+    font-size: 1.1rem;
+  }
+
   #app .tabs-container {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -593,6 +602,12 @@
 
   #app .header-right {
     gap: 8px;
+  }
+
+  #app .logo h1 {
+    max-width: 285px;
+    font-size: 1rem;
+    line-height: 1.28;
   }
 
   #app .role-badge,
