@@ -390,6 +390,7 @@ function switchTab(tabId) {
   }
 
   if (tabId === 'docs') loadDocumentos();
+  if (tabId === 'engenharia' && typeof initEngenhariaLab === 'function') initEngenhariaLab();
   if (tabId === 'perfil') loadProfileData();
   if (tabId === 'admin') loadAdminData();
   if (tabId === 'codigo') loadCodeEditor();
