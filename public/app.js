@@ -52,12 +52,34 @@ function isAluno() {
   return currentUser && currentUser.role === 'aluno';
 }
 
+function isEspecial() {
+  return currentUser && currentUser.role === 'especial';
+}
+
+function getRoleLabel(role) {
+  const labels = {
+    admin: 'Administrador',
+    coordenador: 'Coordenador',
+    aluno: 'Aluno',
+    especial: 'ALUNA ESPECIAL',
+  };
+  return labels[role] || 'Perfil sem permissão';
+}
+
 function canSeeAdmin() {
   return isAdmin() || (isCoord() && coordView);
 }
 
-function canMutate() {
+function canMutateResponses() {
   return isAdmin() || isAluno();
+}
+
+function canViewStudentProjects() {
+  return isAdmin() || isCoord() || isEspecial();
+}
+
+function canCreateOwnProjects() {
+  return isAdmin() || isAluno() || isEspecial();
 }
 
 // ===== Inicialização =====
@@ -247,13 +269,11 @@ function showApp() {
 
   // Role badge
   const badge = document.getElementById('roleBadge');
-  badge.textContent = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
+  badge.textContent = getRoleLabel(currentUser.role);
   badge.className = 'role-badge ' + currentUser.role;
 
   // Coord toggle
-  if (isCoord()) {
-    document.getElementById('coordToggle').classList.remove('hidden');
-  }
+  document.getElementById('coordToggle').classList.toggle('hidden', !isCoord());
 
   // Admin tab visibility
   if (isAdmin()) {
@@ -474,15 +494,19 @@ function renderExercicios(container, unidade, data) {
         html += renderFeedback(resposta, respKey);
 
         html += `<div class="exercise-actions">`;
-        html += `<button class="btn btn-sm btn-outline" onclick="reDoExercise('${respKey}', ${unidade}, ${etapaKey}, ${exKey})">Refazer</button>`;
+        if (canMutateResponses()) {
+          html += `<button class="btn btn-sm btn-outline" onclick="reDoExercise('${respKey}', ${unidade}, ${etapaKey}, ${exKey})">Refazer</button>`;
+        }
         // Gabarito button
         html += `<button class="btn btn-sm btn-outline" onclick="verGabarito(${unidade}, ${etapaKey}, ${exKey})">Ver Gabarito</button>`;
-        if (canMutate() && resposta.id) {
+        if (canMutateResponses() && resposta.id) {
           html += `<button class="btn btn-sm btn-danger" onclick="deleteResposta(${resposta.id}, '${respKey}', ${unidade})">Excluir</button>`;
         }
         html += `</div>`;
-      } else {
+      } else if (canMutateResponses()) {
         html += renderExerciseForm(unidade, etapaKey, exKey);
+      } else {
+        html += '<p class="exercise-read-only">Conteúdo disponível para consulta neste perfil.</p>';
       }
 
       html += '</div>';
@@ -555,6 +579,7 @@ function renderFeedback(resp, respKey) {
 // ===== Enviar Resposta =====
 async function submitResposta(e, unidade, etapa, exercicio) {
   e.preventDefault();
+  if (!canMutateResponses()) return;
   const textarea = document.getElementById(`resp-${unidade}-${etapa}-${exercicio}`);
   const resposta = textarea.value.trim();
   if (!resposta) return;
@@ -592,6 +617,7 @@ async function submitResposta(e, unidade, etapa, exercicio) {
 
 // ===== Refazer =====
 function reDoExercise(respKey, unidade, etapa, exercicio) {
+  if (!canMutateResponses()) return;
   delete respostasCache[respKey];
   renderExercicios(
     document.getElementById(`exercises-${unidade}`),
@@ -602,6 +628,7 @@ function reDoExercise(respKey, unidade, etapa, exercicio) {
 
 // ===== Delete Resposta =====
 async function deleteResposta(id, respKey, unidade) {
+  if (!canMutateResponses()) return;
   if (!confirm('Tem certeza que deseja excluir esta resposta?')) return;
 
   try {
@@ -711,7 +738,7 @@ function loadProfileData() {
   document.getElementById('profileEmail').textContent = currentUser.email;
 
   const roleEl = document.getElementById('profileRole');
-  roleEl.textContent = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
+  roleEl.textContent = getRoleLabel(currentUser.role);
   roleEl.className = 'role-badge ' + currentUser.role;
 
   // Calculate stats from cache
@@ -1050,6 +1077,20 @@ let currentCodeUserId = null; // para admin/coord navegar entre alunos
 let projetosCache = [];
 let adminProjetosCache = []; // projetos do professor visíveis a todos
 let viewingAdminProject = false; // se está visualizando projeto do professor
+
+function isOwnCodeView() {
+  return Boolean(currentUser) && Number(currentCodeUserId) === Number(currentUser.id);
+}
+
+function canEditCurrentProject() {
+  if (viewingAdminProject || !currentUser) return false;
+  if (isAdmin()) return true;
+  return (isAluno() || isEspecial()) && isOwnCodeView();
+}
+
+function canCreateProjectInCurrentView() {
+  return canCreateOwnProjects() && isOwnCodeView() && !viewingAdminProject;
+}
 
 // Imagens do projeto: { 'nome.png': 'data:image/png;base64,...' }
 let projectAssets = {};
@@ -1446,7 +1487,7 @@ async function loadCodeEditor() {
     else check();
   });
 
-  if (isAdmin() || isCoord()) {
+  if (canViewStudentProjects()) {
     // Carregar lista de alunos como sub-abas
     try {
       const res = await fetchWithRetry('/api/projetos-alunos', { headers: authHeaders() });
@@ -1454,16 +1495,17 @@ async function loadCodeEditor() {
       if (!res.ok) throw new Error(data.error);
 
       let html = '<div class="code-user-tabs-container">';
-      // Aba "Meus Projetos" para admin
-      if (isAdmin()) {
+      // Administrador e Aluna Especial têm uma aba própria antes das abas de alunos.
+      const hasOwnProjectsTab = isAdmin() || isEspecial();
+      if (hasOwnProjectsTab) {
         html += `<button class="code-user-tab active" data-userid="${currentUser.id}" onclick="switchCodeUser(${currentUser.id}, this)">
           <span class="code-user-icon">👤</span> Meus Projetos
         </button>`;
       }
       (data.alunos || []).forEach(a => {
-        const isActive = !isAdmin() && a.id === (data.alunos[0] || {}).id ? ' active' : '';
+        const isActive = !hasOwnProjectsTab && a.id === (data.alunos[0] || {}).id ? ' active' : '';
         html += `<button class="code-user-tab${isActive}" data-userid="${a.id}" onclick="switchCodeUser(${a.id}, this)">
-          <span class="code-user-icon">👤</span> ${a.nome.split(' ')[0]}
+          <span class="code-user-icon">👤</span> ${escapeHtml(a.nome.split(' ')[0])}
           <span class="code-user-count">${a.total_projetos}</span>
         </button>`;
       });
@@ -1471,7 +1513,7 @@ async function loadCodeEditor() {
       tabArea.innerHTML = html;
 
       // Carregar projetos do primeiro usuário
-      const firstUserId = isAdmin() ? currentUser.id : (data.alunos[0] ? data.alunos[0].id : null);
+      const firstUserId = hasOwnProjectsTab ? currentUser.id : (data.alunos[0] ? data.alunos[0].id : null);
       if (firstUserId) {
         currentCodeUserId = firstUserId;
         await loadUserProjects(firstUserId);
@@ -1499,7 +1541,8 @@ async function switchCodeUser(userId, btn) {
 async function loadUserProjects(userId) {
   try {
     let res;
-    if ((isAdmin() || isCoord()) && userId !== currentUser.id) {
+    const ownView = Number(userId) === Number(currentUser.id);
+    if (canViewStudentProjects() && !ownView) {
       res = await fetchWithRetry(`/api/projetos-aluno/${userId}`, { headers: authHeaders() });
     } else {
       res = await fetchWithRetry('/api/projetos', { headers: authHeaders() });
@@ -1507,11 +1550,11 @@ async function loadUserProjects(userId) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
 
-    projetosCache = (data.projetos || []).filter(p => Number(p.aluno_id) === userId);
+    projetosCache = (data.projetos || []).filter(p => Number(p.aluno_id) === Number(userId));
 
     // Carregar projetos do professor para alunos
     adminProjetosCache = [];
-    if (isAluno()) {
+    if ((isAluno() || isEspecial()) && ownView) {
       try {
         const adminRes = await fetchWithRetry('/api/projetos-admin', { headers: authHeaders() });
         const adminData = await adminRes.json();
@@ -1526,20 +1569,22 @@ async function loadUserProjects(userId) {
     const select = document.getElementById('codeProjectSelect');
     select.innerHTML = '';
 
-    // Grupo "Meus Projetos"
+    // Projetos próprios ou projetos do aluno selecionado.
     const myGroup = document.createElement('optgroup');
-    myGroup.label = '📁 Meus Projetos';
-    const newOpt = document.createElement('option');
-    newOpt.value = 'new';
-    newOpt.textContent = '+ Novo Projeto';
-    myGroup.appendChild(newOpt);
+    myGroup.label = ownView ? '📁 Meus Projetos' : '📁 Projetos do aluno';
+    if (canCreateProjectInCurrentView()) {
+      const newOpt = document.createElement('option');
+      newOpt.value = 'new';
+      newOpt.textContent = '+ Novo Projeto';
+      myGroup.appendChild(newOpt);
+    }
     projetosCache.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.id;
       opt.textContent = p.nome + (p.visto ? ' ✅' : '');
       myGroup.appendChild(opt);
     });
-    select.appendChild(myGroup);
+    if (myGroup.children.length > 0) select.appendChild(myGroup);
 
     // Grupo "Projetos do Professor" (para alunos)
     if (adminProjetosCache.length > 0) {
@@ -1562,12 +1607,21 @@ async function loadUserProjects(userId) {
       select.value = projetosCache[0].id;
       viewingAdminProject = false;
       loadProjectIntoEditor(projetosCache[0]);
-    } else if (adminProjetosCache.length > 0 && isAluno()) {
+    } else if (adminProjetosCache.length > 0 && (isAluno() || isEspecial())) {
       select.value = 'admin_' + adminProjetosCache[0].id;
       viewingAdminProject = true;
       loadProjectIntoEditor(adminProjetosCache[0]);
-    } else {
+    } else if (canCreateProjectInCurrentView()) {
       select.value = 'new';
+      viewingAdminProject = false;
+      clearEditor();
+    } else {
+      const emptyOpt = document.createElement('option');
+      emptyOpt.value = '';
+      emptyOpt.textContent = 'Nenhum projeto cadastrado';
+      emptyOpt.disabled = true;
+      emptyOpt.selected = true;
+      select.appendChild(emptyOpt);
       viewingAdminProject = false;
       clearEditor();
     }
@@ -1596,7 +1650,7 @@ function loadProjectIntoEditor(projeto) {
   // Renderizar botão de visto
   renderVistoButton(projeto);
 
-  const canDel = canMutate() && !viewingAdminProject;
+  const canDel = canEditCurrentProject();
   document.getElementById('btnDeleteProjeto').style.display = canDel ? '' : 'none';
 
   // Atualizar nome no file tree
@@ -1631,8 +1685,8 @@ function clearEditor() {
 }
 
 function updateEditorPermissions() {
-  const isOwner = currentCodeUserId === currentUser.id;
-  const canEdit = !viewingAdminProject && (isAdmin() || (isAluno() && isOwner));
+  const isOwner = isOwnCodeView();
+  const canEdit = canEditCurrentProject();
   setEditorsReadOnly(!canEdit);
   document.getElementById('codeProjectName').readOnly = !canEdit;
 
@@ -1640,22 +1694,31 @@ function updateEditorPermissions() {
   const saveBtn = document.querySelector('.code-project-actions .btn-primary');
   if (saveBtn) saveBtn.style.display = canEdit ? '' : 'none';
   document.getElementById('btnDeleteProjeto').style.display = canEdit && currentProjectId ? '' : 'none';
+  const importFilesBtn = document.getElementById('btnImportProjectFiles');
+  const importImagesBtn = document.getElementById('btnImportProjectImages');
+  if (importFilesBtn) importFilesBtn.style.display = canEdit ? '' : 'none';
+  if (importImagesBtn) importImagesBtn.style.display = canEdit ? '' : 'none';
 
-  // Mostrar label quando em modo read-only de projeto do professor
+  // Identificar claramente projetos alheios em modo somente leitura.
   let readOnlyLabel = document.getElementById('readOnlyLabel');
-  if (viewingAdminProject) {
+  const readOnlyReason = viewingAdminProject
+    ? '👁 Modo Visualização (Projeto do Professor)'
+    : (!isOwner ? '👁 Modo Visualização (Projeto de outro aluno)' : '');
+  if (!canEdit && readOnlyReason) {
     if (!readOnlyLabel) {
       readOnlyLabel = document.createElement('span');
       readOnlyLabel.id = 'readOnlyLabel';
       readOnlyLabel.className = 'read-only-label';
-      readOnlyLabel.textContent = '👁 Modo Visualização (Projeto do Professor)';
       const projectInfo = document.querySelector('.code-project-info');
       if (projectInfo) projectInfo.appendChild(readOnlyLabel);
     }
+    readOnlyLabel.textContent = readOnlyReason;
     readOnlyLabel.style.display = '';
   } else if (readOnlyLabel) {
     readOnlyLabel.style.display = 'none';
   }
+
+  renderAssetTree();
 }
 
 // Evento ao trocar de projeto no select
@@ -2036,6 +2099,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function salvarProjeto() {
+  if (!canEditCurrentProject()) {
+    showCodeNotification('Este projeto está disponível somente para visualização.', 'error');
+    return;
+  }
+
   const nome = document.getElementById('codeProjectName').value.trim() || 'Meu Projeto';
   const html = getEditorValue('html');
   const css = getEditorValue('css');
@@ -2078,7 +2146,7 @@ async function salvarProjeto() {
 }
 
 async function deletarProjeto() {
-  if (!currentProjectId) return;
+  if (!currentProjectId || !canEditCurrentProject()) return;
   if (!confirm('Tem certeza que deseja excluir este projeto?')) return;
 
   try {
@@ -2311,6 +2379,10 @@ function sanitizeAssetName(name) {
 }
 
 async function handleFileImport(files) {
+  if (!canEditCurrentProject()) {
+    showCodeNotification('Não é possível importar arquivos em um projeto de outra pessoa.', 'error');
+    return;
+  }
   if (!files || !files.length) return;
   const imported = [];
   let addedImages = false;
@@ -2348,22 +2420,27 @@ async function handleFileImport(files) {
 function renderAssetTree() {
   const tree = document.getElementById('codeImageTree');
   if (!tree) return;
+  const canEdit = canEditCurrentProject();
   const names = Object.keys(projectAssets);
   if (!names.length) {
-    tree.innerHTML = '<div class="code-img-empty">Nenhuma imagem.<br><small>Arraste ou clique em +</small></div>';
+    const hint = canEdit ? '<br><small>Arraste ou clique em +</small>' : '';
+    tree.innerHTML = '<div class="code-img-empty">Nenhuma imagem.' + hint + '</div>';
     return;
   }
   tree.innerHTML = names.map((name) => {
     const url = projectAssets[name];
     const safe = escapeHtml(name);
     const attr = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    const editActions = canEdit
+      ? '<button class="file-tree-btn" onclick="event.stopPropagation(); insertImageTag(\'' + attr + '\')" title="Inserir &lt;img&gt; no HTML">&lt;&gt;</button>'
+        + '<button class="file-tree-btn" onclick="event.stopPropagation(); removeAsset(\'' + attr + '\')" title="Remover imagem">🗑</button>'
+      : '';
     return '<div class="code-file-tree-item code-img-item" title="' + safe + '">'
       + '<span class="file-tree-img-thumb" style="background-image:url(&quot;' + url + '&quot;)"></span>'
       + '<span class="file-tree-name" onclick="copyAssetPath(\'' + attr + '\')">' + safe + '</span>'
       + '<div class="file-tree-actions">'
-      + '<button class="file-tree-btn" onclick="event.stopPropagation(); insertImageTag(\'' + attr + '\')" title="Inserir &lt;img&gt; no HTML">&lt;&gt;</button>'
       + '<button class="file-tree-btn" onclick="event.stopPropagation(); copyAssetPath(\'' + attr + '\')" title="Copiar caminho">📋</button>'
-      + '<button class="file-tree-btn" onclick="event.stopPropagation(); removeAsset(\'' + attr + '\')" title="Remover imagem">🗑</button>'
+      + editActions
       + '</div></div>';
   }).join('');
 }
@@ -2389,7 +2466,7 @@ async function copyAssetPath(name) {
 }
 
 function insertImageTag(name) {
-  if (!canMutate() || viewingAdminProject) {
+  if (!canEditCurrentProject()) {
     copyAssetPath(name);
     return;
   }
@@ -2408,6 +2485,7 @@ function insertImageTag(name) {
 }
 
 function removeAsset(name) {
+  if (!canEditCurrentProject()) return;
   if (!projectAssets[name]) return;
   if (!confirm('Remover a imagem "' + name + '" do projeto?')) return;
   delete projectAssets[name];
@@ -2430,17 +2508,20 @@ function setupCodeDropZone() {
   const hasFiles = (e) => e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1;
 
   layout.addEventListener('dragenter', (e) => {
-    if (!hasFiles(e)) return;
+    if (!hasFiles(e) || !canEditCurrentProject()) return;
     e.preventDefault();
     counter++;
     layout.classList.add('drag-active');
   });
-  layout.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+  layout.addEventListener('dragover', (e) => {
+    if (hasFiles(e) && canEditCurrentProject()) e.preventDefault();
+  });
   layout.addEventListener('dragleave', () => {
     counter--;
     if (counter <= 0) { counter = 0; layout.classList.remove('drag-active'); }
   });
   layout.addEventListener('drop', (e) => {
+    if (!canEditCurrentProject()) return;
     e.preventDefault();
     counter = 0;
     layout.classList.remove('drag-active');

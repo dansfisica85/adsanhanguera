@@ -7,6 +7,17 @@ const { dbExecute, dbBatch, initDB } = require('./src/database');
 const gabaritos = require('./src/gabaritos');
 const { avaliarResposta } = require('./src/avaliador');
 const { hashSenha, verificarSenha, gerarToken, middlewareAuth, middlewareRole } = require('./src/auth');
+const {
+  canViewAllProjects,
+  canViewProject,
+  canCreateProject,
+  canUpdateProject,
+  canDeleteProject,
+  canCreateResponse,
+  canMutateResponse,
+  PLATFORM_OWNER_EMAIL,
+  isPlatformOwner,
+} = require('./src/permissions');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -212,6 +223,10 @@ app.get('/api/exercicios/:unidade', (req, res) => {
 // Criar resposta
 app.post('/api/respostas', middlewareAuth, async (req, res) => {
   try {
+    if (!canCreateResponse(req.user)) {
+      return res.status(403).json({ error: 'Este perfil não pode enviar ou corrigir respostas.' });
+    }
+
     const { unidade, etapa, exercicio, resposta } = req.body;
     if (!unidade || !etapa || !exercicio || !resposta)
       return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
@@ -274,8 +289,9 @@ app.put('/api/respostas/:id', middlewareAuth, async (req, res) => {
     if (existing.rows.length === 0) return res.status(404).json({ error: 'Resposta não encontrada.' });
 
     const row = existing.rows[0];
-    if (req.user.role === 'coordenador') return res.status(403).json({ error: 'Coordenadores não podem editar respostas.' });
-    if (req.user.role === 'aluno' && Number(row.aluno_id) !== req.user.id) return res.status(403).json({ error: 'Sem permissão.' });
+    if (!canMutateResponse(req.user, row.aluno_id)) {
+      return res.status(403).json({ error: 'Sem permissão para editar esta resposta.' });
+    }
 
     // Reavaliar
     const avaliacao = avaliarResposta(Number(row.unidade), Number(row.etapa), Number(row.exercicio), resposta);
@@ -300,8 +316,9 @@ app.delete('/api/respostas/:id', middlewareAuth, async (req, res) => {
     if (existing.rows.length === 0) return res.status(404).json({ error: 'Resposta não encontrada.' });
 
     const row = existing.rows[0];
-    if (req.user.role === 'coordenador') return res.status(403).json({ error: 'Coordenadores não podem deletar respostas.' });
-    if (req.user.role === 'aluno' && Number(row.aluno_id) !== req.user.id) return res.status(403).json({ error: 'Sem permissão.' });
+    if (!canMutateResponse(req.user, row.aluno_id)) {
+      return res.status(403).json({ error: 'Sem permissão para excluir esta resposta.' });
+    }
 
     await dbExecute({ sql: 'DELETE FROM respostas WHERE id = ?', args: [id] });
     res.json({ message: 'Resposta removida.' });
@@ -404,7 +421,7 @@ app.get('/api/admin/alunos', middlewareAuth, middlewareRole('admin', 'coordenado
         COALESCE(AVG(r.nota), 0) as media_nota
        FROM usuarios u
        LEFT JOIN respostas r ON u.id = r.aluno_id
-       WHERE u.role = 'aluno'
+       WHERE u.role IN ('aluno', 'especial')
        GROUP BY u.id
        ORDER BY u.nome`
     );
@@ -412,6 +429,51 @@ app.get('/api/admin/alunos', middlewareAuth, middlewareRole('admin', 'coordenado
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro ao buscar alunos.' });
+  }
+});
+
+// Criar usuário por um administrador. O papel especial só pode ser concedido pelo criador da plataforma.
+app.post('/api/admin/usuarios', middlewareAuth, middlewareRole('admin'), async (req, res) => {
+  try {
+    const { nome, email, senha, role = 'aluno' } = req.body;
+    const trimmedNome = String(nome || '').trim();
+    const trimmedLogin = String(email || '').trim();
+    const allowedRoles = new Set(['aluno', 'especial']);
+
+    if (trimmedNome.split(/\s+/).length < 2 || !trimmedLogin || !senha) {
+      return res.status(400).json({ error: 'Nome completo, login e senha são obrigatórios.' });
+    }
+    if (!allowedRoles.has(role)) {
+      return res.status(400).json({ error: 'Papel inválido para criação de usuário.' });
+    }
+    if (!/^[\p{L}\p{N}._@+-]{3,160}$/u.test(trimmedLogin)) {
+      return res.status(400).json({ error: 'Login inválido.' });
+    }
+    if (String(senha).length < 8) {
+      return res.status(400).json({ error: 'A senha deve ter pelo menos 8 caracteres.' });
+    }
+    if (role === 'especial' && !isPlatformOwner(req.user)) {
+      return res.status(403).json({ error: 'Somente o criador da plataforma pode conceder este papel.' });
+    }
+
+    const exists = await dbExecute({
+      sql: 'SELECT id FROM usuarios WHERE lower(email) = lower(?)',
+      args: [trimmedLogin],
+    });
+    if (exists.rows.length > 0) {
+      return res.status(409).json({ error: 'Este login já está cadastrado.' });
+    }
+
+    const hash = await hashSenha(String(senha));
+    const result = await dbExecute({
+      sql: 'INSERT INTO usuarios (nome, email, senha_hash, role) VALUES (?, ?, ?, ?)',
+      args: [trimmedNome, trimmedLogin, hash, role],
+    });
+    const user = { id: Number(result.lastInsertRowid), nome: trimmedNome, email: trimmedLogin, role };
+    res.status(201).json({ user });
+  } catch (err) {
+    console.error('Erro ao criar usuário:', err);
+    res.status(500).json({ error: 'Erro interno ao criar usuário.' });
   }
 });
 
@@ -426,12 +488,16 @@ app.delete('/api/admin/alunos/:id', middlewareAuth, middlewareRole('admin'), asy
     }
 
     // Verificar se o usuário existe
-    const exists = await dbExecute({ sql: 'SELECT id, role FROM usuarios WHERE id = ?', args: [numericId] });
+    const exists = await dbExecute({ sql: 'SELECT id, email, role FROM usuarios WHERE id = ?', args: [numericId] });
     if (exists.rows.length === 0) {
       return res.status(404).json({ error: 'Usuário não encontrado.' });
     }
 
     const targetUser = exists.rows[0];
+
+    if (String(targetUser.email || '').toLowerCase() === PLATFORM_OWNER_EMAIL) {
+      return res.status(403).json({ error: 'O perfil do criador da plataforma não pode ser excluído.' });
+    }
 
     // Evitar que o próprio admin se exclua
     if (Number(targetUser.id) === req.user.id) {
@@ -489,7 +555,7 @@ app.get('/api/admin/alunos/:id/evolucao', middlewareAuth, middlewareRole('admin'
 // Estatísticas gerais
 app.get('/api/admin/estatisticas', middlewareAuth, middlewareRole('admin', 'coordenador'), async (req, res) => {
   try {
-    const totalAlunos = await dbExecute("SELECT COUNT(*) as total FROM usuarios WHERE role = 'aluno'");
+    const totalAlunos = await dbExecute("SELECT COUNT(*) as total FROM usuarios WHERE role IN ('aluno', 'especial')");
     const totalRespostas = await dbExecute('SELECT COUNT(*) as total FROM respostas');
     const mediaNotas = await dbExecute('SELECT AVG(nota) as media FROM respostas');
     const porUnidade = await dbExecute(
@@ -510,17 +576,17 @@ app.get('/api/admin/estatisticas', middlewareAuth, middlewareRole('admin', 'coor
 
 // ===== PROJETOS DE CÓDIGO =====
 
-// Listar todos os projetos (admin/coord vê todos, aluno vê só o seu)
+// Listar projetos conforme o papel: admin/coord/especial veem todos; aluno vê somente os próprios.
 app.get('/api/projetos', middlewareAuth, async (req, res) => {
   try {
     let result;
-    if (req.user.role === 'admin' || req.user.role === 'coordenador') {
+    if (canViewAllProjects(req.user)) {
       result = await dbExecute(
         `SELECT p.*, u.nome as autor_nome FROM projetos_codigo p
          JOIN usuarios u ON p.aluno_id = u.id
          ORDER BY p.atualizado_em DESC`
       );
-    } else {
+    } else if (canViewProject(req.user, req.user.id)) {
       result = await dbExecute({
         sql: `SELECT p.*, u.nome as autor_nome FROM projetos_codigo p
               JOIN usuarios u ON p.aluno_id = u.id
@@ -528,6 +594,8 @@ app.get('/api/projetos', middlewareAuth, async (req, res) => {
               ORDER BY p.atualizado_em DESC`,
         args: [req.user.id],
       });
+    } else {
+      return res.status(403).json({ error: 'Este perfil não pode visualizar projetos.' });
     }
     res.json({ projetos: result.rows });
   } catch (err) {
@@ -545,7 +613,7 @@ app.get('/api/projetos/:id', middlewareAuth, async (req, res) => {
     });
     if (result.rows.length === 0) return res.status(404).json({ error: 'Projeto não encontrado.' });
     const projeto = result.rows[0];
-    if (req.user.role === 'aluno' && Number(projeto.aluno_id) !== req.user.id) {
+    if (!canViewProject(req.user, projeto.aluno_id)) {
       return res.status(403).json({ error: 'Sem permissão.' });
     }
     res.json({ projeto });
@@ -558,6 +626,10 @@ app.get('/api/projetos/:id', middlewareAuth, async (req, res) => {
 // Criar novo projeto
 app.post('/api/projetos', middlewareAuth, async (req, res) => {
   try {
+    if (!canCreateProject(req.user)) {
+      return res.status(403).json({ error: 'Este perfil não pode criar projetos.' });
+    }
+
     const { nome, html, css, js, py, assets } = req.body;
     const assetsStr = typeof assets === 'string' ? assets : JSON.stringify(assets || {});
     const result = await dbExecute({
@@ -577,10 +649,9 @@ app.put('/api/projetos/:id', middlewareAuth, async (req, res) => {
     const existing = await dbExecute({ sql: 'SELECT * FROM projetos_codigo WHERE id = ?', args: [req.params.id] });
     if (existing.rows.length === 0) return res.status(404).json({ error: 'Projeto não encontrado.' });
     const projeto = existing.rows[0];
-    if (req.user.role === 'aluno' && Number(projeto.aluno_id) !== req.user.id) {
-      return res.status(403).json({ error: 'Sem permissão.' });
+    if (!canUpdateProject(req.user, projeto.aluno_id)) {
+      return res.status(403).json({ error: 'Sem permissão para editar este projeto.' });
     }
-    if (req.user.role === 'coordenador') return res.status(403).json({ error: 'Coordenadores não podem editar projetos.' });
 
     const { nome, html, css, js, py, assets } = req.body;
     const assetsStr = assets === undefined ? projeto.assets : (typeof assets === 'string' ? assets : JSON.stringify(assets || {}));
@@ -601,9 +672,8 @@ app.delete('/api/projetos/:id', middlewareAuth, async (req, res) => {
     const existing = await dbExecute({ sql: 'SELECT * FROM projetos_codigo WHERE id = ?', args: [req.params.id] });
     if (existing.rows.length === 0) return res.status(404).json({ error: 'Projeto não encontrado.' });
     const projeto = existing.rows[0];
-    if (req.user.role === 'coordenador') return res.status(403).json({ error: 'Coordenadores não podem deletar projetos.' });
-    if (req.user.role === 'aluno' && Number(projeto.aluno_id) !== req.user.id) {
-      return res.status(403).json({ error: 'Sem permissão.' });
+    if (!canDeleteProject(req.user, projeto.aluno_id)) {
+      return res.status(403).json({ error: 'Sem permissão para excluir este projeto.' });
     }
     await dbExecute({ sql: 'DELETE FROM projetos_codigo WHERE id = ?', args: [req.params.id] });
     res.json({ message: 'Projeto removido.' });
@@ -613,16 +683,16 @@ app.delete('/api/projetos/:id', middlewareAuth, async (req, res) => {
   }
 });
 
-// Listar todos os alunos (para admin/coord verem sub-abas)
-app.get('/api/projetos-alunos', middlewareAuth, middlewareRole('admin', 'coordenador'), async (req, res) => {
+// Listar alunos para admin, coord e Aluna Especial navegarem pelas sub-abas de projetos.
+app.get('/api/projetos-alunos', middlewareAuth, middlewareRole('admin', 'coordenador', 'especial'), async (req, res) => {
   try {
     const result = await dbExecute(
-      `SELECT u.id, u.nome, COUNT(p.id) as total_projetos
+      { sql: `SELECT u.id, u.nome, u.role, COUNT(p.id) as total_projetos
        FROM usuarios u
        LEFT JOIN projetos_codigo p ON u.id = p.aluno_id
-       WHERE u.role = 'aluno'
+       WHERE u.role IN ('aluno', 'especial') AND u.id != ?
        GROUP BY u.id
-       ORDER BY u.nome`
+       ORDER BY u.nome`, args: [req.user.id] }
     );
     res.json({ alunos: result.rows });
   } catch (err) {
@@ -631,8 +701,8 @@ app.get('/api/projetos-alunos', middlewareAuth, middlewareRole('admin', 'coorden
   }
 });
 
-// Buscar projetos de um aluno específico (admin/coord)
-app.get('/api/projetos-aluno/:id', middlewareAuth, middlewareRole('admin', 'coordenador'), async (req, res) => {
+// Buscar projetos de um aluno específico (admin/coord/especial; mutações são validadas separadamente).
+app.get('/api/projetos-aluno/:id', middlewareAuth, middlewareRole('admin', 'coordenador', 'especial'), async (req, res) => {
   try {
     const result = await dbExecute({
       sql: `SELECT p.*, u.nome as autor_nome FROM projetos_codigo p

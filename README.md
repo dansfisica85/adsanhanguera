@@ -6,7 +6,7 @@
 
 <br/>
 
-<img src="https://img.shields.io/badge/Versão-4.0.0-F37021?style=for-the-badge" alt="Versão" />
+<img src="https://img.shields.io/badge/Versão-4.1.0-F37021?style=for-the-badge" alt="Versão" />
 
 <br/><br/>
 
@@ -21,7 +21,9 @@
 
 <br/><br/>
 
-Plataforma educacional completa para o curso de **Análise e Desenvolvimento de Sistemas** da **Universidade Anhanguera**. Reúne cadastro e login de alunos, exercícios interativos com avaliação automática, um **compilador/IDE web** com **preview ao vivo redimensionável**, **assistente de IA integrado (ADS-AI)**, ranking gamificado, painel administrativo com gráficos, biblioteca de documentos, visualizador do README e explorador de arquivos.
+Plataforma educacional completa para o curso de **Análise e Desenvolvimento de Sistemas** da **Universidade Anhanguera**. Reúne autenticação por perfis, exercícios interativos com avaliação automática, um **compilador/IDE web** com **preview ao vivo redimensionável**, **assistente de IA integrado (ADS-AI)**, ranking gamificado, painel administrativo com gráficos, biblioteca de documentos, avisos acadêmicos em destaque, visualizador do README e explorador de arquivos.
+
+> **Atualização 2026.2:** a área autenticada recebeu uma modernização visual responsiva, preservando integralmente as funções existentes e mantendo inalteradas a identidade e as cores da tela de login. A plataforma também ganhou a aba **Avisos** e o papel restrito **Aluna Especial**.
 
 <br/>
 
@@ -34,6 +36,7 @@ Plataforma educacional completa para o curso de **Análise e Desenvolvimento de 
 ## 📋 Índice
 
 - [Funcionalidades](#-funcionalidades)
+  - [Interface modernizada e Avisos](#-interface-modernizada-e-avisos--novidade-v41)
   - [Preview ao Vivo](#-preview-ao-vivo--novidade-v40)
   - [Painel Redimensionável](#-painel-de-preview-redimensionável--novidade-v40)
   - [Assistente IA (ADS-AI)](#-assistente-de-ia-ads-ai--novidade-v40)
@@ -59,6 +62,18 @@ Plataforma educacional completa para o curso de **Análise e Desenvolvimento de 
 ---
 
 ## ✨ Funcionalidades
+
+### ✨ Interface modernizada e Avisos — `NOVIDADE v4.1`
+
+- Modernização visual isolada na área autenticada por meio de `public/app-modern.css`; a tela de login e suas cores permanecem inalteradas
+- Nova hierarquia visual para cabeçalho, navegação, cards, botões, formulários, modais, editor e rodapé
+- Layout responsivo para desktop, tablet e dispositivos móveis
+- Nova aba **Avisos**, disponível para todos os perfis autenticados
+- Galeria em destaque com resumo da aplicação 2026.2, calendário de provas presenciais e horário da coordenação
+- Imagens com textos alternativos, carregamento adiado e adaptação responsiva
+- Novo selo **ALUNA ESPECIAL**, com visualização dos projetos de outros alunos em modo somente leitura e edição limitada aos projetos próprios
+
+---
 
 ### 🖥 Preview ao Vivo — `NOVIDADE v4.0`
 
@@ -197,6 +212,7 @@ Editor de código embutido baseado no **Monaco Editor** (o mesmo motor do VS Cod
 - Navegação pelos projetos de código de cada aluno
 - Exclusão de perfil de aluno pelo admin, removendo também respostas e projetos vinculados
 - Recálculo de notas pelo endpoint administrativo e pelo script local `scripts/recalcular-notas.js`
+- Proteção do perfil do criador da plataforma, que permanece com o nível administrativo máximo
 
 ---
 
@@ -353,6 +369,7 @@ flowchart LR
 
 | Tecnologia | Versão | Uso |
 |-----------|--------|-----|
+| HTML5, CSS3 e JavaScript | Vanilla SPA | Interface, navegação, responsividade e interações sem framework frontend |
 | Node.js | 18+ | Runtime do servidor |
 | Express | 5.x | Framework HTTP / API REST |
 | @libsql/client | 0.17+ | Cliente Turso/libSQL |
@@ -373,12 +390,13 @@ flowchart LR
 adsanhanguera/
 ├── server.js              # Servidor Express 5 (API + estáticos + explorer)
 ├── vercel.json            # Configuração de deploy Vercel (com includeFiles)
-├── package.json           # Dependências e scripts (versão do pacote: 2.0.0)
+├── package.json           # Dependências e scripts (versão do pacote: 4.1.0)
 ├── .env                   # Variáveis de ambiente (não versionado)
 ├── README.md
 │
 ├── src/
 │   ├── auth.js            # Autenticação (bcrypt + JWT)
+│   ├── permissions.js     # Matriz explícita de papéis, propriedade e autorizações
 │   ├── database.js        # Conexão Turso + schema + migrations + seed
 │   ├── gabaritos.js       # Banco de exercícios (perguntas, palavras-chave)
 │   └── avaliador.js       # Motor de avaliação por palavras-chave
@@ -389,7 +407,9 @@ adsanhanguera/
 ├── public/
 │   ├── index.html         # SPA (login/cadastro, abas, compilador, preview, AI chat)
 │   ├── style.css          # Tema laranja Anhanguera + estilos do preview
+│   ├── app-modern.css     # Camada visual moderna restrita à área autenticada
 │   ├── app.js             # Lógica do frontend (auth, exercícios, compilador, preview, AI, ranking, docs)
+│   ├── images/avisos/     # Imagens acadêmicas publicadas na aba Avisos
 │   ├── explorer.html      # Explorador de arquivos
 │   ├── explorer.css       # Estilos do explorador
 │   └── docs/              # Biblioteca de documentos (ADS 1, 2, 3)
@@ -419,11 +439,10 @@ git clone https://github.com/dansfisica85/adsanhanguera.git
 cd adsanhanguera
 
 # 2. Instalar dependências
-npm install
+npm ci
 
 # 3. Configurar variáveis de ambiente
-cp .env.example .env
-# Editar .env com suas credenciais Turso
+# Criar manualmente um arquivo .env e inserir as configurações descritas abaixo
 
 # 4. Iniciar o servidor
 npm start
@@ -431,7 +450,7 @@ npm start
 ```
 
 > [!TIP]
-> O banco de dados é inicializado automaticamente ao iniciar (criação de tabelas + seed de usuários). Nenhuma configuração extra é necessária.
+> O banco de dados executa automaticamente a criação das tabelas e as migrações não destrutivas ao iniciar. A conexão Turso precisa estar configurada no arquivo `.env`.
 
 ---
 
@@ -443,7 +462,7 @@ Crie um arquivo `.env` na raiz do projeto:
 TURSO_DATABASE_URL=libsql://seu-banco.turso.io
 TURSO_AUTH_TOKEN=seu-token-turso
 GROQ_API_KEY=sua-chave-groq          # necessária para o ADS-AI
-JWT_SECRET=sua-chave-secreta-jwt  # opcional, tem fallback
+JWT_SECRET=sua-chave-secreta-jwt  # use um segredo forte e exclusivo em produção
 PORT=3000                          # opcional, padrão 3000
 ```
 
@@ -478,8 +497,9 @@ vercel --prod
 
 | Role | Permissões |
 |------|-----------|
-| **admin** | Acesso total: CRUD de respostas e projetos, painel admin, gabaritos, marcar "visto", excluir alunos, documentos |
+| **admin** | Nível máximo: CRUD de respostas e projetos, painel admin, gabaritos, marcação de "visto", gestão de alunos e documentos. O perfil do criador permanece protegido com esse nível máximo |
 | **coordenador** | Alterna entre "Visão Aluno" e "Visão Admin" (leitura). **Não pode** criar/editar/excluir respostas ou projetos |
+| **especial — Aluna Especial** | Exibe o selo **ALUNA ESPECIAL**. Visualiza os projetos dos demais em modo somente leitura e cria, edita ou exclui somente os próprios projetos. Não acessa respostas ou notas alheias, não corrige atividades, não marca "visto", não altera ou exclui usuários e não modifica projetos de terceiros |
 | **aluno** | Cria perfil, responde exercícios, usa o compilador, salva projetos, vê ranking, exclui as próprias respostas e projetos |
 
 ### Fluxo de Autenticação
@@ -525,14 +545,14 @@ Cada request autenticada envia:
 
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
-| `GET` | `/api/projetos` | ✅ | Listar projetos do usuário |
-| `GET` | `/api/projetos/:id` | ✅ | Obter um projeto |
+| `GET` | `/api/projetos` | ✅ | Listar projetos conforme o papel autenticado |
+| `GET` | `/api/projetos/:id` | ✅ | Obter um projeto respeitando a permissão de leitura |
 | `POST` | `/api/projetos` | ✅ | Criar projeto (html, css, js, py, assets) |
 | `PUT` | `/api/projetos/:id` | ✅ | Atualizar projeto |
 | `DELETE` | `/api/projetos/:id` | ✅ | Excluir projeto |
 | `PUT` | `/api/projetos/:id/visto` | ✅ (admin) | Marcar/desmarcar "visto" |
-| `GET` | `/api/projetos-alunos` | ✅ (admin/coord) | Alunos com contagem de projetos |
-| `GET` | `/api/projetos-aluno/:id` | ✅ (admin/coord) | Projetos de um aluno |
+| `GET` | `/api/projetos-alunos` | ✅ (admin/coord/especial) | Alunos com contagem de projetos |
+| `GET` | `/api/projetos-aluno/:id` | ✅ (admin/coord/especial) | Projetos de um aluno; Aluna Especial recebe somente leitura |
 | `GET` | `/api/projetos-admin` | ✅ | Projetos publicados pelo professor |
 | `GET` | `/api/ranking` | ✅ | Ranking de alunos (projetos/linhas) |
 
@@ -540,6 +560,7 @@ Cada request autenticada envia:
 
 | Método | Rota | Auth | Role |
 |--------|------|------|------|
+| `POST` | `/api/admin/usuarios` | ✅ | admin; somente o criador concede o papel especial |
 | `GET` | `/api/admin/alunos` | ✅ | admin, coordenador |
 | `DELETE` | `/api/admin/alunos/:id` | ✅ | admin |
 | `GET` | `/api/admin/alunos/:id/evolucao` | ✅ | admin, coordenador |
