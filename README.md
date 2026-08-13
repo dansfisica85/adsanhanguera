@@ -470,6 +470,8 @@ PORT=3000                          # opcional, padrão 3000
 
 Configure as mesmas variáveis em **Settings → Environment Variables**.
 
+`JWT_SECRET` é obrigatório, deve ter pelo menos 32 caracteres e não possui valor de fallback no código.
+
 ---
 
 ## 🌐 Deploy na Vercel
@@ -518,6 +520,9 @@ Cada request autenticada envia:
   Authorization: Bearer <token>
 ```
 
+O servidor revalida o papel e a versão da sessão no banco. Trocas de senha
+incrementam `token_version` e encerram imediatamente os tokens anteriores da conta.
+
 ---
 
 ## 📡 API Endpoints
@@ -561,6 +566,7 @@ Cada request autenticada envia:
 | Método | Rota | Auth | Role |
 |--------|------|------|------|
 | `POST` | `/api/admin/usuarios` | ✅ | admin; somente o criador concede o papel especial |
+| `PATCH` | `/api/admin/usuarios/:id` | ✅ | somente o criador; atualiza a identidade do perfil especial preservando ID e projetos |
 | `GET` | `/api/admin/alunos` | ✅ | admin, coordenador |
 | `DELETE` | `/api/admin/alunos/:id` | ✅ | admin |
 | `GET` | `/api/admin/alunos/:id/evolucao` | ✅ | admin, coordenador |

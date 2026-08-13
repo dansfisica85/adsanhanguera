@@ -6,7 +6,14 @@ require('dotenv').config();
 const { dbExecute, dbBatch, initDB } = require('./src/database');
 const gabaritos = require('./src/gabaritos');
 const { avaliarResposta } = require('./src/avaliador');
-const { hashSenha, verificarSenha, gerarToken, middlewareAuth, middlewareRole } = require('./src/auth');
+const {
+  hashSenha,
+  verificarSenha,
+  gerarToken,
+  middlewareAuth,
+  middlewareRole,
+  configurarCarregadorUsuario,
+} = require('./src/auth');
 const {
   canViewAllProjects,
   canViewProject,
@@ -43,6 +50,15 @@ function startDBInit() {
 }
 
 startDBInit();
+
+// Revalida identidade, papel e versão de sessão no banco a cada request.
+configurarCarregadorUsuario(async (id) => {
+  const result = await dbExecute({
+    sql: 'SELECT id, nome, email, role, token_version FROM usuarios WHERE id = ?',
+    args: [Number(id)],
+  });
+  return result.rows[0] || null;
+});
 
 app.use(express.json({ limit: '25mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -120,7 +136,7 @@ app.post('/api/auth/login', async (req, res) => {
     const senhaOk = await verificarSenha(senha, user.senha_hash);
     if (!senhaOk) return res.status(401).json({ error: 'Credenciais inválidas.' });
 
-    const token = gerarToken({ id: user.id, email: user.email, role: user.role, nome: user.nome });
+    const token = gerarToken(user);
     res.json({
       token,
       user: { id: user.id, nome: user.nome, email: user.email, role: user.role },
@@ -170,7 +186,7 @@ app.post('/api/auth/register', async (req, res) => {
     });
 
     const userId = Number(result.lastInsertRowid);
-    const token = gerarToken({ id: userId, email: trimmedEmail, role: 'aluno', nome: trimmedNome });
+    const token = gerarToken({ id: userId, email: trimmedEmail, role: 'aluno', nome: trimmedNome, token_version: 0 });
 
     res.status(201).json({
       token,
@@ -474,6 +490,72 @@ app.post('/api/admin/usuarios', middlewareAuth, middlewareRole('admin'), async (
   } catch (err) {
     console.error('Erro ao criar usuário:', err);
     res.status(500).json({ error: 'Erro interno ao criar usuário.' });
+  }
+});
+
+// Atualizar a identidade de uma conta especial sem trocar seu ID ou perder projetos.
+// Somente o criador da plataforma pode executar esta operação.
+app.patch('/api/admin/usuarios/:id', middlewareAuth, middlewareRole('admin'), async (req, res) => {
+  try {
+    if (!isPlatformOwner(req.user)) {
+      return res.status(403).json({ error: 'Somente o criador da plataforma pode atualizar este perfil.' });
+    }
+
+    const numericId = Number(req.params.id);
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+      return res.status(400).json({ error: 'ID de usuário inválido.' });
+    }
+
+    const targetResult = await dbExecute({
+      sql: 'SELECT id, nome, email, role FROM usuarios WHERE id = ?',
+      args: [numericId],
+    });
+    if (targetResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+
+    const target = targetResult.rows[0];
+    if (target.role !== 'especial') {
+      return res.status(403).json({ error: 'Esta rota atualiza somente o perfil especial.' });
+    }
+
+    const body = req.body || {};
+    const trimmedNome = String(body.nome || '').trim();
+    const trimmedLogin = String(body.email || '').trim();
+    const senha = String(body.senha || '');
+
+    if (trimmedNome.split(/\s+/).length < 2 || !trimmedLogin || !senha) {
+      return res.status(400).json({ error: 'Nome completo, login e senha são obrigatórios.' });
+    }
+    if (!/^[\p{L}\p{N} ._@+-]{3,160}$/u.test(trimmedLogin)) {
+      return res.status(400).json({ error: 'Login inválido.' });
+    }
+    if (senha.length < 8) {
+      return res.status(400).json({ error: 'A senha deve ter pelo menos 8 caracteres.' });
+    }
+
+    const duplicate = await dbExecute({
+      sql: 'SELECT id FROM usuarios WHERE lower(email) = lower(?) AND id != ?',
+      args: [trimmedLogin, numericId],
+    });
+    if (duplicate.rows.length > 0) {
+      return res.status(409).json({ error: 'Este login já está cadastrado.' });
+    }
+
+    const senhaHash = await hashSenha(senha);
+    await dbExecute({
+      sql: `UPDATE usuarios
+            SET nome = ?, email = ?, senha_hash = ?, token_version = COALESCE(token_version, 0) + 1
+            WHERE id = ? AND role = 'especial'`,
+      args: [trimmedNome, trimmedLogin, senhaHash, numericId],
+    });
+
+    res.json({
+      user: { id: numericId, nome: trimmedNome, email: trimmedLogin, role: target.role },
+    });
+  } catch (err) {
+    console.error('Erro ao atualizar usuário especial:', err);
+    res.status(500).json({ error: 'Erro interno ao atualizar perfil.' });
   }
 });
 
