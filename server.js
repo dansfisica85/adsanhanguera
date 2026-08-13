@@ -421,7 +421,7 @@ app.get('/api/admin/alunos', middlewareAuth, middlewareRole('admin', 'coordenado
         COALESCE(AVG(r.nota), 0) as media_nota
        FROM usuarios u
        LEFT JOIN respostas r ON u.id = r.aluno_id
-       WHERE u.role = 'aluno'
+       WHERE u.role IN ('aluno', 'especial')
        GROUP BY u.id
        ORDER BY u.nome`
     );
@@ -555,7 +555,7 @@ app.get('/api/admin/alunos/:id/evolucao', middlewareAuth, middlewareRole('admin'
 // Estatísticas gerais
 app.get('/api/admin/estatisticas', middlewareAuth, middlewareRole('admin', 'coordenador'), async (req, res) => {
   try {
-    const totalAlunos = await dbExecute("SELECT COUNT(*) as total FROM usuarios WHERE role = 'aluno'");
+    const totalAlunos = await dbExecute("SELECT COUNT(*) as total FROM usuarios WHERE role IN ('aluno', 'especial')");
     const totalRespostas = await dbExecute('SELECT COUNT(*) as total FROM respostas');
     const mediaNotas = await dbExecute('SELECT AVG(nota) as media FROM respostas');
     const porUnidade = await dbExecute(
@@ -687,12 +687,12 @@ app.delete('/api/projetos/:id', middlewareAuth, async (req, res) => {
 app.get('/api/projetos-alunos', middlewareAuth, middlewareRole('admin', 'coordenador', 'especial'), async (req, res) => {
   try {
     const result = await dbExecute(
-      `SELECT u.id, u.nome, COUNT(p.id) as total_projetos
+      { sql: `SELECT u.id, u.nome, u.role, COUNT(p.id) as total_projetos
        FROM usuarios u
        LEFT JOIN projetos_codigo p ON u.id = p.aluno_id
-       WHERE u.role = 'aluno'
+       WHERE u.role IN ('aluno', 'especial') AND u.id != ?
        GROUP BY u.id
-       ORDER BY u.nome`
+       ORDER BY u.nome`, args: [req.user.id] }
     );
     res.json({ alunos: result.rows });
   } catch (err) {

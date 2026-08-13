@@ -61,7 +61,7 @@ function getRoleLabel(role) {
     admin: 'Administrador',
     coordenador: 'Coordenador',
     aluno: 'Aluno',
-    especial: 'Aluna Especial',
+    especial: 'ALUNA ESPECIAL',
   };
   return labels[role] || 'Perfil sem permissão';
 }
