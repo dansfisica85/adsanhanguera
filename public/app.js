@@ -2733,6 +2733,9 @@ function toggleRankingView() {
 // ===== AI CHAT =====
 let aiChatHistory = [];
 let aiChatIsOpen = false;
+let aiRequestInFlight = false;
+let aiConversationVersion = 0;
+let aiActiveController = null;
 
 function toggleAIChat() {
   const panel = document.getElementById('aiChatPanel');
@@ -2748,6 +2751,8 @@ function toggleAIChat() {
 }
 
 function clearAIChat() {
+  aiConversationVersion += 1;
+  if (aiActiveController) aiActiveController.abort();
   aiChatHistory = [];
   const msgs = document.getElementById('aiChatMessages');
   if (!msgs) return;
@@ -2780,10 +2785,18 @@ function aiQuickAsk(question) {
 }
 
 async function sendAIMessage(overrideText, includeCode) {
+  // O Enter e os atalhos continuam ativos visualmente, mas nunca disparam
+  // uma segunda chamada enquanto a primeira ainda está em andamento.
+  if (aiRequestInFlight) return;
+
   includeCode = includeCode || false;
   const input = document.getElementById('aiChatInput');
   const userText = overrideText !== undefined ? overrideText : (input ? input.value.trim() : '');
   if (!userText) return;
+
+  aiRequestInFlight = true;
+  const requestConversationVersion = aiConversationVersion;
+  const userMessage = { role: 'user', content: userText };
 
   if (!overrideText && input) input.value = '';
 
@@ -2791,12 +2804,19 @@ async function sendAIMessage(overrideText, includeCode) {
   if (!aiChatIsOpen) toggleAIChat();
 
   appendAIMsg('user', userText);
-  aiChatHistory.push({ role: 'user', content: userText });
+  aiChatHistory.push(userMessage);
 
   const sendBtn = document.getElementById('aiSendBtn');
   if (sendBtn) sendBtn.disabled = true;
 
   const typingId = appendAITyping();
+  const controller = new AbortController();
+  aiActiveController = controller;
+  let requestTimedOut = false;
+  const timeoutId = setTimeout(() => {
+    requestTimedOut = true;
+    controller.abort();
+  }, 35000);
 
   try {
     const lang = document.querySelector('.code-lang-tab.active')?.dataset?.lang || 'html';
@@ -2808,22 +2828,69 @@ async function sendAIMessage(overrideText, includeCode) {
       body.codigoContexto = getEditorValue(lang) || '';
     }
 
-    const res = await fetchWithRetry('/api/ai/chat', {
+    // Chat não usa o retry genérico: repetir automaticamente um POST pode
+    // duplicar consumo, respostas e limites do provedor.
+    const res = await fetch('/api/ai/chat', {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
 
     removeAITyping(typingId);
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Erro ao contatar IA.');
+    const contentType = res.headers && typeof res.headers.get === 'function'
+      ? (res.headers.get('content-type') || '')
+      : '';
+    let data = {};
 
-    aiChatHistory.push({ role: 'assistant', content: data.reply });
-    appendAIMsg('assistant', data.reply);
+    if (contentType.includes('application/json')) {
+      data = await res.json().catch(() => ({}));
+    } else {
+      const rawBody = typeof res.text === 'function' ? await res.text().catch(() => '') : '';
+      try {
+        data = rawBody ? JSON.parse(rawBody) : {};
+      } catch {
+        data = {};
+      }
+    }
+    if (!data || typeof data !== 'object') data = {};
+
+    if (res.status === 401) {
+      throw new Error('Sua sessão expirou. Saia e entre novamente para continuar usando a IA.');
+    }
+    if (!res.ok) {
+      throw new Error(data.error || `Serviço de IA indisponível no momento (erro ${res.status}). Tente novamente.`);
+    }
+
+    const reply = typeof data.reply === 'string' ? data.reply.trim() : '';
+    if (!reply) {
+      throw new Error('A IA retornou uma resposta vazia. Tente novamente.');
+    }
+
+    // Se a conversa foi limpa enquanto a chamada estava pendente, a resposta
+    // antiga não deve reaparecer nem voltar para o histórico novo.
+    if (requestConversationVersion !== aiConversationVersion) return;
+
+    aiChatHistory.push({ role: 'assistant', content: reply });
+    appendAIMsg('assistant', reply);
   } catch (err) {
     removeAITyping(typingId);
-    appendAIMsg('assistant', '❌ ' + (err.message || 'Erro ao contatar IA. Tente novamente.'));
+    if (requestConversationVersion !== aiConversationVersion) return;
+
+    const failedMessageIndex = aiChatHistory.indexOf(userMessage);
+    if (failedMessageIndex !== -1) aiChatHistory.splice(failedMessageIndex, 1);
+
+    let message = err && err.message ? err.message : 'Erro ao contatar IA. Tente novamente.';
+    if (requestTimedOut) {
+      message = 'A IA demorou mais de 35 segundos para responder. Tente novamente.';
+    } else if (err && (err.name === 'TypeError' || err.name === 'NetworkError')) {
+      message = 'Não foi possível conectar ao serviço de IA. Verifique sua internet e tente novamente.';
+    }
+    appendAIMsg('assistant', '❌ ' + message);
   } finally {
+    clearTimeout(timeoutId);
+    if (aiActiveController === controller) aiActiveController = null;
+    aiRequestInFlight = false;
     if (sendBtn) sendBtn.disabled = false;
     const inp = document.getElementById('aiChatInput');
     if (inp) inp.focus();
