@@ -16,7 +16,7 @@
 <img src="https://img.shields.io/badge/Monaco_Editor-0.45-0078D4?logo=visualstudiocode&logoColor=white" alt="Monaco" />
 <img src="https://img.shields.io/badge/Pyodide-0.26-3776AB?logo=python&logoColor=white" alt="Pyodide" />
 <img src="https://img.shields.io/badge/Chart.js-4.x-FF6384?logo=chartdotjs&logoColor=white" alt="Chart.js" />
-<img src="https://img.shields.io/badge/Llama_3.3-Groq-F55036?logo=meta&logoColor=white" alt="Llama via Groq" />
+<img src="https://img.shields.io/badge/GPT--OSS_120B-Groq-F55036?logo=openai&logoColor=white" alt="GPT-OSS via Groq" />
 <img src="https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white" alt="Vercel" />
 
 <br/><br/>
@@ -114,14 +114,14 @@ Um painel de visualização ao vivo fica posicionado abaixo do editor e do conso
 
 ### 🤖 Assistente de IA (ADS-AI) — `NOVIDADE v4.0`
 
-> **Um tutor de IA integrado direto na sua IDE, alimentado pelo Llama 3.3 via Groq.**
+> **Um tutor de IA integrado direto na sua IDE, alimentado pelo GPT-OSS 120B via Groq.**
 
 | Recurso | Detalhe |
 |---------|---------|
 | 💬 **Chat interativo** | Painel lateral com conversa por texto |
 | ⚡ **Ações rápidas** | Explicar código, sugerir melhorias, corrigir bugs, gerar exemplos |
 | 🤖 **Botão flutuante** | Toggle com emoji de robô para abrir/fechar o painel |
-| 🧠 **Modelo Llama 3.3** | Processamento de linguagem via API Groq (rápido e gratuito) |
+| 🧠 **Modelo GPT-OSS 120B** | Processamento de linguagem via API Groq, sujeito aos limites do plano da conta |
 
 ---
 
@@ -174,7 +174,7 @@ Editor de código embutido baseado no **Monaco Editor** (o mesmo motor do VS Cod
 │  └────────────────────────────────────────────────────┘  │
 │                                                         │
 │  ┌─ 🤖 ADS-AI ───────────────────────────────────────┐  │
-│  │  Assistente IA (Llama 3.3 / Groq)                 │  │
+│  │  Assistente IA (GPT-OSS / Groq)                   │  │
 │  │  [Explicar] [Melhorar] [Corrigir] [Exemplo]       │  │
 │  └────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────┘
@@ -368,7 +368,7 @@ flowchart LR
             ▼
   ┌───────────────────┐
   │     Groq API      │
-  │   Llama 3.3 70B   │
+  │   GPT-OSS 120B    │
   └───────────────────┘
 ```
 
@@ -376,7 +376,7 @@ flowchart LR
 - **Backend**: Node.js + Express 5 (API REST + arquivos estáticos)
 - **Banco de Dados**: Turso (libSQL) — SQLite distribuído na edge
 - **Autenticação**: bcryptjs (hash) + jsonwebtoken (JWT)
-- **IA**: Llama 3.3 via Groq API (assistente ADS-AI)
+- **IA**: GPT-OSS 120B via Groq API (assistente ADS-AI)
 - **Deploy**: Vercel (serverless)
 
 ---
@@ -395,7 +395,7 @@ flowchart LR
 | Monaco Editor | 0.45 (CDN) | Editor de código do compilador |
 | Pyodide | 0.26 (CDN) | Execução de Python no navegador |
 | Chart.js | 4.x (CDN) | Gráficos no painel admin |
-| Groq API | HTTP | Backend do assistente ADS-AI (`llama-3.3-70b-versatile`) |
+| Groq API | HTTP | Backend do assistente ADS-AI (`openai/gpt-oss-120b`) |
 | marked | CDN | Renderização do README no modal da aplicação |
 
 ---
@@ -482,6 +482,7 @@ Crie um arquivo `.env` na raiz do projeto:
 TURSO_DATABASE_URL=libsql://seu-banco.turso.io
 TURSO_AUTH_TOKEN=seu-token-turso
 GROQ_API_KEY=sua-chave-groq          # necessária para o ADS-AI
+GROQ_MODEL=openai/gpt-oss-120b       # opcional; este é o modelo padrão
 JWT_SECRET=sua-chave-secreta-jwt  # use um segredo forte e exclusivo em produção
 PORT=3000                          # opcional, padrão 3000
 ```
@@ -640,8 +641,11 @@ incrementam `token_version` e encerram imediatamente os tokens anteriores da con
 - O ranking conta projetos e linhas de código por aluno; a mensagem de liderança muda quando há troca de líder
 - O **preview ao vivo** atualiza automaticamente a cada alteração no código (com debounce)
 - A **altura do preview** é persistida em `localStorage` e pode ser ajustada entre 160px e 960px
-- O **assistente ADS-AI** utiliza o Llama 3.3 via Groq para oferecer ações rápidas sobre o código do aluno
+- O **assistente ADS-AI** utiliza o GPT-OSS 120B via Groq para oferecer ações rápidas sobre o código do aluno
 - Se `GROQ_API_KEY` não estiver configurada, o endpoint de IA retorna `503` informando que o serviço não está configurado
+- A rota publicada é `POST /api/ai/chat` em `server.js`. O arquivo `ai_service.py` é um serviço independente e não é utilizado pelo roteamento atual da Vercel.
+- Em 14/09/2026, a integração Node migrou do Llama 3.3 para `openai/gpt-oss-120b`: o modelo anterior foi [desativado pela Groq em 16/08/2026 nos planos Free/Developer](https://console.groq.com/docs/deprecations). A chave continua em `GROQ_API_KEY`; mudanças de variáveis na Vercel exigem uma nova publicação.
+- `GROQ_MODEL` permite configurar outro modelo disponível para a conta. O serviço usa `max_completion_tokens`, limita a espera pelo provedor a 25 segundos e distingue erros de modelo, credencial, limite de uso e resposta vazia. Os logs não incluem a chave nem as conversas.
 
 ### Resiliência e Operação
 

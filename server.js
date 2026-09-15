@@ -976,12 +976,18 @@ app.get('/api/explorer/file', (req, res) => {
 // ===== AI CHAT (Groq) =====
 app.post('/api/ai/chat', middlewareAuth, async (req, res) => {
   try {
-    const { messages, includeCode, codigoContexto } = req.body;
+    const { messages, includeCode, codigoContexto } = req.body || {};
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: 'messages é obrigatório.' });
     }
 
-    const apiKey = process.env.GROQ_API_KEY;
+    const recentMessages = messages.slice(-20);
+    if (recentMessages.some(message => !message || !['user', 'assistant'].includes(message.role)
+      || typeof message.content !== 'string' || !message.content.trim())) {
+      return res.status(400).json({ error: 'Envie mensagens de texto válidas.' });
+    }
+
+    const apiKey = (process.env.GROQ_API_KEY || '').trim();
     if (!apiKey) {
       return res.status(503).json({ error: 'Serviço de IA não configurado. Defina GROQ_API_KEY nas variáveis de ambiente.' });
     }
@@ -1013,12 +1019,17 @@ Regras:
     }
 
     const payload = {
-      model: 'llama-3.3-70b-versatile',
-      messages: [...systemMessages, ...messages.slice(-20)],
+      // Llama 3.3 foi desativado nos planos Free/Developer da Groq em 16/08/2026.
+      model: (process.env.GROQ_MODEL || '').trim() || 'openai/gpt-oss-120b',
+      messages: [...systemMessages, ...recentMessages.map(({ role, content }) => ({ role, content }))],
       temperature: 0.7,
-      max_tokens: 2048,
+      max_completion_tokens: 4096,
       stream: false,
     };
+    if (payload.model.startsWith('openai/gpt-oss-')) {
+      payload.reasoning_effort = 'low';
+      payload.include_reasoning = false;
+    }
 
     const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -1027,20 +1038,38 @@ Regras:
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(25000),
     });
 
     if (!groqRes.ok) {
       const errBody = await groqRes.json().catch(() => ({}));
-      console.error('Erro Groq API:', groqRes.status, errBody);
+      const code = String(errBody.error?.code || 'upstream_error');
+      // Não registrar a chave, o corpo da conversa ou a mensagem bruta do provedor.
+      console.error('Erro Groq API:', { status: groqRes.status, code: /^[a-z0-9_]{1,80}$/i.test(code) ? code : 'upstream_error' });
+      if (groqRes.status === 429) {
+        return res.status(429).json({ error: 'O limite de uso da IA foi atingido. Aguarde um pouco e tente novamente.' });
+      }
+      if (code === 'model_decommissioned' || code === 'model_not_found' || groqRes.status === 403) {
+        return res.status(503).json({ error: 'O modelo de IA está indisponível para esta conta. O administrador precisa conferir a configuração do serviço.' });
+      }
+      if (groqRes.status === 401) {
+        return res.status(503).json({ error: 'A credencial do serviço de IA não foi aceita. O administrador precisa conferir a configuração do serviço.' });
+      }
       return res.status(502).json({ error: 'Erro ao contatar IA. Tente novamente em instantes.' });
     }
 
     const data = await groqRes.json();
     const reply = data.choices?.[0]?.message?.content || '';
+    if (typeof reply !== 'string' || !reply.trim()) {
+      return res.status(502).json({ error: 'A IA não retornou uma resposta. Tente novamente com uma pergunta mais curta.' });
+    }
     res.json({ reply });
   } catch (err) {
-    console.error('Erro no chat IA:', err);
-    res.status(500).json({ error: 'Erro interno no serviço de IA.' });
+    const timedOut = err.name === 'TimeoutError' || err.name === 'AbortError';
+    console.error('Erro no chat IA:', { code: timedOut ? 'timeout' : 'request_failed' });
+    res.status(timedOut ? 504 : 502).json({ error: timedOut
+      ? 'A IA demorou para responder. Tente novamente em instantes.'
+      : 'Não foi possível obter a resposta da IA. Tente novamente em instantes.' });
   }
 });
 
