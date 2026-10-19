@@ -166,6 +166,11 @@
         postTicket(popup.document, '_self', launchUrl, result.ticket);
         message('VS Code aberto em uma nova aba. Você pode continuar usando a plataforma.');
       } else {
+        const workspaceUrl = new URL(launchUrl);
+        const userId = typeof currentUser === 'object' && currentUser ? String(currentUser.id) : '';
+        if (!/^[1-9][0-9]{0,18}$/.test(userId)) throw new Error('Usuário inválido');
+        workspaceUrl.hostname = workspaceUrl.hostname === 'localhost'
+          ? `u${userId}.ide.localhost` : `u${userId}.${workspaceUrl.hostname}`;
         removeFrame();
         frame = document.createElement('iframe');
         frame.className = 'vscode-frame';
@@ -173,7 +178,9 @@
         frame.title = 'VS Code — meu espaço de trabalho';
         frame.referrerPolicy = 'no-referrer';
         const origin = new URL(launchUrl).origin;
-        frame.setAttribute('allow', `clipboard-read ${origin}; clipboard-write ${origin}; fullscreen ${origin}`);
+        // O POST de entrada termina na origem pessoal da conta autenticada.
+        const allowedOrigins = `${origin} ${workspaceUrl.origin}`;
+        frame.setAttribute('allow', `clipboard-read ${allowedOrigins}; clipboard-write ${allowedOrigins}; fullscreen ${allowedOrigins}`);
         const currentFrame = frame;
         frame.onload = () => {
           if (!stillCurrent(version, owner) || frame !== currentFrame) return;
