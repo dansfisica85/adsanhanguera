@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="app-modern.css" />
   <link rel="stylesheet" href="engenharia-lab.css" />
+  <link rel="stylesheet" href="vscode-ide.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -120,6 +121,10 @@
         <button class="tab active" data-tab="codigo" onclick="switchTab('codigo')">
           <span class="tab-num">💻</span>
           <span class="tab-label">Code Editor</span>
+        </button>
+        <button class="tab" data-tab="vscode" onclick="switchTab('vscode')" aria-controls="tab-vscode">
+          <span class="tab-num" aria-hidden="true">⌨️</span>
+          <span class="tab-label">VS Code</span>
         </button>
         <div class="tab-dropdown">
           <button class="tab tab-dropdown-toggle" onclick="toggleUnidadesMenu()">
@@ -675,6 +680,32 @@
         </div>
       </section>
 
+      <!-- ==================== VS CODE ==================== -->
+      <section id="tab-vscode" class="tab-content" aria-labelledby="vscodeTitle">
+        <div class="unit-header vscode-header">
+          <h2 id="vscodeTitle">VS Code</h2>
+          <p class="unit-desc">Seu espaço pessoal para programar com editor, terminal e extensões.</p>
+          <p class="vscode-workspace-note">Os arquivos desta IDE ficam no seu espaço pessoal, separado dos projetos do Code Editor.</p>
+        </div>
+        <div id="vscodeShell" class="vscode-shell">
+          <div class="vscode-toolbar" role="group" aria-label="Controles da IDE">
+            <span class="vscode-workspace-label">Meu espaço de trabalho</span>
+            <div class="vscode-actions">
+              <button id="vscodeOpenButton" class="btn btn-primary btn-sm" onclick="window.vscodeIDE.launch('iframe')" hidden>Abrir VS Code</button>
+              <button id="vscodeNewTabButton" class="btn btn-outline btn-sm" onclick="window.vscodeIDE.launch('tab')" hidden>Abrir em nova aba ↗</button>
+              <button id="vscodeFullscreenButton" class="btn btn-outline btn-sm" onclick="window.vscodeIDE.fullscreen()" hidden>Tela cheia</button>
+            </div>
+          </div>
+          <div id="vscodeStatus" class="vscode-status" role="status" aria-live="polite">
+            <span class="vscode-status-icon" aria-hidden="true">⌨</span>
+            <p id="vscodeMessage">Verificando a disponibilidade do VS Code…</p>
+            <button id="vscodeRetryButton" class="btn btn-outline btn-sm" onclick="window.vscodeIDE.show(true)" hidden>Tentar novamente</button>
+            <button id="vscodeEditorButton" class="btn btn-outline btn-sm" onclick="switchTab('codigo')" hidden>Ir para o editor de projetos</button>
+          </div>
+          <div id="vscodeFrameHost" class="vscode-frame-host" hidden></div>
+        </div>
+      </section>
+
       <!-- ==================== DOCUMENTOS ==================== -->
       <section id="tab-docs" class="tab-content">
         <div class="unit-header">
@@ -1017,5 +1048,6 @@
   <script src="engenharia-data.js"></script>
   <script src="engenharia-lab.js"></script>
   <script src="app.js"></script>
+  <script src="vscode-ide.js"></script>
 </body>
 </html>

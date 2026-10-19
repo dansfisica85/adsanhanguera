@@ -1,0 +1,22 @@
+[Unit]
+Description=ADS Anhanguera VS Code gateway
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=ads-ide
+Group=ads-ide
+SupplementaryGroups=docker
+WorkingDirectory=/opt/adsanhanguera/services/ide-gateway
+EnvironmentFile=/etc/ads-ide.env
+ExecStart=/usr/bin/node server.mjs
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target
