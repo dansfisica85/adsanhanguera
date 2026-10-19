@@ -5,6 +5,10 @@ Serviço Node.js sem dependências npm, executado em um servidor Linux com Docke
 rede, processos e origem do navegador próprios. Não conecta ao Turso e não
 recebe nomes, e-mails, senhas ou JWTs dos usuários.
 
+O proprietário solicitou implantação sem nenhuma despesa nova. A preparação
+específica para sua conta Oracle está em [Oracle Always Free](../../docs/oracle-always-free.md),
+incluindo uma consulta de inventário que não cria nem altera recursos.
+
 ## Preparar o servidor
 
 Use um servidor dedicado à IDE, Node.js 22+ e Docker 28+. Comece com recursos

@@ -37,6 +37,10 @@ A aplicação atual pode continuar na Vercel. A IDE precisa de um servidor Linux
 persistente com Docker, armazenamento e HTTPS. Funções serverless da Vercel não
 mantêm terminais, servidores de linguagem e conexões WebSocket de longa duração.
 
+Para a implantação com orçamento zero solicitada neste projeto, veja a
+[preparação para Oracle Always Free](oracle-always-free.md). A conta, suas cotas e
+a disponibilidade gratuita precisam ser conferidas antes de criar recursos.
+
 1. Prepare o servidor seguindo [services/ide-gateway/README.md](../services/ide-gateway/README.md).
 2. Defina o endereço HTTPS da IDE, seu DNS/certificado wildcard para as origens
    pessoais (`u<ID>.ide.seudominio.com`) e permita somente a origem HTTPS da
