@@ -132,6 +132,22 @@ test('logout remove a IDE imediatamente e revoga com os cabeçalhos anteriores a
   assert.equal(h.calls.at(-1).options.keepalive, true);
 });
 
+test('clipboard e tela cheia acompanham somente as origens de entrada e da conta atual', async () => {
+  for (const [launchUrl, workspaceOrigin] of [
+    ['https://ide.example.com/launch', 'https://u3.ide.example.com'],
+    ['http://localhost:4100/launch', 'http://u3.ide.localhost:4100'],
+  ]) {
+    const h = harness(async url => response(url.endsWith('/status') ? { configured: true } : session({ launchUrl })));
+    await h.run('window.vscodeIDE.show()');
+    await h.run('window.vscodeIDE.launch()');
+    const policies = h.frames[0].attributes.allow.split('; ').map(value => value.split(' '));
+    assert.deepEqual(policies, ['clipboard-read', 'clipboard-write', 'fullscreen'].map(feature => [
+      feature, new URL(launchUrl).origin, workspaceOrigin,
+    ]));
+    assert.doesNotMatch(h.frames[0].attributes.allow, /\*|u4\./);
+  }
+});
+
 test('resposta atrasada após logout não recria iframe nem envia ticket', async () => {
   let resolveSession;
   const h = harness(async (url, options) => {
