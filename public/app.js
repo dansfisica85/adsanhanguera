@@ -132,6 +132,9 @@ async function verifyAndShow() {
 }
 
 function clearAuth() {
+  if (typeof window !== 'undefined' && window.vscodeIDE) {
+    window.vscodeIDE.reset(authToken ? authHeaders() : null);
+  }
   authToken = null;
   currentUser = null;
   localStorage.removeItem('adsToken');
@@ -394,6 +397,7 @@ function switchTab(tabId) {
   if (tabId === 'perfil') loadProfileData();
   if (tabId === 'admin') loadAdminData();
   if (tabId === 'codigo') loadCodeEditor();
+  if (tabId === 'vscode' && typeof window !== 'undefined' && window.vscodeIDE) window.vscodeIDE.show();
 }
 
 // ===== Conceitos Toggle =====

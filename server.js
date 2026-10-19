@@ -6,6 +6,7 @@ require('dotenv').config();
 const { dbExecute, dbBatch, initDB } = require('./src/database');
 const gabaritos = require('./src/gabaritos');
 const { avaliarResposta } = require('./src/avaliador');
+const { createIdeRouter } = require('./src/ide');
 const {
   hashSenha,
   verificarSenha,
@@ -209,6 +210,9 @@ app.get('/api/auth/me', middlewareAuth, async (req, res) => {
     res.status(500).json({ error: 'Erro interno.' });
   }
 });
+
+// Workspaces pessoais da IDE são independentes dos dados acadêmicos.
+app.use('/api/ide', middlewareAuth, createIdeRouter());
 
 // ===== EXERCÍCIOS =====
 

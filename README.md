@@ -446,6 +446,15 @@ adsanhanguera/
 
 ## 🚀 Instalação Local
 
+### IDE VS Code no navegador
+
+A aba **VS Code** integra ambientes pessoais de `code-server` para todos os
+perfis autenticados, com arquivos e terminal separados dos dados acadêmicos.
+Para habilitá-la, prepare o serviço persistente de IDE e configure
+`IDE_GATEWAY_URL` e `IDE_GATEWAY_TOKEN`. Veja o [guia de integração](docs/vscode.md)
+e a [estrutura do servidor](services/ide-gateway/README.md). Sem essa configuração,
+o editor de projetos atual continua funcionando.
+
 ### Pré-requisitos
 
 - Node.js 18+ instalado

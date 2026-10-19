@@ -1,0 +1,23 @@
+/* A IDE usa uma sessão própria; os estilos ficam restritos à nova aba. */
+#app #tab-vscode [hidden] { display: none !important; }
+#app #tab-vscode .vscode-header { border-left-color: #1476b8; }
+#app #tab-vscode .vscode-workspace-note { margin-top: 12px; color: var(--text-secondary); font-size: .85rem; line-height: 1.5; }
+#app #tab-vscode .vscode-shell { overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+#app #tab-vscode .vscode-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--surface-alt); }
+#app #tab-vscode .vscode-workspace-label { color: var(--text); font-size: .9rem; font-weight: 700; }
+#app #tab-vscode .vscode-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+#app #tab-vscode .vscode-status { display: flex; min-height: 260px; flex-wrap: wrap; justify-content: center; align-content: center; gap: 14px; padding: 30px 22px; color: var(--text-secondary); text-align: center; }
+#app #tab-vscode .vscode-status p { width: 100%; max-width: 760px; margin: 0 auto; line-height: 1.6; }
+#app #tab-vscode .vscode-status-icon { flex-basis: 100%; color: #1476b8; font-size: 2.5rem; }
+#app #tab-vscode .vscode-status.is-compact { min-height: 0; padding: 12px 18px; font-size: .85rem; }
+#app #tab-vscode .vscode-status.is-compact .vscode-status-icon { display: none; }
+#app #tab-vscode .vscode-frame-host { height: max(620px, 75vh); background: #1f1f1f; }
+#app #tab-vscode .vscode-frame { display: block; width: 100%; height: 100%; border: 0; }
+#app #tab-vscode .vscode-shell:fullscreen { display: flex; flex-direction: column; width: 100%; height: 100%; border: 0; border-radius: 0; }
+#app #tab-vscode .vscode-shell:fullscreen .vscode-frame-host { flex: 1; min-height: 0; height: auto; }
+#app #tab-vscode button:focus-visible { outline: 3px solid #1476b8; outline-offset: 3px; }
+@media (max-width: 640px) {
+  #app #tab-vscode .vscode-toolbar { padding: 12px; }
+  #app #tab-vscode .vscode-actions { width: 100%; }
+  #app #tab-vscode .vscode-frame-host { height: 72vh; min-height: 440px; }
+}
